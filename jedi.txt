@@ -1,0 +1,271 @@
+PHP
+
+	<? if (isset($info)): ?>
+		<div class="alert"><?= $info ?></div>
+	<? endif ?>
+
+	<? if (isset($steps)): ?>
+		<ol class="process">
+			<? foreach ($steps as $step): ?>
+				<li><?= $step ?>
+			<? endforeach ?>
+		</ol>
+	<? endif ?>
+
+
+Jade
+
+	if info
+		div.alert= info
+	if steps
+		ol.process
+			each step in steps
+				li= step
+
+
+Jedi
+				
+	:if info
+		div.alert
+			= info
+	:if steps
+		ol.process
+			:for step in steps
+				li = step
+
+	
+	if {info}, () ->
+		node div.alert, null, () ->
+			node anonymous, info, () -> null
+
+		
+Jedi (terse syntax)
+
+	div.alert if info
+		= info
+	ol.process
+		:for step in steps
+			li = step
+
+
+Jedi (even more terse)
+
+	div.alert = info
+	ol.process for step in steps
+		li = step
+
+
+Jedi (even more terse)
+
+	div.alert = info
+	ol.process = steps
+		li = *
+
+
+Jedi (more examples)
+
+	nav > ul for cat in categories
+		li > a = cat.link
+			= cat.label | i18n 'zh'
+	
+	table let fields = ['name', 'gender', 'age', 'tel']
+		:for field in fields
+			col.{field}
+		thead
+			tr > th "Name" + th "Gender" + th "Age" + th "Tel"
+		tbody = users
+			tr for field in fields 
+				td = *.[field]			
+
+	div.a.b#id markdown
+
+	ol = path.segments
+		case 
+		li > a = *
+
+	
+	:define bx:crumbs
+		ol = model
+			li
+				a = *
+					:content
+	
+	bx:crumbs = path
+		@a-class segment
+		@li-title *.fullName
+			
+		
+	:if x > 90
+		p 'A
+	:else if x > 80
+		p 'B
+	:else if x > 70
+		p 'C
+	:else
+		p 'D
+
+	dl.contact#pid = contact
+		dt 'First Name
+		dd = *.firstName
+		dt 'Last Name
+		dd = *.lastName
+	
+	ul.contacts = contacts
+		li > dl.contact#pid-{*.id}
+				dt 'First Name
+				dd = *.firstName
+				dt 'Last Name
+				dd = *.lastName
+
+信息架构	
+	ul.contacts
+		= myself
+		= contacts starred
+		= contacts unstarred
+	
+第一个实现	
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li.starred > dl.contact#pid-{*.id}
+				dt 'First Name
+				dd = *.firstName
+				dt 'Last Name
+				dd = *.lastName
+		= contacts unstarred
+			li > *.fullName
+	
+复用
+	:define dl.contact
+		dt 'First Name
+		dd = *.firstName
+		dt 'Last Name
+		dd = *.lastName
+	
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li.starred > dl.contact#pid-{*.id} = *
+		= contacts unstarred
+			li.unstarred > dl.contact#pid-{*.id} = *
+	
+复用是针对模型的
+	:define dl (contact)
+		@class += 'contact'
+		dt 'First Name
+		dd = contact.firstName
+		dt 'Last Name
+		dd = contact.lastName
+	
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li.starred > dl = *
+		= contacts unstarred
+			li.unstarred > dl = *
+	dl = myself
+	
+	:define dl (any)
+		@dataset = any.meta
+	
+	:macro bx:contact (contact)
+		:attr SpacedIDs class
+		dl.contact#pid-{contact.id}
+			@class += class
+			dt 'First Name
+			dd = contact.firstName
+			dt 'Last Name
+			dd = contact.lastName
+	
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li > bx:contact.starred = *
+		= contacts unstarred
+			li > bx:contact.unstarred = *
+	
+	
+	:define bx:contact (contact)
+		:attr SpacedIDs class
+		:attr CommaedIDs order
+		dl.contact#pid-{contact.id}
+			@class += class
+			dt 'First Name
+			dd = contact.firstName
+			dt 'Last Name
+			dd = contact.lastName
+	
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li > bx:contact.starred = *
+				@order = 'last, first'
+		= contacts unstarred
+			li > bx:contact.unstarred = *
+	
+
+	:define bx:contact
+			li.starred > dl.contact#pid-{*.id}
+				dt 'First Name
+				dd = *.firstName
+				dt 'Last Name
+				dd = *.lastName
+	
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			bx:contact = *
+		= contacts unstarred
+			li > p = *.fullName
+	
+	
+	div match score
+		'A' case > 90
+		'B' case > 80
+		'C' case > 70
+		'D' case *
+
+	
+	
+	:define button
+		startTag
+		attrs #attr
+		content
+		endTag
+
+	:define bx:if
+		@extend bx:div
+		div.container#myDiv (if @test)
+			#content
+
+
+	:if help
+		button
+			startTag
+			attrs
+			endTag
+		
+	:define html:button extends html:@element
+		if ie < 8:
+			@type 'button
+		else:
+		if ieq:
+			div.{@tagName}
+			
+		.test
+	
+	:define bx
+
+开启数据绑定后，默认自动更新，但是表单控件除外，默认会被锁定（lock）
+会要求必须处理model-refresh事件，从最外层的form控件capture阶段开始。
+
+最基本的元素：
+	宏定义
+	属性
+	

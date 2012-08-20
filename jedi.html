@@ -1,0 +1,85 @@
+<!doctype html>
+<script src="../tabish/type.js"></script>
+<script src="../tabish/iterator.js"></script>
+<script src="../tabish/matcher.js"></script>
+<script src="../tabish/tabish.js"></script>
+<script src="jedi.js"></script>
+<style>
+textarea {
+	display: block;
+	min-width: 30em;
+	min-height: 10em;
+	-webkit-tab-size: 4; 
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+}
+</style>
+
+<textarea id="test6" rows="25" cols="80">
+html
+	head
+		title
+			'Test
+	body
+		header
+			h1
+				'Test{1}{'+'}{1}={1+1}
+			:if true
+				'Hello!
+			:if false
+				'Oops!
+				
+			:for i in [1,2,3]
+				'{i}
+			nav
+				ul
+					li
+						a
+							@href="/"
+							'home
+					li
+						a
+							@href="#a"
+							'Part A
+					li
+						a
+							@href="#b"
+							'Part B
+					li
+						a
+							@href="#c"
+							'Part C
+		section#a
+			h1
+				'A
+			p
+			p
+			p
+		section#b
+			h1
+				'B
+			p
+			p
+			p
+		section#c
+			h1
+				'C
+			p
+			p
+			p
+</textarea>
+<input type="button" value="test" onclick="test('test6')">
+
+<script>
+function test(id) {
+	try {
+		var runtime = new jedi.JSRuntime()
+		var source = document.getElementById(id).value
+		var template = runtime.eval(jedi.compileToJS(source))
+		template.echo = function(s){ console.log(s) }
+		template.call(null, {name: 'hax'})
+	} catch(e) {
+		console.error(e)
+	}
+}
+</script>

@@ -1,0 +1,70 @@
+Option
+	indentChar: '\t'
+	ignoreLine: /^\s*(//|$)/
+	trimTailSpaces: on
+
+indent: '\t'
+ignoreLine: /^\s*(//|$)/
+
+Source
+	(Block | IgnoreLine)*
+
+Block
+	Header
+	Line*
+
+Line
+	indent Line
+	IgnoreLine
+
+Header
+	indent* Line
+
+Header
+
+Block
+	Comment
+		'--' char*
+			Line*
+	FilterBlock
+		':' FilterName s? Expression
+			Block*
+	Attr
+		'@' AttrName s? AttrOp s? Expression
+			Null*
+		'@' AttrName s? AttrOp
+			Expression+
+	TextLine
+		'\'' StringSource '\''?
+			Null*
+	TextBlock
+		'\'' '\t' StringSource
+			StringSource*
+	TagBlock
+Component
+	StringSource
+		
+	Expression
+
+	@TagName
+		char*
+	@AttrName
+		char*
+	@AttrOp
+		'='
+		opchar '='
+Id
+	'#' IdPrefix PlaceHolder
+@IdPrefix
+	
+@Class
+	'.' char+
+@ClassList
+	class*
+@Filter
+Attr
+	PlaceHolder
+		'{' Expression '}'
+Block
+	TagName? Class* Id? Filter*
+		Block
