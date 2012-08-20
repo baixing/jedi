@@ -6,6 +6,9 @@
 <script src="jedi.js"></script>
 <style>
 textarea {
+	font-family: Consolas, verdana, monospace;
+}
+textarea {
 	display: block;
 	min-width: 30em;
 	min-height: 10em;
@@ -13,13 +16,23 @@ textarea {
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
 }
+div {
+	float: left
+	
+}
+#output {
+	width: 600px;
+	height: 400px;
+}
 </style>
 
+<div>
 <textarea id="test6" rows="25" cols="80">
 html
 	head
 		title
 			'Test
+		style
 	body
 		header
 			h1
@@ -69,6 +82,11 @@ html
 			p
 </textarea>
 <input type="button" value="test" onclick="test('test6')">
+</div>
+
+<div>
+<iframe id="output"></iframe>
+</div>
 
 <script>
 function test(id) {
@@ -76,7 +94,11 @@ function test(id) {
 		var runtime = new jedi.JSRuntime()
 		var source = document.getElementById(id).value
 		var template = runtime.eval(jedi.compileToJS(source))
-		template.echo = function(s){ console.log(s) }
+		var html = ''
+		template.echo = function(s){
+			console.log(s)
+			document.getElementById('output').contentDocument.write(s)
+		}
 		template.call(null, {name: 'hax'})
 	} catch(e) {
 		console.error(e)
