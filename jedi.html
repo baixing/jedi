@@ -22,7 +22,8 @@ div {
 }
 #output {
 	width: 600px;
-	height: 400px;
+	height: 380px;
+	overflow: scroll;
 }
 </style>
 
@@ -33,17 +34,26 @@ html
 		title
 			'Test
 		style
+			body {
+				font: small 'Microsoft Yahei', sans-serif;
+			}
+			section {
+				border: 1px solid;
+				margin: 1em;
+				min-height: 10em;
+			}
 	body
 		header
 			h1
-				'Test{1}{'+'}{1}={1+1}
+				'Test: {1}{'+'}{1}={1+1}
 			:if true
-				'Hello!
+				'Hello world!
 			:if false
 				'Oops!
 				
 			:for i in [1,2,3]
-				'{i}
+				p
+					'Hello!
 			nav
 				ul
 					li
@@ -95,13 +105,15 @@ function test(id) {
 		var source = document.getElementById(id).value
 		var template = runtime.eval(jedi.compileToJS(source))
 		var html = ''
+		var doc = document.getElementById('output').contentDocument
+		doc.open()
 		template.echo = function(s){
 			console.log(s)
-			document.getElementById('output').contentDocument.write(s)
+			doc.write(s)
 		}
 		template.call(null, {name: 'hax'})
 	} catch(e) {
-		console.error(e)
+		console.error(e.message, e)
 	}
 }
 </script>
