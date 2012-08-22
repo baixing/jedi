@@ -103,23 +103,22 @@ void function(exports){
 				var ifElse = /^\s*if\s+(.+)/.exec(x.struct)
 				if (ifElse != null) {
 					result += content &&
-						indents + 'if (' + ifElse[1] + ') {\n' +
+						indents + 'if (' + compileES5Expression(ifElse[1]) + ') {\n' +
 						content + 
 						indents + '}\n'
 				}				
 				var forIn = /^\s*for\s+(.+)in\s+(.+)/.exec(x.struct)
 				if (forIn != null) {
 					result += content &&
-						indents + ';(' + forIn[2] + ').forEach(function(' + forIn[1] + '){\n' +
+						indents + ';(' + compileES5Expression(forIn[2]) + ').forEach(function(' + forIn[1] + '){\n' +
 						content +
 						indents + '})\n'
 				}
 				var lets = /^\s*let\s+(.+)/.exec(x.struct)
 				var bindings = ''
 				if (lets != null) {
-					bindings = 'var ' + lets[1]
 					result += content &&
-						indents + 'void function(){ var ' + lets[2] + '\n' +
+						indents + 'void function(){ var ' + compileES5Expression(lets[1]) + '\n' +
 						content +
 						indents + '}()\n'
 				}
@@ -132,11 +131,90 @@ void function(exports){
 				var attrNames = Object.keys(x).filter(function(name){
 					return name != 'children' && name != 'name' && name != 'model'
 				})
+				if (x.name === 'Text') {
+					content = indents + '\t$builder.echo(' + compileES5StringTemplate(x.value) + ')\n'
+				} else if (x.name === 'Attribute') {
+					var exp = x.value ? compileES5Expression(x.value) : '""'
+					var op
+					switch (x.operation) {
+						case '=': case '':
+							op = '=' + exp
+							break
+						case '+=':
+							op = '.add(' + exp + ')'
+							break
+						case '-=':
+							op = '.remove(' + exp + ')'
+							break
+						case '+-=':
+							op = '.toggle(' + exp + ')'
+							break
+						default:
+							throw 'Unknown attribute operation: ' + x.operation
+					}
+					content = indents + '\t$element["' + x.attributeName + '"]' + op + '\n'
+				}
 				result += indents + closeStartTag + '$builder.' + x.name + '(' + JSON.stringify(x, attrNames) + ', $element' +
 					(content &&
 					', function(' + (x.model ? '$model' : '') + '){' + (x.tagName ? 'var $element = ' + JSON.stringify(x.attributes) : '') + '\n' + 
 					content + 
 					indents + '}') + ')\n'
+			}
+		}
+		if (!startTagClosed) {
+			result += indents + '$builder.closeStartTag($element)\n'
+		}
+			
+		return result
+	}
+	
+	function toPHP(instructions, indents) {
+		if (indents == null) indents = '\t'
+		var result = ''
+		var startTagClosed = false
+		for (var i = 0; i < instructions.length; i++) {
+			var x = instructions[i]
+			var content = x.children != null ?
+				toES5(x.children, indents + '\t') : ''
+				
+			if (x.struct != null) {
+				var ifElse = /^\s*if\s+(.+)/.exec(x.struct)
+				if (ifElse != null) {
+					result += content &&
+						indents + 'if (' + ifElse[1] + ') {\n' +
+						content + 
+						indents + '}\n'
+				}				
+				var forIn = /^\s*for\s+(.+)in\s+(.+)/.exec(x.struct)
+				if (forIn != null) {
+					result += content &&
+						indents + ';foreach (' + forIn[2] + ' as ' + forIn[1] + ') {\n' +
+						content +
+						indents + '}\n'
+				}
+				var lets = /^\s*let\s+(.+)/.exec(x.struct)
+				var bindings = ''
+				if (lets != null) {
+					bindings = 'var ' + lets[1]
+					result += content &&
+						indents + 'call_user_func(function(){ ' + lets[2] + ';\n' +
+						content +
+						indents + '});\n'
+				}
+			} else {
+				var closeStartTag = ''
+				if (!startTagClosed && x.name !== 'Attribute' && x.name !== 'Struct') {
+					closeStartTag = '$builder->closeStartTag($element);'
+					startTagClosed = true
+				}
+				var attrNames = Object.keys(x).filter(function(name){
+					return name != 'children' && name != 'name' && name != 'model'
+				})
+				result += indents + closeStartTag + '$builder->' + x.name + '(' + JSON.stringify(x, attrNames) + ', $element' +
+					(content &&
+					', function(' + (x.model ? '$model' : '') + '){' + (x.tagName ? '$element = ' + JSON.stringify(x.attributes) : '') + ';\n' + 
+					content + 
+					indents + '}') + ');\n'
 			}
 		}
 		if (!startTagClosed) {
@@ -270,9 +348,11 @@ void function(exports){
 				else return ''
 			}).join('')
 		},
-		Attribute: function(node, attrs) {
+		Attribute: function(node, _, contentBuilder) {
+			contentBuilder()
+			return
 			var n = node.attributeName
-			var v = evalExp(node.value)
+			var v = node.value
 			switch (node.operation) {
 				case '=': case '':
 					attrs[n] = v
@@ -294,8 +374,8 @@ void function(exports){
 					throw 'Unknown attribute operation: ' + node.operation
 			}			
 		},
-		Text: function(node, context) {
-			this.echo(evalStringSource(node.value, context))
+		Text: function(node, _, contentBuilder) {
+			contentBuilder()
 		},
 		Struct: function(node, contentBuilder) {
 			throw 'uncompiled structure'
@@ -508,6 +588,23 @@ void function(exports){
 		return s.replace(/{(.+?)}/g, function(_, exp){
 			return evalExp(exp)
 		})
+	}
+	
+	function compileES5StringTemplate(s) {
+		var a = s.split(/{(.+?)}/)
+		var result = []
+		for (var i = 0; i < a.length; i++) {
+			result.push(
+				i % 2 === 0 ?
+					'"' + a[i].replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n') + '"':
+					'(' + compileES5Expression(a[i]) + ')'
+			)
+		}
+		return result.join(' + ')
+	}
+	
+	function compileES5Expression(s) {
+		return s.replace(/\*\./g, '$model.')
 	}
 	
 	exports.jedi = {
