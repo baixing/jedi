@@ -6,64 +6,24 @@ void function(exports){
 	'export jedi'
 	
 	
-	function isEmpty(s) {
-		return /^\s*$/.test(s)
-	}
-	
-	//var syntax = Tabish.DSL(resource('jedi.tabish'))
-	function InstructionBuilder(block) {
-		var result
-		if (Object.keys(Syntax).some(function(name){
-			var r = Syntax[name]
-			var m = r.header.exec(block.headerLine.content)
-			if (m == null) return false
-			//console.log(name, block.headerLine.content, m)
-			result = r.parse(m, block.bodyLines)
-			if (result.name == null) result.name = name
-			return true
-		})) {
-			//console.log(result)
-			return result
-		} else throw 'Unknown structure:' + block.headerLine.content
-	}
-	
-	function Text(bodyLines) {
-		var lines = []
-		try {
-			while (true) {
-				lines.push(bodyLines.next())
-			}
-		} catch(e) {
-			console.assert(e === StopIteration, e)
-		}
-		return lines.join('\n')
-	}
-	
-	function Null(bodyLines, name) {
-		try {
-			while (true) {
-				if (!isEmpty(bodyLines.next().content))
-					throw name + ' should not have child!'
-			}
-		} catch(e) {
-			if (e !== StopIteration) throw e
-			return ''
-		}
-	}
-	
-	function Blocks(bodyLines, parent) {
-		return Tabish.parse(bodyLines,
-			InstructionBuilder, {parent: parent})
-	}
-	
-	var Syntax = {
-		FilterBlock: {
-			header: /^:([a-z]+)(.*)/i,
+	var Grammar = {
+		Struct: {
+			header: /^:(.*)/i,
 			parse: function (header, bodyLines) {
 				var self = {
-					name: 'Filter',
-					filterName: header[1],
-					expression: header[2],
+					struct: header[1],
+				}
+				self.children = Blocks(bodyLines, self)
+				return self
+			}
+		},
+		Bind: {
+			header: /^=(.*)/,
+			parse: function (header, bodyLines) {
+				var self = {
+					name: 'Tag',
+					tagName: null,
+					model: header[1],
 				}
 				self.children = Blocks(bodyLines, self)
 				return self
@@ -72,7 +32,6 @@ void function(exports){
 		Tag: {
 			header: /^([a-z0-9_-]+)((?:\.[a-z0-9_-]+)*)(?:#([a-z0-9_-]+))?(.*)/i,
 			parse: function(header, bodyLines) {
-				if (header[4]) throw 'Unimplemented'
 				var self = {
 					tagName: header[1],
 					attributes: {
@@ -80,7 +39,11 @@ void function(exports){
 						id: header[3]
 					}
 				}
-				self.children = Blocks(bodyLines, self)
+				var m = /\s+=(.*)/.exec(header[4])
+				if (m != null) self.model = m[1]
+				if (self.tagName === 'style' || self.tagName === 'script')
+					self.children = [{name:'Text', value:Text(bodyLines)}]
+				else self.children = Blocks(bodyLines, self)
 				return self
 			}
 		},
@@ -127,6 +90,112 @@ void function(exports){
 	}
 	
 	
+	function toES5(instructions, indents) {
+		if (indents == null) indents = '\t'
+		var result = ''
+		var startTagClosed = false
+		for (var i = 0; i < instructions.length; i++) {
+			var x = instructions[i]
+			var content = x.children != null ?
+				toES5(x.children, indents + '\t') : ''
+				
+			if (x.struct != null) {
+				var ifElse = /^\s*if\s+(.+)/.exec(x.struct)
+				if (ifElse != null) {
+					result += content &&
+						indents + 'if (' + ifElse[1] + ') {\n' +
+						content + 
+						indents + '}\n'
+				}				
+				var forIn = /^\s*for\s+(.+)in\s+(.+)/.exec(x.struct)
+				if (forIn != null) {
+					result += content &&
+						indents + ';(' + forIn[2] + ').forEach(function(' + forIn[1] + '){\n' +
+						content +
+						indents + '})\n'
+				}
+				var lets = /^\s*let\s+(.+)/.exec(x.struct)
+				var bindings = ''
+				if (lets != null) {
+					bindings = 'var ' + lets[1]
+					result += content &&
+						indents + 'void function(){ var ' + lets[2] + '\n' +
+						content +
+						indents + '}()\n'
+				}
+			} else {
+				var closeStartTag = ''
+				if (!startTagClosed && x.name !== 'Attribute' && x.name !== 'Struct') {
+					closeStartTag = '$builder.closeStartTag($element);'
+					startTagClosed = true
+				}
+				var attrNames = Object.keys(x).filter(function(name){
+					return name != 'children' && name != 'name' && name != 'model'
+				})
+				result += indents + closeStartTag + '$builder.' + x.name + '(' + JSON.stringify(x, attrNames) + ', $element' +
+					(content &&
+					', function(' + (x.model ? '$model' : '') + '){' + (x.tagName ? 'var $element = ' + JSON.stringify(x.attributes) : '') + '\n' + 
+					content + 
+					indents + '}') + ')\n'
+			}
+		}
+		if (!startTagClosed) {
+			result += indents + '$builder.closeStartTag($element)\n'
+		}
+			
+		return result
+	}
+	
+	function isEmpty(s) {
+		return /^\s*$/.test(s)
+	}
+	
+	//var syntax = Tabish.DSL(resource('jedi.tabish'))
+	function InstructionBuilder(block) {
+		var result
+		if (Object.keys(Grammar).some(function(name){
+			var r = Grammar[name]
+			var m = r.header.exec(block.headerLine.content)
+			if (m == null) return false
+			//console.log(name, block.headerLine.content, m)
+			result = r.parse(m, block.bodyLines)
+			if (result.name == null) result.name = name
+			return true
+		})) {
+			//console.log(result)
+			return result
+		} else throw 'Unknown structure:' + block.headerLine.content
+	}
+	
+	function Text(bodyLines) {
+		var lines = []
+		try {
+			while (true) {
+				lines.push(bodyLines.next().content)
+			}
+		} catch(e) {
+			console.assert(e === StopIteration, e)
+		}
+		return lines.join('\n')
+	}
+	
+	function Null(bodyLines, name) {
+		try {
+			while (true) {
+				if (!isEmpty(bodyLines.next().content))
+					throw name + ' should not have child!'
+			}
+		} catch(e) {
+			if (e !== StopIteration) throw e
+			return ''
+		}
+	}
+	
+	function Blocks(bodyLines, parent) {
+		return Tabish.parse(bodyLines,
+			InstructionBuilder, {parent: parent})
+	}
+	
 	function JSRuntime() {
 		var r = JSRuntime.create({
 			context: Object.create(null)
@@ -145,12 +214,13 @@ void function(exports){
 			var body = '\
 	"use strict"\n\
 	return function template($model) {\n\
+		var $element = null\n\
 		if (template.echo != null)\n\
 			$builder.echo = template.echo\n\
-		;(\n' + 
+		{\n' + 
 			source + '\
-		)($model)\n\
-		return $builder.contents\n\
+		}\n\
+		return $builder.content\n\
 	}\n'
 			//console.log(source)
 			console.log(names, body)
@@ -160,7 +230,7 @@ void function(exports){
 				console.log(template)
 				return template
 			} catch(e) {
-				console.error(e)
+				console.error(e.message, e)
 			}
 		},
 		imports: function(context) {
@@ -169,21 +239,26 @@ void function(exports){
 	})
 	
 	var MarkupBuilder = {
-		contents: '',
+		content: '',
+		tags: [],
 		echo: function (s) {
-			this.contents += s
+			this.content += s
 		},
 		Comment: function(node) {
 			this.echo('<!--' + node.value + '-->')
 		},
-		Tag: function(node, contentBuilder, context) {
+		Tag: function(node, attrs, contentBuilder, context) {
 			//console.log('tag', node)
-			this.startTag(node.tagName, node.attributes)
-			contentBuilder()
+			this.openStartTag(node.tagName)
+			if (contentBuilder) contentBuilder()
 			this.endTag(node.tagName)
 		},
-		startTag: function (tagName, attributes) {
-			this.echo('<' + tagName + this.attrs(attributes) + '>')
+		openStartTag: function (tagName) {
+			this.tags.push(tagName)
+		},
+		closeStartTag: function (attributes) {
+			var tagName = this.tags.pop()
+			if (tagName) this.echo('<' + tagName + this.attrs(attributes) + '>')
 		},
 		endTag: function (tagName) {
 			this.echo('</' + tagName + '>')
@@ -195,13 +270,39 @@ void function(exports){
 				else return ''
 			}).join('')
 		},
-		Attribute: function() {
+		Attribute: function(node, attrs) {
+			var n = node.attributeName
+			var v = evalExp(node.value)
+			switch (node.operation) {
+				case '=': case '':
+					attrs[n] = v
+					break
+				case '+=':
+					var i = attrs[n].indexOf(v)
+					if (i === -1) attrs[n].push(v)
+					break
+				case '-=':
+					var i = attrs[n].indexOf(v)
+					if (i >= 0) attrs[n].splice(i, 1)
+					break
+				case '+-=':
+					var i = attrs[n].indexOf(v)
+					if (i >= 0) attrs[n].splice(i, 1)
+					else attrs[n].push(v)
+					break
+				default:
+					throw 'Unknown attribute operation: ' + node.operation
+			}			
 		},
 		Text: function(node, context) {
 			this.echo(evalStringSource(node.value, context))
 		},
-		Filter: function(node, contentBuilder) {
-			return Filters[node.filterName](node.expression, contentBuilder)
+		Struct: function(node, contentBuilder) {
+			throw 'uncompiled structure'
+			//return Filters[node.filterName](node.expression, contentBuilder)
+		},
+		Bind: function(node, contentBuilder) {
+			throw 'uncompiled structure'
 		}
 	}
 	
@@ -217,21 +318,6 @@ void function(exports){
 			return true
 		})) return result
 		else throw 'Unknown structure:' + block.headerLine.content
-	}
-	
-	function toES5(instructions, indents) {
-		if (indents == null) indents = '\t'
-		var result = ''
-		for (var i = 0; i < instructions.length; i++) {
-			var x = instructions[i]
-			var attrNames = Object.keys(x).filter(function(name){
-				return name != 'children' && name != 'name' && name != 'bindings'
-			})
-			result += indents + '$builder.' + x.name + '(' + JSON.stringify(x, attrNames) + 
-				(x.children != null ?
-				', function(){\n' + toES5(x.children, indents + '\t') + indents + '}':'') + ')\n'
-		}
-		return result
 	}
 	
 	function BlockProcessor(header, bodyLines) {
