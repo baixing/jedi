@@ -1,0 +1,9 @@
+{
+	"name": "jedi",
+	"version": "0.0.2",
+	"description": "jedi -- a language for Web",
+	"author": "johnhax@gmail.com",
+	"dependencies": {
+		"my": "> 0.0.0"
+	}
+}
