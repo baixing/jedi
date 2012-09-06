@@ -1,5 +1,6 @@
 'use strict'
 //'import ResourceLoader'
+imports: {StopIteration} from: 'lib/Tabish/iterator.js'
 imports: {Tabish} from: 'lib/Tabish/tabish.js'
 imports: {Class} from: 'lib/Tabish/type.js'
 
@@ -272,7 +273,7 @@ function Blocks(bodyLines, parent) {
 		InstructionBuilder, {parent: parent})
 }
 
-function JSRuntime() {
+exports: function JSRuntime() {
 	var r = JSRuntime.create({
 		context: Object.create(null)
 	})
@@ -300,14 +301,14 @@ return function template($model) {\n\
 }\n'
 		//console.log(source)
 		console.log(names, body)
-		try {
+		//try {
 			var f = Function.apply(null, names.concat(body))
 			var template = f.apply(null, values)
-			console.log(template)
+			//console.log(template)
 			return template
-		} catch(e) {
-			console.error(e.message, e)
-		}
+		//} catch(e) {
+		//	console.error(e.message, e)
+		//}
 	},
 	imports: function(context) {
 		Object.augment(this.context, context)
@@ -605,10 +606,8 @@ function compileES5Expression(s) {
 	return s.replace(/\*\./g, '$model.')
 }
 
-exports: var jedi = {
-	JSRuntime: JSRuntime,
-	compileToJS: function(source) {
-		var result = Tabish.parse(source, InstructionBuilder, {maxErrors: 0})
-		return toES5(result, '\t')
-	}
+
+exports: function compileToJS(source) {
+	var result = Tabish.parse(source, InstructionBuilder, {maxErrors: 0})
+	return toES5(result, '\t')
 }

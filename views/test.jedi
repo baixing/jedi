@@ -1,0 +1,1 @@
+html	head		title	body		p			'Hello		p			'{*.name}		div			'{*.content}					p			'{*.id}
