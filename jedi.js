@@ -97,15 +97,15 @@ function toES5(instructions, indents) {
 		var x = instructions[i]
 		var content = x.children != null ?
 			toES5(x.children, indents + '\t') : ''
-			
+
 		if (x.struct != null) {
 			var ifElse = /^\s*if\s+(.+)/.exec(x.struct)
 			if (ifElse != null) {
 				result += content &&
 					indents + 'if (' + compileES5Expression(ifElse[1]) + ') {\n' +
-					content + 
+					content +
 					indents + '}\n'
-			}				
+			}
 			var forIn = /^\s*for\s+(.+)in\s+(.+)/.exec(x.struct)
 			if (forIn != null) {
 				result += content &&
@@ -155,15 +155,15 @@ function toES5(instructions, indents) {
 			}
 			result += indents + closeStartTag + '$builder.' + x.name + '(' + JSON.stringify(x, attrNames) + ', $element' +
 				(content &&
-				', function(' + (x.model ? '$model' : '') + '){' + (x.tagName ? 'var $element = ' + JSON.stringify(x.attributes) : '') + '\n' + 
-				content + 
+				', function(' + (x.model ? '$model' : '') + '){' + (x.tagName ? 'var $element = ' + JSON.stringify(x.attributes) : '') + '\n' +
+				content +
 				indents + '}') + ')\n'
 		}
 	}
 	if (!startTagClosed) {
 		result += indents + '$builder.closeStartTag($element)\n'
 	}
-		
+
 	return result
 }
 
@@ -175,15 +175,15 @@ function toPHP(instructions, indents) {
 		var x = instructions[i]
 		var content = x.children != null ?
 			toES5(x.children, indents + '\t') : ''
-			
+
 		if (x.struct != null) {
 			var ifElse = /^\s*if\s+(.+)/.exec(x.struct)
 			if (ifElse != null) {
 				result += content &&
 					indents + 'if (' + ifElse[1] + ') {\n' +
-					content + 
+					content +
 					indents + '}\n'
-			}				
+			}
 			var forIn = /^\s*for\s+(.+)in\s+(.+)/.exec(x.struct)
 			if (forIn != null) {
 				result += content &&
@@ -211,15 +211,15 @@ function toPHP(instructions, indents) {
 			})
 			result += indents + closeStartTag + '$builder->' + x.name + '(' + JSON.stringify(x, attrNames) + ', $element' +
 				(content &&
-				', function(' + (x.model ? '$model' : '') + '){' + (x.tagName ? '$element = ' + JSON.stringify(x.attributes) : '') + ';\n' + 
-				content + 
+				', function(' + (x.model ? '$model' : '') + '){' + (x.tagName ? '$element = ' + JSON.stringify(x.attributes) : '') + ';\n' +
+				content +
 				indents + '}') + ');\n'
 		}
 	}
 	if (!startTagClosed) {
 		result += indents + '$builder.closeStartTag($element)\n'
 	}
-		
+
 	return result
 }
 
@@ -273,7 +273,8 @@ function Blocks(bodyLines, parent) {
 		InstructionBuilder, {parent: parent})
 }
 
-exports: function JSRuntime() {
+exports: JSRuntime
+function JSRuntime() {
 	var r = JSRuntime.create({
 		context: Object.create(null)
 	})
@@ -294,7 +295,7 @@ return function template($model) {\n\
 	var $element = null\n\
 	if (template.echo != null)\n\
 		$builder.echo = template.echo\n\
-	{\n' + 
+	{\n' +
 		source + '\
 	}\n\
 	return $builder.content\n\
@@ -371,7 +372,7 @@ var MarkupBuilder = {
 				break
 			default:
 				throw 'Unknown attribute operation: ' + node.operation
-		}			
+		}
 	},
 	Text: function(node, _, contentBuilder) {
 		contentBuilder()
@@ -577,7 +578,7 @@ function dump(result, level) {
 function evalExp(x, context) {
 	try {
 		return context != null ?
-			new Function('context', 'with (context) { return (' + x + ') }')(context) : 
+			new Function('context', 'with (context) { return (' + x + ') }')(context) :
 			new Function('return (' + x + ')')()
 	} catch(e) {
 		console.log('eval error: ', x)
@@ -607,7 +608,8 @@ function compileES5Expression(s) {
 }
 
 
-exports: function compileToJS(source) {
+exports: compileToJS
+function compileToJS(source) {
 	var result = Tabish.parse(source, InstructionBuilder, {maxErrors: 0})
 	return toES5(result, '\t')
 }
