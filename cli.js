@@ -1,0 +1,23 @@
+var transpiler = require('./src/transpiler')
+
+var program = require('commander')
+
+program.
+	version('0.9').
+	option('--php', '编译为PHP').
+	option('-e, --error-handler [type]', '指定错误处理器', 'html').
+	option('-w, --watch', '当指定文件的内容变化时自动重新编译').
+	parse(process.argv)
+
+if (program.args.length > 0) {
+
+	var srcPath = program.args[0]
+	var destPath = program.args[1] || srcPath.replace(/\.jedi$/, '.php')
+
+	if (program.watch) transpiler.watch(srcPath, destPath)
+	else transpiler.compile(srcPath, destPath)
+
+} else {
+	program.help()
+}
+

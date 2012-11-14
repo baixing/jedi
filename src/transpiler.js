@@ -24,19 +24,25 @@ function jedi2php(path) {
 	//console.log(code)
 	return code
 }
-function watch(path) {
-	console.log(path)
-	fs.watch(path, function(evt, filename) {
-		var phpTarget = path.replace(/\.jedi$/, '.php')
-		//console.log(filename, phpTarget)
-		try {
-			fs.writeFileSync(phpTarget, jedi2php(path))
-		} catch(e) {
-			fs.writeFileSync(phpTarget, e.stack || e.message || e)
-		}
+
+function compile(source, target) {
+	try {
+		fs.writeFileSync(target, jedi2php(source))
+	} catch(e) {
+		console.error(e)
+		fs.writeFileSync(target, e.stack || e.message || e)
+	}
+}
+
+function watch(source, target) {
+	compile(source, target)
+	fs.watch(source, function(evt, filename) {
+		compile(source, target)
 	})
 }
 
 exports.transpile = transpile
 exports.jedi2php = jedi2php
+
+exports.compile = compile
 exports.watch = watch
