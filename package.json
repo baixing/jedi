@@ -1,6 +1,6 @@
 {
 	"name": "jedi",
-	"version": "0.0.5",
+	"version": "0.9.0",
 	"description": "jedi -- a language for Web",
 	"author": "johnhax@gmail.com",
 	"dependencies": {
