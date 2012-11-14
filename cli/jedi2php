@@ -1,11 +1,13 @@
-var transpiler = require('./src/transpiler')
+#!/usr/bin/env node
+
+var transpiler = require('../src/transpiler')
 
 var program = require('commander')
 
 program.
 	version('0.9').
 	option('--php', '编译为PHP').
-	option('-e, --error-handler [type]', '指定错误处理器', 'html').
+	//option('-e, --error-handler [type]', '指定错误处理器', 'html').
 	option('-w, --watch', '当指定文件的内容变化时自动重新编译').
 	parse(process.argv)
 
