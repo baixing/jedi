@@ -17,9 +17,9 @@ ometa PHP5Transpiler {
 	node [string:nodeType [number number] apply(nodeType):x] -> x,
 	node :unknown -> ['/*', unknown, '*/'],
 
-	doctype = [#comment [number number] [output:x]] -> x | -> ["echo '<!doctype html>', '\\n';"],
+	doctype = [#comment [number number] [output:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	output = [outputMethod:x] -> x,
-	outputMethod spaces ("html" spaces? "5"?) spaces -> ["echo '<!doctype html>', '\\n';"],
+	outputMethod spaces ("html" spaces? "5"?) spaces -> ["echo '<!doctype html>', \"\\n\";"],
 
 	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),
 	trans [#Null] -> 'null',
@@ -48,17 +48,17 @@ ometa PHP5Transpiler {
 
 	comment [:line] -> ["echo '" + closeStartTag() + "<!-- " + escapeComment(simpleString(line)) + " -->';"],
 	comment [echoComment*:xs] -> [].concat(
-			"echo '" + closeStartTag() + "<!--', '\\n';",
+			"echo '" + closeStartTag() + "<!--', \"\\n\";",
 			xs,
 			"echo '-->';"
 		),
-	echoComment [char*:s] -> ("echo '" + escapeComment(simpleString(s)) + "', '\\n';"),
+	echoComment [char*:s] -> ("echo '" + escapeComment(simpleString(s)) + "', \"\\n\";"),
 
 	text closeStartTag:x undefined [echoLine*:lines] -> [x].concat(lines),
 	text closeStartTag:x undefined [echoTemplateString*:lines] -> [x].concat(lines),
 	closeStartTag -> (closeStartTag() ? "echo '>';" : ''),
 
-	echoLine string:s -> ("echo htmlSpecialChars('" + simpleString(s) + "'), '\\n';"),
+	echoLine string:s -> ("echo htmlSpecialChars('" + simpleString(s) + "'), \"\\n\";"),
 	echoTemplateString [trans*:exprList] -> ('echo ' + exprList.join(', ') + ';'),
 	//	-> dom.text(lines),
 
