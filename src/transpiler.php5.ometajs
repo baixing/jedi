@@ -1,0 +1,190 @@
+"module util at './util'"
+"export PHP5Transpiler"
+
+ometa PHP5Transpiler {
+	php = topBlock:xs -> (
+		'<?php\n//jedi@baixing.com\n' +
+		//flattenString(x) +
+		util.flattenLines(xs).join('\n') +
+		'\n?>'),
+
+	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
+	block = [node*:x] -> x,
+
+	ignore string:x -> x, // empty or ignore
+
+	node ignore,
+	node [string:nodeType [number number] apply(nodeType):x] -> x,
+	node :unknown -> ['/*', unknown, '*/'],
+
+	doctype = [#comment [number number] [output:x]] -> x | -> ["echo '<!doctype html>', '\\n';"],
+	output = [outputMethod:x] -> x,
+	outputMethod spaces ("html" spaces? "5"?) spaces -> ["echo '<!doctype html>', '\\n';"],
+
+	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),
+	trans [#Null] -> 'null',
+	trans [#True] -> 'true',
+	trans [#False] -> 'false',
+	trans [#Number :n] -> String(n),
+	trans [#String :s] -> ("'" + util.flattenString(s).replace(/'/g, '\\\'') + "'"),
+	trans [#String :s :raw] -> ("'" + util.flattenString(s).replace(/'/g, '\\\'') + "'"),
+	trans [#List [trans*:list]] -> ('[' + list.join(', ') + ']'),
+	trans ["." [#Symbol 'url'] [#Symbol :y]]
+		-> ('UrlBuilder::' + y),
+	trans ["." trans:x [#Symbol :y]]
+		-> (x + '->' + y),
+	trans [#Call trans:x trans:y]
+		-> (x + y),
+	trans [#Tuple [trans*:list]] -> ('(' + list.join(', ') + ')'),
+
+	trans [#Tuple [tupleItem*:list]] -> ('[' + list.join(', ') + ']'),
+
+	trans [#BinaryOp :op trans:x trans:y]
+		-> ('(' + x + ' ' + util.flattenString(op) + ' ' + y + ')'),
+	trans [#Symbol '*'] -> '$context',
+	trans [#Symbol :s resolve(s):x] -> x,
+	trans :unknown -> ['/*', JSON.stringify(unknown), '*/'],
+	//trans [trans*:x] -> ( x ),
+
+	comment [:line] -> ["echo '" + closeStartTag() + "<!-- " + escapeComment(simpleString(line)) + " -->';"],
+	comment [echoComment*:xs] -> [].concat(
+			"echo '" + closeStartTag() + "<!--', '\\n';",
+			xs,
+			"echo '-->';"
+		),
+	echoComment [char*:s] -> ("echo '" + escapeComment(simpleString(s)) + "', '\\n';"),
+
+	text closeStartTag:x undefined [echoLine*:lines] -> [x].concat(lines),
+	text closeStartTag:x undefined [echoTemplateString*:lines] -> [x].concat(lines),
+	closeStartTag -> (closeStartTag() ? "echo '>';" : ''),
+
+	echoLine string:s -> ("echo htmlSpecialChars('" + simpleString(s) + "'), '\\n';"),
+	echoTemplateString [trans*:exprList] -> ('echo ' + exprList.join(', ') + ';'),
+	//	-> dom.text(lines),
+
+	element [:tag :cls :id] :bind {startTag(tag, cls, id)}:startT block:body {endTag(tag)}:endT
+		-> [startT, body, endT],
+
+	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
+	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', " + exp + ", '\"';"],
+
+	binding closeStartTag:x trans:expr :_ block:body
+		-> [x].concat(closure(expr, body)),
+
+	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
+	instruction #else :_ block:b -> ["else {", b, "}"],
+
+	instruction #for [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock -> ["foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
+	bindingPattern [#Symbol :v] -> [[v], '$' + v],
+	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
+
+	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
+	fragment :name :_ block:b -> ['//  #' + name, b],
+
+	endElement -> '',
+
+	inject :x :y block:body -> [x.join('') + ' {', body, '}'],
+	/*filter [#Symbol [``if'']] [spaces Expression.expression:exp node(exp):x] block:body
+		-> ['if (' + x + ') {', body, '}'],
+	filter [#Symbol [``else'']] :x block:body
+		-> ['else {', body, '}'],
+
+	Quasi :tag [trans*:templateStrings]
+		-> [echo(closeStartTag()) + "Jedi::Quasi(" +
+			(tag ? "'" + tag.join('') + "'": null) +
+			", " +
+			templateStrings.join(', ') +
+			');'],
+
+	//directive :type [apply(type):x] -> x,
+	//node = directive (#Comment | #Suppress | #Inject | #Element | #Text | #Filter)
+	//Element :tag [:cls, :id] :body ->*/
+
+	END
+}
+
+
+PHP5Transpiler.initialize = function() {
+	this._stack = [['page']]
+	this.enterBlock = function(bindings) {
+		this._stack.unshift(bindings)
+	}
+	this.exitBlock = function() {
+		this._stack.shift()
+	}
+	this.resolve = function(symbol) {
+		for (var i = 0; i < this._stack.length; i++) {
+			if (this._stack[i].indexOf(symbol) >= 0) return '$' + symbol
+		}
+		return '$model->' + symbol
+	}
+}
+
+function echo() {
+	var args = [].slice.call(arguments).reduce(function(a, b){
+		if (util.isCharArray(b)) b = b.join('')
+		if (typeof b === 'string' && typeof a[a.length - 1] === 'string') {
+			a[a.length - 1] += b
+		} else {
+			a.push(b)
+		}
+		return a
+	}, []).map(function(o){
+		if (typeof o === 'string') {
+			return "'" + o.replace(/'/g, "\\'") + "'"
+		}
+		return JSON.stringify(o)
+	})
+	return 'echo ' + args.join(', ') + ';'
+}
+function echoLines(lines) {
+	return lines.map(function(line) {
+		return echo(line, '\n')
+	})
+}
+
+function escapeComment(s) {
+	// http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#comments
+	// Comment must not contain two consecutive U+002D HYPHEN-MINUS characters (--)
+	return s.replace(/--/g, '- -')
+}
+function simpleString(s) {
+	if (util.isCharArray(s)) s = s.join('')
+	return s.replace(/'/g, "\\'")
+}
+function attrValue(s) {
+	return s.replace(/"/g, '\\"')
+}
+
+var closed = true
+function closeStartTag() {
+	if (closed) return ''
+	closed = true
+	return '>'
+}
+function startTag(tag, cls, id) {
+	var r = echo(
+		closeStartTag(),
+		"<", tag,
+		cls.length > 0 ? ' class="' + cls.join(' ') + '"': '',
+		id ? ' id="' + id + '"' : '')
+	closed = false
+	return r
+}
+function endTag(tag) {
+	return echo(closeStartTag(), '</', tag, '>')
+}
+
+function closure(context, body) {
+	return [
+		'$_binding = function($context) {',
+		body,
+		'}; $_binding(' + context + ');'
+	]
+}
+
+function htmlComment(lines) {
+	return '<!--'
+}
+
+

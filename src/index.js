@@ -1,0 +1,1 @@
+'use strict'var trans = require('./transpiler')var defaultPath = 'D:\\working\\hax\\haojing\\htdocs\\view\\listing.jedi'if (process.argv[2] === '-w') {	trans.watch(require.resolve(process.argv[3] || defaultPath))} else {	console.log(trans.jedi2php('./examples/hello.jedi'))}

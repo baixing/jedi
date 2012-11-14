@@ -1,0 +1,52 @@
+"export SimpleText, UnicodeText, CompatibleText"
+
+ometa SimpleText {
+	source = lines,
+	lines (newline:nl) = string:s -> s.split(nl),
+	newline -> /\r?\n/,
+	whitespace = ' ' | '\t' | '\n',
+	nameChar = letterOrDigit | '_' | '-' | '&',
+	END
+}
+
+ometa UnicodeText <: SimpleText {
+	source = lines:x -> x.map(check),
+	newline -> /\r\n?|\n|\u2028|\u2029/,
+	whitespace = char:c ?whitespace.test(c) -> c,
+	END
+}
+
+ometa CompatibleText <: UnicodeText {
+	source = lines:x -> x.map(filter),
+	newline -> /\r[\n\u0085]?|\n\r?|[\u2028\u2029\f\u0085]/,
+	END
+}
+
+var discouraged = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\uFDD0-\uFDEF\uFFFE\uFFFF]/g
+var whitespace = /[\t\n \u00A0\u3000\u2000-\u200A\u202F\u205F\u2028\u2029\u1680\u180E\uFEFF]/
+
+function check(line, n, lines) {
+	var c = line.search(discouraged)
+	if (c >= 0) {
+		var e = new Error('discouraged character')
+		e.charCode = line.charCodeAt(c)
+		e.char = line.charAt(c)
+		e.position = {line:n, column:c}
+		e.source = lines
+		e.toString = function() {
+			return this.message + ':' +
+				'U+' + this.charCode.toString(16).toUpperCase() +
+				'(' + this.char + ')' +
+				' @ line ' + (this.position.line + 1) +
+				', column ' + (this.position.column + 1)
+		}
+		throw e
+	}
+	return line
+}
+
+function filter(line) {
+	return line.replace(discouraged, '\uFFFD')
+}
+
+// UnicodeText.match('line 1\nline\u001f2', 'source')

@@ -1,0 +1,183 @@
+"import OffsideRule from './offside'"
+"import Expression from './expression'"
+"import string from './util'"
+"export Parser, Optimizer"
+
+ometa PlainParser <: OffsideRule {
+
+	ignore = '/' '/',
+	tabSize -> null,
+
+	parse :rule = position:pos apply(rule):x -> [rule, pos].concat(x),
+
+	processSection = jediSection | ^processSection,
+	jediSection = parse('suppress')
+		| parse('inject')
+		| parse('text')
+		| parse('binding')
+		| parse('instruction')
+		| parse('fragment'),
+
+	suppress = [suppressFlag spaces char*:x] :xs -> [[x].concat(xs).map(string)],
+	suppressFlag = '-' '-',
+
+	inject = [injectFlag spaces char*:x] block:b -> [string(x), null, b],
+	injectFlag = '-',
+
+	binding = [bindingPattern:e] block:b -> e.concat(b),
+	/*binding = [elementPattern:y pos:col offset(0, col):pos bindingPattern:x] block:b
+		-> [x[0], x[1], [
+				[#element, pos, y[0], y[1], b]
+			]],*/
+	bindingPattern = bindingFlag spaces bindingArg:expr spaces -> [expr, []],
+	bindingFlag = '=',
+	bindingArg = Expression.expression | error,
+
+	text = ['\'' spaces char*:x] :xs -> [undefined, [x].concat(xs).map(string)],
+	text = [Expression.symbol?:tag '"' spaces templateString:x] templateStrings:xs
+		-> [tag, [x].concat(xs)],
+	text = ['\u2018' spaces char*:x] :xs
+		-> [#Unicode, [x].concat(xs)],
+	text = ['\u201c' spaces templateString:x] templateStrings:xs
+		-> [#Unicode, [x].concat(xs)],
+	//templateStrings = [[anything*]*],
+	templateString = (Expression.interpolation | stringLiteralSection)*,
+	stringLiteralSection = <(Expression.escapedChar | ~'{' char)+:cooked>:raw
+		-> [#String, string(cooked), string(raw)],
+	templateStrings = [(skip | [templateString:x] -> x)*:y] -> y,
+
+	fragment = [idName:id spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
+		-> [id, null, x ? [[#binding, pos, x[0], x[1], b]] : b],
+
+	END
+}
+
+ometa Parser <: PlainParser {
+
+	jediSection = parse('comment')
+		| parse('attribute')
+		| parse('macro')
+		| ^jediSection
+		//| parse('endElement')
+		| parse('element'),
+
+	error = offsetCol position:pos char* -> [#Error, pos],
+
+	comment = [commentFlag spaces char*:x] :xs -> [[x].concat(xs).map(string)],
+	commentFlag = '!',
+
+
+	attribute = [attributeFlag attrName:attr assignmentOperator?:op char*:x] :xs
+		expr([].concat.apply(x, xs)):expr
+		-> [attr, op, expr],
+	attributeFlag = '@',
+	attrName = (~(space | '=' | '+' | '-' | '^' | '$') char)+:x -> x.join(''),
+	assignmentOperator = spaces <('+' | '-' | '^' | '$')? '='>:x spaces -> x,
+
+	expr = [spaces Expression.expression:x spaces] -> x,
+
+	macro = [macroStart macroPattern:x] block:b -> [x[0], x[1], b],
+	macroStart = ':' ':',
+	macroPattern = elementPattern:sel spaces macroParam:param spaces -> [sel, param],
+	macroParam = Expression.tupleLiteral,
+
+	instruction = [instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
+	instruction = [elementPattern:y pos:col offset(0, col):pos instructionPattern:x] block:b
+		-> [x[0], x[1], [
+				[#element, pos, y[0], y[1], b]
+			]],
+	instructionStart = ':',
+	instructionPattern = "if" spaces Expression.expression:x spaces -> [#if, x],
+	instructionPattern = "else if" spaces Expression.expression:x spaces -> [#elseif, x],
+	instructionPattern = "else" spaces -> [#else, null],
+	instructionPattern = "end if" spaces -> [#endif, null],
+	instructionPattern = "for" spaces Expression.bindingPattern:x
+		spaces "in" spaces Expression.expression:y -> [#for, [x, y]],
+	instructionPattern = "for" spaces Expression.expression:x -> [#for, x],
+	instructionPattern = "end for" spaces -> [#endfor, null],
+	instructionPattern = "match" spaces Expression.expression:x -> [#match, x],
+	instructionPattern = "case" spaces Expression.expression:x -> [#case, x],
+	instructionPattern = "end match" spaces -> [#endmatch, null],
+	instructionPattern = "let" spaces Expression.bindingPattern:x
+		spaces '=' spaces Expression.expression:y -> [#let, [x, y]],
+
+	instructionName:name spaces instructionParam:param spaces -> [name, param],
+	instructionName = Expression.symbol,
+	instructionParam = Expression.expression,
+
+	element = [elementPattern:e bindingPattern?:b] block:children -> [e, b, children],
+	element = [elementPattern:e childCombinator offsetCol char+:rest]
+		parse('element', rest):child
+		-> [e, undefined, [child]],
+	element = [elementPattern:e offsetCol char+:rest] block:children
+		parse('attribute', rest, []):a
+		-> [e, undefined, [a].concat(children)],
+
+	childCombinator = '>' spaces,
+	elementPattern = tagName:tag classList:cls idName?:id spaces -> [tag, cls, id],
+	simpleName = (Expression.escapedChar
+		| ~(space|'.'|'#'|'='|'@'|'\''|'"'|'!') char)+:x
+		-> x.join(''),
+	tagName = simpleName,
+	aclass = '.' simpleName,
+	classList = aclass*,
+	idName = '#' simpleName,
+
+	END
+}
+
+ometa Optimizer {
+	source = block,
+	block = [node*:x] -> x,
+	node :x -> x,
+	END
+}
+
+
+/*
+
+	bindingForm = bindingOp spaces Expression.expression:x spaces ("use" bindingNames:y)? -> [x, y],
+	parameters = listOf('identifier', ','),
+	bindingNames = parameters | '(' spaces parameters:x spaces ')' -> x,
+}
+
+ometa Translator {
+
+	filter = [':' structure:x] :y -> [#Filter, x, y],
+
+	structure = "if" expression:x -> [#If, x],
+	structure = "else" -> [#Else],
+	structure = "case" expression:x -> [#Case, x],
+	structure = "for" forBindings:x expression:y -> [#For, x, y],
+
+	forBindings = identifier "in",
+	forBindings = identifier ":" identifier "in",
+	forBindings = identifier "of",
+	forBindings = identifier "," identifier "of",
+}
+*/
+
+/*
+a every x -> x * 2
+
+a some (x -> x > 2
+
+test (x in 1...3) ->
+test (number x) -> x + 1
+test (boolean x) -> !x
+
+position (x, y)
+position (x:left, y:top)
+
+p:point = position (x = left, y = top)
+
+def position (x, y)
+
+def f (a1, a2 = 3, ...args)
+def f (a1 = 1, a2, ...args)
+
+
+f (1)
+
+f (a1 = 1, a2 = 2,
+*/
