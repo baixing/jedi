@@ -1,0 +1,131 @@
+"import string, toUTF16 from './util'"
+"export Expression"
+
+ometa Expression {
+
+	primary = literal | listLiteral | tupleLiteral | path | symbol,
+
+	symbol = ('*' | nameChar+):s -> [#Symbol, string(s)],
+	nameChar = letterOrDigit | '$' | '_' | '-' | '&',
+
+	path = symbol?:start segment+:segments
+		-> [#Path, start].concat(segments),
+	segment = '/' <segmentChar*>,
+	segmentChar = ~(space | ambigSep | '/' | '?' | '#') char,
+	ambigSep = (',' | ']' | ')') (space | end),
+
+	literal = nullLiteral | booleanLiteral | numberLiteral
+		| stringLiteral | quasiLiteral,
+
+	nullLiteral "null" -> [#Null],
+
+	booleanLiteral "true" -> [#True],
+	booleanLiteral "false" -> [#False],
+
+	numberLiteral "NaN" -> [#NaN],
+	numberLiteral "Infinity" -> [#PosInf],
+	numberLiteral "+Infinity" -> [#PosInf],
+	numberLiteral "-Infinity" -> [#NegInf],
+	numberLiteral <signedInt ('.' digit*)? ('e' signedInt)?>:n
+		-> [#Number, parseFloat(string(n))],
+	signedInt = <('+' | '-')? digit+>,
+
+	stringLiteral
+		'\''
+		(~'\'' char | '\'' '\'' -> '\'')*:s
+		'\''
+		-> [#String, s],
+
+	quasiLiteral
+		symbol?:tag
+		'"'
+		(interpolation | stringLiteralSection)*:s
+		'"'
+		-> [#Quasi, tag, s],
+	interpolation = '{' expression:expr '}' -> expr,
+	stringLiteralSection = <(escapedChar | ~('"' | '{') char)+:cooked>:raw
+		-> [#String, cooked, raw],
+
+	escapedChar '\\' 'b' -> '\u0008',
+	escapedChar '\\' 't' -> '\u0009',
+	escapedChar '\\' 'n' -> '\u000a',
+	escapedChar '\\' 'v' -> '\u000b',
+	escapedChar '\\' 'f' -> '\u000c',
+	escapedChar '\\' 'r' -> '\u000d',
+	escapedChar '\\' <hex hex? hex? hex? hex? hex?>:u space?
+		-> toUTF16(parseInt(u, 16)),
+	escapedChar '\\' 'u' <hex hex hex hex>:u
+		-> String.fromCharCode(parseInt(u, 16)),
+	escapedChar '\\' 'u' '{' <hex+>:u '}'
+		-> toUTF16(parseInt(u, 16)),
+	escapedChar '\\' <char>,
+	hex = char:c ?/[0-9a-f]/i.test(c),
+
+	listLiteral =
+		'[' spaces
+		(listItem:item comma -> item)*:x listItem?:y
+		spaces ']'
+		-> [#List, y ? x.concat([y]) : x],
+	listItem = expression,
+
+	tupleLiteral =
+		'(' spaces
+		(tupleItem:item comma -> item)*:x tupleItem?:y
+		spaces ')'
+		-> [#Tuple, y ? x.concat([y]) : x],
+	tupleItem = mapping | expression,
+	mapping = symbol:name spaces ':' spaces expression:expr -> [#Mapping, name, expr],
+
+	bindingPattern = tuplePattern | listPattern | symbol,
+	listPattern =
+		'[' spaces
+		(bindingPattern:item comma -> item)*:x bindingPattern?:y
+		spaces ']'
+		-> [#ListPattern, y ? x.concat([y]) : x],
+	tuplePattern =
+		'(' spaces
+		((bindingPattern | mappingPattern):item comma -> item)*:x bindingPattern?:y
+		spaces ')'
+		-> [#TuplePattern, y ? x.concat([y]) : x],
+	mappingPattern = symbol:name spaces ':' spaces bindingPattern:bind -> [#MappingPattern, name, bind],
+
+	comma = spaces ',' spaces,
+
+	binOp string:left string:op string:right = apply(left):x,
+
+	// x.name | x?.name
+	refExp = refExp:x (``.'' | ``?.''):op symbol:name -> [op, x, name],
+	// x(y) | x [y]
+	refExp = refExp:x spaces (tupleLiteral | listLiteral):y -> [#Call, x, y],
+	refExp = refExp:x space+ primary:y -> [#Call, x, y], // x y
+	refExp = primary,
+
+	rangeExp = refExp:x (``''),
+
+	concatExp = concatExp:x "++" exp1 -> [#Concat, x, y], // x ++ y
+
+	expression = exp1,
+	exp1 = exp1:x op1:op exp2:y -> [#BinaryOp, op, x, y] | exp2,
+	exp2 = exp2:x op2:op exp3:y -> [#BinaryOp, op, x, y] | exp3,
+	exp3 = exp3:x op3:op exp4:y -> [#BinaryOp, op, x, y] | exp4,
+	exp4 = exp4:x op4:op exp5:y -> [#BinaryOp, op, x, y] | exp5,
+	exp5 = exp5:x op5:op exp6:y -> [#BinaryOp, op, x, y] | exp6,
+	exp6 = exp6:x op6:op exp7:y -> [#BinaryOp, op, x, y] | exp7,
+	exp7 = exp7:x op7:op exp8:y -> [#BinaryOp, op, x, y] | exp8,
+	exp8 = exp9:x op8:op exp9:y -> [#BinaryOp, op, x, y] | exp9,
+	exp9 = op9:op refExp:x -> [#UnaryOp, op, x] | refExp,
+	expA = expA:x opA:op symbol:y -> [#BinaryOp, op, x, y] | primary,
+	op1 = spaces ("->" | "<-"):x spaces -> x,
+	op2 = spaces ("||" | "&&"):x spaces -> x,
+	op3 = spaces ("===" | "!==" | "==" | "!=" | "<=>" | ">=" | "<=" | ">" | "<"):x spaces -> x,
+	op4 = spaces ("<<<" | ">>>" | "<<" | ">>"):x spaces -> x,
+	op5 = spaces ("?:"):x spaces -> x,
+	op6 = spaces ("+" | "-"):x spaces -> x,
+	op7 = spaces ("¡Á" | "¡Â"):x spaces -> x,
+	op8 = spaces ("..." | "..<"):x spaces -> x,
+	op9 = spaces ('!'):x spaces -> x,
+	opA = spaces ("?." | "." | "!"):x spaces -> x,
+
+	END
+}
+
