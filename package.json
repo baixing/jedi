@@ -1,6 +1,6 @@
 {
 	"name": "jedi",
-	"version": "0.9.0",
+	"version": "0.9.4",
 	"author": "Hax <johnhax@gmail.com>",
 	"description": "jedi -- a language for Web",
 	"keywords": ["template", "view", "dsl"],
@@ -16,6 +16,6 @@
 	"bugs": "http://github.com/hax/jedi/issues",
 	"main": "src/transpiler.js",
 	"bin": {
-		"jedi2php": "./cli.js"
+		"jedi2php": "./cli/jedi2php"
 	}
 }
