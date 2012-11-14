@@ -1,0 +1,165 @@
+!html5
+!if ie8
+html
+	head
+		meta @charset='utf-8'
+		title = pageTitle
+		jedi-model
+			contents: []
+	body
+		header
+			h1 "Jedi Language
+			nav = contents
+
+		section#Syntax
+			section#tag
+				h1 "Tags
+
+				p
+					A tag is simply a leading word:
+					pre > code.lang-jedi
+						'p
+					'for example is converted to
+					code.lang-html '<p></p>
+				p
+					'The end tag
+					code.lang-html '</p>
+					'can be omitted in some context,
+					'and Jedi can deal with such cases automatically
+					pre > code.lang-jedi
+						'div
+						'	p
+						'	p
+					'renders
+					code.lang-html '<div><p><p></div>
+					pre > code.lang-jedi
+						'ol
+						'	li
+						'	li
+						'	li
+					'renders
+					code.lang-html '<ol><li><li><li></ol>
+				p
+					'You could also stick to XHTML syntax if you like
+					pre > code.lang-jedi
+						'!xhtml5
+						'ol
+						'	li
+						'	li
+						'	li
+					'renders
+					code.lang-html '<ol><li></li><li></li><li></li></ol>
+				p
+					'tags can has class and id
+					pre > code.lang-jedi
+						'p.note
+					'renders
+					code.lang-html '<p class="note"></p>
+					pre > code.lang-jedi
+						'ul#task-list
+						'	li#task1
+						'	li#task2
+					'renders
+					code.lang-html '<ul id="task-list"><li id="task1"><li id="task2"></ul>
+				p
+					'multiple classes plus id
+					pre > code.lang-jedi
+						'ul
+						'	li.task.done#t1
+						'	li.task#t2
+					'renders
+					code.lang-html '<ul><li class="task done" id="t1"><li class="task" id="t2"></ul>
+				p
+					'Note: Jedi only accept
+					code.lang-jedi 'tag.cls1.cls2#id
+					, and will report a compiling error for
+					code.lang-jedi 'tag#id.cls1.cls2
+					, such strict rule will help you avoid ambiguity.
+				p
+					'Note: Jedi also don't allow empty tag like Jade,
+					'because such shortcuts tend to cause divitous
+
+			section#text
+				h1 'Text
+
+				p
+					'Leading quotation marks ' or " denote text
+					pre > code.lang-jedi
+						'h1 "Hello world!
+					'renders
+					code.lang-html '<h1>Hello world!</h1>
+					'multiline text
+					pre > code.lang-jedi
+						"p
+						"	'foo bar baz
+						"	'rawr rawr
+						"	'super cool
+					'renders
+					code.lang-html
+						'<p>foo bar baz
+						'rawr rawr
+						'super cool</p>
+				p
+					'You can add tailing quotation marks to control whitespace,
+					pre > code.lang-jedi
+						"p
+						"	'foo bar baz'
+						"	'rawr "rawr"
+						"	'super cool'
+					'renders
+					code.lang-html
+						'<p>foo bar bazrawr "rawr"
+						'super cool</p>
+				p
+					'For large bodies of text, you can also write:
+					pre > code.lang-jedi
+						'p
+						'	"
+						'		foo bar baz
+						'		rawr rawr
+						'		super cool
+					'renders
+					code.lang-html
+						'<p>foo bar baz
+						'rawr rawr
+						'super cool</p>
+				p
+					'Note: If you use ` or open double qutation “ instead,
+					'the text will be transformed as unicode rules,
+					'which is very useful for East-asian users
+					pre > code.lang-jedi
+						'p
+						'	“
+						'		Jade
+						'		是一个
+						'		非常棒的
+						'		template
+						'		语言；
+						'		Jedi
+						'		是一个
+						'		更棒的
+						'		template
+						'		语言。
+					'renders
+					code.lang-html
+						'<p>Jade 是一个非常棒的 template 语言；Jedi 是一个更棒的 template 语言。</p>
+				p
+					'interpolation? yup! both types of text can utilize interpolation,
+					'if we passed { name: 'hax', email: 'johnhax@gmail.com' }
+					'to the compiled function we can do the following:
+					pre > code.lang-jedi
+						'div#user '\{name} (\{email})
+					'outputs
+					code.lang-html
+						'<div id="user">hax (johnhax@gmail.com)</div>
+
+				p
+					'Actually want
+					code '{something}
+
+		section#api
+			h1 'Public API
+
+			pre > code.lang-JavaScript
+				var runtime = jedi.runtime.create()
+				var template = jedi.compile('jedi source code', options)

@@ -1,0 +1,377 @@
+Jedi吸取了以下模板或相关技术
+
+可扩展性的机制主要来源于Ruby和Groovy中的Markup Builder
+语法主要沿袭Jade，所做的修改参考了各方面因素
+核心抽象机制来自于CSS Selector、XSLT和强类型编程语言
+表达式考虑了各种语言，其中参考最多的是ES6和PHP
+
+
+PHP
+
+	<? if (isset($info)): ?>
+		<div class="alert"><?= $info ?></div>
+	<? endif ?>
+
+	<? if (isset($steps)): ?>
+		<ol class="process">
+			<? foreach ($steps as $step): ?>
+				<li><?= $step ?>
+			<? endforeach ?>
+		</ol>
+	<? endif ?>
+
+
+Jade
+
+	if info
+		div.alert= info
+	if steps
+		ol.process
+			each step in steps
+				li= step
+
+
+Jedi
+
+	:if info
+		div.alert
+			= info
+	:if steps
+		ol.process
+			:for step in steps
+				li
+					= step
+
+
+Jedi (terse syntax)
+
+	div.alert if info
+		= info
+	ol.process
+		:for step in steps
+			li = step
+
+
+Jedi (even more terse)
+
+	div.alert = info
+	ol.process
+		li *= step for step in steps
+
+
+Jedi (even more terse)
+
+	div.alert = info
+	ol.process = steps
+		li = *
+
+
+Jedi (more examples)
+
+	nav > ul for cat in categories
+		li > a = cat.link
+			= cat.label | i18n 'zh'
+
+	table let fields = ['name', 'gender', 'age', 'tel']
+		:for field in fields
+			col.{field}
+		thead
+			tr > th "Name" + th "Gender" + th "Age" + th "Tel"
+		tbody = users
+			tr for field in fields
+				td = *.[field]
+
+	div.a.b#id markdown
+
+	ol = path.segments
+		case
+		li > a = *
+
+
+	:define bx:crumbs
+		ol = model
+			li
+				a = *
+					:content
+
+	bx:crumbs = path
+		@a-class segment
+		@li-title *.fullName
+
+
+	:if x > 90
+		p 'A
+	:else if x > 80
+		p 'B
+	:else if x > 70
+		p 'C
+	:else
+		p 'D
+
+	dl.contact#pid = contact
+		dt 'First Name
+		dd = *.firstName
+		dt 'Last Name
+		dd = *.lastName
+
+	ul.contacts = contacts
+		li > dl.contact#pid-{*.id}
+				dt 'First Name
+				dd = *.firstName
+				dt 'Last Name
+				dd = *.lastName
+
+信息架构
+	ul.contacts
+		= myself
+		= contacts.starred
+		= contacts.unstarred
+
+第一个实现
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li.starred > dl.contact#pid-{*.id}
+				dt 'First Name
+				dd = *.firstName
+				dt 'Last Name
+				dd = *.lastName
+		= contacts unstarred
+			li > *.fullName
+
+复用
+	:: dl.contact
+		dt 'First Name
+		dd = *.firstName
+		dt 'Last Name
+		dd = *.lastName
+
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li.starred > dl.contact#pid-{*.id} = *
+		= contacts unstarred
+			li.unstarred > dl.contact#pid-{*.id} = *
+
+	div
+		'
+			ksdfjl
+			slkdfjl
+			slkdfj
+			skdlflk
+
+复用是针对模型的
+	:: dl (contact)
+		@class += 'contact'
+		dt 'First Name
+		dd = contact.firstName
+		dt 'Last Name
+		dd = contact.lastName
+
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li.starred > dl = *
+		= contacts unstarred
+			li.unstarred > dl = *
+	dl = myself
+
+	:define dl (any)
+		@dataset = any.meta
+
+	:macro bx:contact (contact)
+		:attr SpacedIDs class
+		dl.contact#pid-{contact.id}
+			@class += class
+			dt 'First Name
+			dd = contact.firstName
+			dt 'Last Name
+			dd = contact.lastName
+
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li > bx:contact.starred = *
+		= contacts unstarred
+			li > bx:contact.unstarred = *
+
+
+	:define bx:contact (contact)
+		:attr SpacedIDs class
+		:attr CommaedIDs order
+		dl.contact#pid-{contact.id}
+			@class += class
+			dt 'First Name
+			dd = contact.firstName
+			dt 'Last Name
+			dd = contact.lastName
+
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			li > bx:contact.starred = *
+				@order = 'last, first'
+		= contacts unstarred
+			li > bx:contact.unstarred = *
+
+
+	:define bx:contact
+			li.starred > dl.contact#pid-{*.id}
+				dt 'First Name
+				dd = *.firstName
+				dt 'Last Name
+				dd = *.lastName
+
+	ul.contacts
+		= myself
+			li.me > h1 = *.fullName
+		= contacts starred
+			bx:contact = *
+		= contacts unstarred
+			li > p = *.fullName
+
+
+	div match score
+		'A' case > 90
+		'B' case > 80
+		'C' case > 70
+		'D' case *
+
+	div
+		:score > 90 ?
+			'A'
+
+
+
+	:define button
+		startTag
+		attrs #attr
+		content
+		endTag
+
+	:define bx:if
+		@extend bx:div
+		div.container#myDiv (if @test)
+			#content
+
+
+	:if help
+		button
+			startTag
+			attrs
+			endTag
+
+	:define html:button extends html:@element
+		if ie < 8:
+			@type 'button
+		else:
+		if ieq:
+			div.{@tagName}
+
+		.test
+
+	:define bx
+
+开启数据绑定后，默认自动更新，但是表单控件除外，默认会被锁定（lock）
+会要求必须处理model-refresh事件，从最外层的form控件capture阶段开始。
+
+最基本的元素：
+	宏定义
+	属性
+
+
+
+Jedi
+
+API
+
+	var highlighted = jedi.process(source, jedi.highlighter.html)
+	var source = jedi.process(source, jedi.compiler.es5)
+	var runtime = jedi.Runtime()
+	runtime.imports(jedi.libs.HTML5)
+	var template = jedi.load(source)
+	template(context, runtime)
+
+Jedi.render(jediSource, imports)
+
+jedi.Tokenizer
+jedi.Builder
+	comment(text)
+	filter(name, expression, contentBuilder)
+	tagBlock(tagName, classList, id, contentBuilder)
+	block(id, tagName, classList, commonAttrs, childBuilder)
+	attr(name, operator, expression)
+	text(expression)
+
+jedi.Compiler implements jedi.Builder
+
+jedi.Highlighter implements jedi.Builder
+
+
+model
+	submission#s
+		@get http://example.com/search
+
+	input
+		@ref q
+		label:text
+			search
+
+	li > a.nav#link @href=http://example.com/link 'click here
+
+	table
+		thead
+			tr > th "heading" + th "col1" + th "col2"
+		tbody.{x}#{channel}
+			tr > th {h[1]} + td "cell 1" + td "cell 2"
+			tr > th {h[2]} + td "cell 1" + td "cell 2"
+
+	input:text#username
+	input:password:{user.password.required}#password
+
+	label|username '用户
+	input#username
+
+
+	select1 @ref=method
+		label 'Select Payment Method:
+		item
+			label 'Cash
+			value 'cash
+		item
+			label 'Credit
+			value 'cc
+	input @ref=number
+		label 'Credit Card Number:
+	input @ref=expiry
+		label 'Expiration Date:
+	submit @submission=s
+		label 'Submit
+
+
+	bind
+		@ref=payment.number
+		@relevant? payment.method == 'cc'
+		@required
+		@type ccnumber
+	bind
+		@ref payment.expiry
+		@relevant payment.method == 'cc'
+		@required
+		@type gYearMonth
+
+
+	switch
+		case#in @selected
+			input @ref=yourname
+				label 'Please tell me your name
+				toggle
+					@event='DOMActivate'
+					@case out
+		case#out
+			p 'Hello' + output @ref=yourname
