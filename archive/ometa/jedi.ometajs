@@ -1,0 +1,164 @@
+var tabish = require('./tabish')
+var Blocks = tabish.Blocks
+
+function toUTF16(codePoint) {
+	if (codePoint < 0x10000) return String.fromCharCode(codePoint)
+	codePoint -= 0x10000
+	var lead = (codePoint >> 10) + 0xd800
+	var trail = (codePoint & 0x3ff) + 0xdc00
+	return String.fromCharCode(lead, trail)
+}
+
+ometa ToJSCompiler {
+}
+
+ometa ToPHPCompiler {
+}
+
+ometa Expression {
+}
+
+ometa Parser <: Blocks {
+
+	doc blocks end,
+
+	block doctype,
+	block comment,
+	block suppress,
+	block inject,
+	block filter,
+	block binding,
+	block text,
+	block element,
+	block attribute,
+	block placeholder,
+	block ^block,
+
+	doctype = ['!' char*:x] -> [#DocType, x.join('')],
+
+	comment = [commentStart char*:x] :y :e -> [#Comment, [x].concat(y)],
+	commentStart = '!',
+
+	suppress = [suppressStart char*:x] :y :e -> [#Suppress, [x].concat(y)],
+	suppressStart = '-' '-',
+
+	inject = [injectStart char*:x] :y :e -> [#Inject, [x].concat(y)],
+	injectStart = '-',
+
+	binding = [bindingForm:x] [blocks:y] :e -> [#Binding].concat(x, [y]),
+	bindingForm = bindingOp spaces expression:x spaces ("use" bindingNames:y)? -> [x, y],
+	bindingOp = '=',
+
+	filter = [filterStart filterName:x char*:y] [blocks:z] :e -> [#Filter, x, y, z],
+	filterStart = ':',
+	filterName = letter+,
+
+	text = [stringLiteral:x] :y :e -> [#Text, x[1]],
+	text = ['\'' char*:x] :y :e -> [#Text, [x].concat(y) ],
+	text = ['"' templateString:x] templateStrings:y :e -> [#Quasi, '', [x].concat(y)],
+	text = ['\u2018' char*:x] :y :e -> [#Quasi, #Unicode, [x].concat(y)],
+	text = ['\u201c' templateString:x] templateStrings:y :e -> [#Quasi, #Unicode, [x].concat(y)],
+	text = [quasiTag:tag '`' templateString:x] templateStrings:y :e -> [#Quasi, tag, [x].concat(y)],
+	quasiTag = identifier | empty,
+	templateString = (interpolation | char)*,
+	//templateStrings = [[anything*]*],
+	templateStrings = [(skip:x -> x | [templateString:x] -> x)*:y] -> y,
+	//interpolation = '{' (~'}' char)*:x '}' -> [#Expression, x],
+	interpolation = '{' expression:x '}' -> x,
+
+	element = [tagName:tag classList:cls id?:id spaces binding?:bind] [blocks:body] :e
+		-> bind ?
+			[#Binding, bind[0], bind[1], [#Element, tag, [cls, id], body]] :
+			[#Element, tag, [cls, id], body],
+	simpleName = (escapedChar | ~('.'|'#'|space) char)+:x -> x.join(''),
+	tagName = simpleName,
+	aclass = '.' simpleName,
+	classList = aclass*,
+	id = '#' simpleName,
+
+	attribute = ['@' attrName:attr (assignmentOperator:op char*:x)?] :y
+		expression(x.concat(y.join(''))):exp
+		-> [#Attribute, attr, op, exp],
+	attrName = (~space char)+:x -> x.join(''),
+	assignmentOperator = space+ (('+' | '-' | '^' | '$')? '='):x space+ -> x,
+
+	placeholder = [id:id spaces bindingForm?:bind] [blocks:body]
+		-> bind ?
+			[#Binding, bind[0], bind[1], [#Placeholder, id, null, body]] :
+			[#Placeholder, id, null, body],
+
+
+	literal = booleanLiteral | numberLiteral | stringLiteral | listLiteral | tupleLiteral,
+
+	booleanLiteral "true" -> [#True],
+	booleanLiteral "false" -> [#False],
+
+	numberLiteral "NaN" -> [#NaN],
+	numberLiteral "Infinite" -> [#PosInf],
+	numberLiteral "+Infinite" -> [#PosInf],
+	numberLiteral "-Infinite" -> [#NegInf],
+	numberLiteral ('+' | '-')?:a digit+:b ('.':c digit*:d)? ('e':e ('+' | '-'):f digit+:g)?
+		-> [#Number, parseFloat([].concat(a, b, c, d, e, f, g).join(''))],
+
+	stringLiteral = '"' (escapedChar | ~'"' char)*:x '"' -> [#String, x],
+	stringLiteral = '\'' (~'\'' char)*:x '\'' -> [#String, x],
+
+	escapedChar '\\' 'n' -> '\n',
+	escapedChar '\\' 'r' -> '\r',
+	escapedChar '\\' 't' -> '\t',
+	escapedChar '\\' 'f' -> '\f',
+	escapedChar '\\' 'v' -> '\u000b',
+	escapedChar '\\' /^[0-9a-f]{1,6}/i:u space? -> toUTF16(parseInt(u, 16)),
+	escapedChar '\\' /^u[0-9a-f]{4}/i:u -> String.fromCharCode(parseInt(u.slice(1), 16)),
+	escapedChar '\\' char:c -> c,
+
+	listLiteral = '[' spaces (listItem comma)*:x listItem?:y spaces ']' -> [#List, y ? x.concat([y]) : x],
+	listItem = expression,
+
+	tupleLiteral = '(' spaces (tupleItem comma)*:x tupleItem?:y spaces ')' -> [#Tuple, y ? x.concat([y]) : x],
+	tupleItem = expression,
+
+	comma = spaces ',' spaces,
+
+	expression = exp1,
+	op1 = spaces ("->" | "<-"):x spaces -> x,
+	op2 = spaces ("||" | "&&"):x spaces -> x,
+	op3 = spaces ("===" | "!==" | "==" | "!=" | "<=>" | ">=" | "<=" | ">" | "<"):x spaces -> x,
+	op4 = spaces ("<<<" | ">>>" | "<<" | ">>"):x spaces -> x,
+	op5 = spaces ("?:"):x spaces -> x,
+	op6 = spaces ("+" | "-"):x spaces -> x,
+	op7 = spaces ("¡Á" | "¡Â"):x spaces -> x,
+	op8 = spaces ("!"):x spaces -> x,
+	op9 = spaces ("?." | "." | "!"):x spaces -> x,
+	exp1 = exp1:x op1:op exp2:y -> [#BinaryOp, op, x, y] | exp2,
+	exp2 = exp2:x op2:op exp3:y -> [#BinaryOp, op, x, y] | exp3,
+	exp3 = exp3:x op3:op exp4:y -> [#BinaryOp, op, x, y] | exp4,
+	exp4 = exp4:x op4:op exp5:y -> [#BinaryOp, op, x, y] | exp5,
+	exp5 = exp5:x op5:op exp6:y -> [#BinaryOp, op, x, y] | exp6,
+	exp6 = exp6:x op6:op exp7:y -> [#BinaryOp, op, x, y] | exp7,
+	exp7 = exp7:x op7:op exp8:y -> [#BinaryOp, op, x, y] | exp8,
+	exp8 = op8:op exp8:x -> [#UnaryOp, op, x] | exp9,
+	exp9 = exp9:x op9:op exp9:y -> [#BinaryOp, op, x, y] | atomic,
+	atomic = literal | variable,
+
+	variable = identifier:x ('/' identifier:id -> id)*:y
+		-> [#Ref, x].concat(y),
+	identifier = '*' | /^[a-z0-9$_-]+[?!]?/i,
+	parameters = listOf('identifier', ','),
+	bindingNames = parameters | '(' spaces parameters:x spaces ')' -> x,
+}
+
+ometa Translator {
+
+	filter = [':' structure:x] :y -> [#Filter, x, y],
+
+	structure = "if" expression:x -> [#If, x],
+	structure = "else" -> [#Else],
+	structure = "case" expression:x -> [#Case, x],
+	structure = "for" forBindings:x expression:y -> [#For, x, y],
+
+	forBindings = identifier "in",
+	forBindings = identifier ":" identifier "in",
+	forBindings = identifier "of",
+	forBindings = identifier "," identifier "of",
+}

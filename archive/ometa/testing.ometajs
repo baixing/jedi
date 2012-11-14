@@ -1,0 +1,40 @@
+ometa Test {
+	testString1 = ('Hello' 'world' '!'),
+	testString2 = 'Hello',
+	testChars = ``Hello'',
+	testList1 = ['H' 'e' 'l' 'l' 'o'],
+	testList2 = [testChars],
+	testSymbol = 'H',
+	pattern = /(ab*)c/,
+	p2 = 'T' pattern ``bc'',
+	emptyEnd = empty end,
+}
+
+ometa TestRe {
+  test = /test/i,
+  start = 'T',
+  end = 'T',
+  source = (start test end):x -> x,
+}
+
+/*
+console.log(TestRe.matchAll('test...', 'test'))
+console.log(TestRe.matchAll('TtestT', 'source'))
+console.log(TestRe.matchAll('T.tesT', 'source'))
+*/
+
+/*
+console.log(t.Test.matchAll('Hello', 'testChars'))
+//console.log(t.Test.match('Hello'.split(''), 'testChars'))
+console.log(t.Test.match('Hello', 'testList1'))
+console.log(t.Test.match('Hello', 'testList2'))
+console.log(t.Test.match('Hello'.split(''), 'testList1'))
+console.log(t.Test.match('Hello'.split(''), 'testList2'))
+//console.log(t.Test.matchAll('Hello', 'testString'))
+console.log(t.Test.matchAll('Hello', 'testSymbol'))
+console.log(t.Test.matchAll(['H'], 'testSymbol'))
+console.log(t.Test.matchAll('H', 'testSymbol'))
+console.log(t.Test.match('H', 'testSymbol'))
+console.log(t.Test.match('H', 'testSymbol'))
+//console.log(t.Test.matchAll(['Hello', 'world', '!'], 'testString'))
+*/

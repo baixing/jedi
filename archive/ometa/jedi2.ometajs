@@ -1,0 +1,188 @@
+ometa Lines {
+	lines = line*,
+	line whitespace* eol -> '',
+	line whitespace* (ignore content):x eol -> x,
+	line content:x eol -> x,
+
+	ignore = '/' '/',
+	content = (~eol char)*,
+	eol = '\r' '\n' | '\n' '\r' | '\n' | '\r',
+	whitespace = ~eol space | '\u0085',
+	END
+}
+
+ometa UnicodeLines <: Lines {
+	eol = ^eol | char:c ?(/^[\u2028\u2029]/.test(c)),
+	//whitespace = ^whitespace | /^[\u00A0\u1680\u180E\u2000-\u200A\u202F\u205F\u3000\uFDD0-\uFDEF\uFEFF\uFFFE\uFFFF]/),
+	END
+}
+test(UnicodeLines, 'Hello world!\nThis is a simple test.', 'lines')
+
+
+
+ometa Blocks {
+	blocks startBody (skip | parseBlock | offside)*:x endBody -> x,
+	startBody -> { if (!this.indents) this.indents = []; this.indents.unshift(null) },
+	endBody -> { this.indents.shift() },
+
+	parseBlock
+		[indent mixed?:error char*:head]
+		(skip | [indent tab char*:x] -> x)*:body
+		block(head, body, error),
+
+	block :head :body :error -> [#Block, head, body].concat(error ? [error] : []),
+
+	offside :line -> [#Offside, line],
+	mixed (char:c ?(/^[\u0000-\u0020\u0085\u00A0\u1680\u180E\u2000-\u200A\u202F\u205F\u3000\uFDD0-\uFDEF\uFEFF\uFFFE\uFFFF]/.test(c)))+:whitespaces
+		-> [#MixedWhitespaces, whitespaces],
+
+	skip [],
+	skip [ignore char*],
+	ignore = '/' '/',
+
+	indent = ?(this.indents[0] === null) tab*:x { this.indents[0] = x.length },
+	indent = repeat('tab', this.indents[0]),
+
+	tab = '\t' | tabSize:x ?(x !== null) repeat('sp', x),
+	sp = ' ',
+	tabSize -> null,
+
+	repeat :r :n = ?(n === 0) | apply(r) repeat(r, n - 1),
+	END
+}
+
+test(Blocks, ['', 'head', '', '\tbody line', '\tbody line'], 'blocks')
+
+ometa Parser <: Blocks {
+
+	doc blocks end,
+
+	block doctype,
+	block comment,
+	block suppress,
+	block inject,
+	block filter,
+	block binding,
+	block text,
+	block element,
+	block attribute,
+	block placeholder,
+	block ^block,
+
+	doctype = ['!' char*:x] -> [#DocType, x.join('')],
+
+	comment = [commentStart char*:x] :y :e -> [#Comment, [x].concat(y)],
+	commentStart = '!',
+
+	suppress = [suppressStart char*:x] :y :e -> [#Suppress, [x].concat(y)],
+	suppressStart = '-' '-',
+
+	inject = [injectStart char*:x] :y :e -> [#Inject, [x].concat(y)],
+	injectStart = '-',
+
+	binding = [bindingForm:x] [blocks:y] :e -> [#Binding].concat(x, [y]),
+	bindingForm = bindingOp spaces expression:x spaces ("use" bindingNames:y)? -> [x, y],
+	bindingOp = '=',
+
+	filter = [filterStart filterName:x char*:y] [blocks:z] :e -> [#Filter, x, y, z],
+	filterStart = ':',
+	filterName = letter+,
+
+	text = [stringLiteral:x] :y :e -> [#Text, x[1]],
+	text = ['\'' char*:x] :y :e -> [#Text, [x].concat(y) ],
+	text = ['"' templateString:x] templateStrings:y :e -> [#Quasi, '', [x].concat(y)],
+	text = ['\u2018' char*:x] :y :e -> [#Quasi, #Unicode, [x].concat(y)],
+	text = ['\u201c' templateString:x] templateStrings:y :e -> [#Quasi, #Unicode, [x].concat(y)],
+	text = [quasiTag:tag '`' templateString:x] templateStrings:y :e -> [#Quasi, tag, [x].concat(y)],
+	quasiTag = identifier | empty,
+	templateString = (interpolation | char)*,
+	//templateStrings = [[anything*]*],
+	templateStrings = [(skip:x -> x | [templateString:x] -> x)*:y] -> y,
+	//interpolation = '{' (~'}' char)*:x '}' -> [#Expression, x],
+	interpolation = '{' expression:x '}' -> x,
+
+	element = [tagName:tag classList:cls id?:id spaces binding?:bind] [blocks:body] :e
+		-> (bind ?
+			[#Binding, bind[0], bind[1], [#Element, tag, [cls, id], body]] :
+			[#Element, tag, [cls, id], body]),
+	simpleName = (escapedChar | ~('.'|'#'|space) char)+:x -> x.join(''),
+	tagName = simpleName,
+	aclass = '.' simpleName,
+	classList = aclass*,
+	id = '#' simpleName,
+
+	attribute = ['@' attrName:attr (assignmentOperator:op char*:x)?] :y
+		expression(x.concat(y.join(''))):exp
+		-> [#Attribute, attr, op, exp],
+	attrName = (~space char)+:x -> x.join(''),
+	assignmentOperator = space+ (('+' | '-' | '^' | '$')? '='):x space+ -> x,
+
+	placeholder = [id:id spaces bindingForm?:bind] [blocks:body]
+		-> (bind ?
+			[#Binding, bind[0], bind[1], [#Placeholder, id, null, body]] :
+			[#Placeholder, id, null, body]),
+
+
+	literal = booleanLiteral | numberLiteral | stringLiteral | listLiteral | tupleLiteral,
+
+	booleanLiteral "true" -> [#True],
+	booleanLiteral "false" -> [#False],
+
+	numberLiteral "NaN" -> [#NaN],
+	numberLiteral "Infinite" -> [#PosInf],
+	numberLiteral "+Infinite" -> [#PosInf],
+	numberLiteral "-Infinite" -> [#NegInf],
+	numberLiteral ('+' | '-')?:a digit+:b ('.':c digit*:d)? ('e':e ('+' | '-'):f digit+:g)?
+		-> [#Number, parseFloat([].concat(a, b, c, d, e, f, g).join(''))],
+
+	stringLiteral = '"' (escapedChar | ~'"' char)*:x '"' -> [#String, x],
+	stringLiteral = '\'' (~'\'' char)*:x '\'' -> [#String, x],
+
+	escapedChar '\\' 'n' -> '\n',
+	escapedChar '\\' 'r' -> '\r',
+	escapedChar '\\' 't' -> '\t',
+	escapedChar '\\' 'f' -> '\f',
+	escapedChar '\\' 'v' -> '\u000b',
+	escapedChar '\\' (hexChar hexChar? hexChar? hexChar? hexChar? hexChar?):u space? -> toUTF16(parseInt(u, 16)),
+	escapedChar '\\' 'u' (hexChar hexChar hexChar hexChar):u -> String.fromCharCode(parseInt(u, 16)),
+	escapedChar '\\' char:c -> c,
+	hexChar char:c ?(/^[0-9a-f]/i.test(c)),
+
+	listLiteral = '[' spaces (listItem comma)*:x listItem?:y spaces ']' -> [#List, y ? x.concat([y]) : x],
+	listItem = expression,
+
+	tupleLiteral = '(' spaces (tupleItem comma)*:x tupleItem?:y spaces ')' -> [#Tuple, y ? x.concat([y]) : x],
+	tupleItem = expression,
+
+	comma = spaces ',' spaces,
+
+	expression = exp1,
+	op1 = spaces ("->" | "<-"):x spaces -> x,
+	op2 = spaces ("||" | "&&"):x spaces -> x,
+	op3 = spaces ("===" | "!==" | "==" | "!=" | "<=>" | ">=" | "<=" | ">" | "<"):x spaces -> x,
+	op4 = spaces ("<<<" | ">>>" | "<<" | ">>"):x spaces -> x,
+	op5 = spaces ("?:"):x spaces -> x,
+	op6 = spaces ("+" | "-"):x spaces -> x,
+	op7 = spaces ("×" | "÷"):x spaces -> x,
+	op8 = spaces ("!"):x spaces -> x,
+	op9 = spaces ("?." | "." | "!"):x spaces -> x,
+	exp1 = exp1:x op1:op exp2:y -> [#BinaryOp, op, x, y] | exp2,
+	exp2 = exp2:x op2:op exp3:y -> [#BinaryOp, op, x, y] | exp3,
+	exp3 = exp3:x op3:op exp4:y -> [#BinaryOp, op, x, y] | exp4,
+	exp4 = exp4:x op4:op exp5:y -> [#BinaryOp, op, x, y] | exp5,
+	exp5 = exp5:x op5:op exp6:y -> [#BinaryOp, op, x, y] | exp6,
+	exp6 = exp6:x op6:op exp7:y -> [#BinaryOp, op, x, y] | exp7,
+	exp7 = exp7:x op7:op exp8:y -> [#BinaryOp, op, x, y] | exp8,
+	exp8 = op8:op exp8:x -> [#UnaryOp, op, x] | exp9,
+	exp9 = exp9:x op9:op exp9:y -> [#BinaryOp, op, x, y] | atomic,
+	atomic = literal | variable,
+
+	variable = identifier:x ('/' identifier:id -> id)*:y
+		-> [#Ref, x].concat(y),
+	identifier = '*' | (digit | letter)+,
+	parameters = listOf('identifier', ','),
+	bindingNames = parameters | '(' spaces parameters:x spaces ')' -> x,
+	END
+}
+
+test(Parser, ['', 'head', '\t@title = 0', '\ttitle', '\t\t"Hello {user}'], 'blocks')

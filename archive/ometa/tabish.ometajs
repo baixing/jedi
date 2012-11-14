@@ -1,0 +1,47 @@
+
+ometa Lines {
+	lines = line*,
+	line whitespace* eol -> '',
+	line whitespace* (ignore content):x eol -> x,
+	line content:x eol -> x,
+
+	ignore = '/' '/',
+	content = (~eol char)*,
+	eol = '\r' '\n' | '\n' '\r' | '\n' | '\r' | end,
+	whitespace = ~eol space | '\u0085',
+}
+
+ometa UnicodeLines <: Lines {
+	eol = ^eol | /^[\u2028\u2029]/,
+	whitespace = ^whitespace | /^[\u00A0\u1680\u180E\u2000-\u200A\u202F\u205F\u3000\uFDD0-\uFDEF\uFEFF\uFFFE\uFFFF]/),
+}
+
+ometa Blocks {
+	blocks startBody (skip | parseBlock | offside)*:x endBody -> x,
+	startBody -> { if (!this.indents) this.indents = []; this.indents.unshift(null) },
+	endBody -> { this.indents.shift() },
+
+	parseBlock
+		[indent mixed?:error char*:head]
+		(skip | [indent tab char*:x] -> x)*:body
+		block(head, body, error),
+
+	block :head :body :error -> [#Block, head, body].concat(error ? [error] : []),
+
+	offside :line -> [#Offside, line],
+	mixed /^[\u0000-\u0020\u0085\u00A0\u1680\u180E\u2000-\u200A\u202F\u205F\u3000\uFDD0-\uFDEF\uFEFF\uFFFE\uFFFF]+/:whitespaces
+		-> [#MixedWhitespaces, whitespaces],
+
+	skip [],
+	skip [ignore char*],
+	ignore = '/' '/',
+
+	indent = ?(this.indents[0] === null) tab*:x { this.indents[0] = x.length },
+	indent = repeat('tab', this.indents[0]),
+
+	tab = '\t' | tabSize:x ?(x !== null) repeat('sp', x),
+	sp = ' ',
+	tabSize -> null,
+
+	repeat :r :n = ?(n === 0) | apply(r) repeat(r, n - 1),
+}
