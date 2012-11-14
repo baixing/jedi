@@ -1,0 +1,50 @@
+!html5
+! Jedi简单示例
+html
+	! 这里是HTML注释
+
+	!	注释可以有
+		很多
+		很多
+		行……
+
+	! 注释中的 -- 会被自动 escape
+
+	head
+		--	这是代码注释，
+			不会被输出到HTML
+
+		meta @charset='utf-8'
+		title
+			"{page.title} - Jedi
+	body
+
+		p
+			'	普通文本，可以包含任何字符，包括 ' 和 "，
+				HTML特殊字符如 < > & 会被自动 escape，
+				也可以折行。
+
+			"	插值文本，可以插入表达式，
+				如 1 + 1 = {1 + 1}
+
+		! 子元素可写在一行内
+		div > h1 = page.title
+			"{*}
+
+		:if x > 1
+			p
+				"x > 1
+		:else
+			p
+				"x <= 1
+
+		:for x in [1, 2, 3]
+			"x = {x}
+
+		! 属性访问
+		"{page.title}
+		! 方法调用
+		"{url.static()}
+		"{url.static('test.css')}
+		-- 命名元组
+		--"{url.listing(1, (name:'hax'))}

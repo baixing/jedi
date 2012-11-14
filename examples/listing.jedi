@@ -1,0 +1,64 @@
+-- model = (
+	category, city, area,
+	filters, gapFilters, supplyOrDemand, areaFilters
+	)
+
+:extends layout
+
+	:define nav.category (a, b)
+		..
+
+	#head::after
+		link @rel='stylesheet', @href="//s.baixing.net/listing.css"
+
+	#main
+		nav.category.crumb
+			a @href='/'
+				"{city.name}百姓网
+			= category.path()[1...]
+				span.sep '>
+				a @href = UrlBuilder.listing(*, city)
+					"{city.name}{*.name}
+			= area.path()[1...]
+				span.sep '>
+				a @href = UrlBuilder.listing(category, city, (area=*.id))
+					"{*.name}{category.name}
+
+		div.layout#sidebar > form#filters
+			h1 '筛选
+			:each (name, filter) in filters
+				fieldset
+					legend = name
+					.showLinks = filter
+					:if name in gapFilters
+						label "或者自定义#{name}区间：
+						input @type='number'
+							@name="{name}_min"
+						span.sep '～
+						input @type='number'
+							@name="{name}_max"
+						-- TODO: 需要有量词，如价格为“万元”，年龄为“岁”……
+						input @type='submit'
+							@value='筛选'
+				fieldset.search
+					legend "搜索{area.name}{category.name}
+					input @type='search'
+						@name='query'
+						@value=params.query
+					input @type='submit'
+						@value='搜索'
+
+			aside.related
+				h1 '相关类目
+				ul = category.relatedCategories
+					li > a @href=*.url
+						= *.label
+		div.layout#main
+			nav.supplyOrDemand = supplyOrDemand
+			nav.publisher = publisherFilter
+			nav.location
+				h1 '区域
+				ol for (filter, i) in areaFilters
+					li = filter
+
+
