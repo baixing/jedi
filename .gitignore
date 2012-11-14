@@ -1,5 +1,6 @@
 #node modules
 node_modules/
+*.ometa.js
 
 #################
 ## Eclipse
