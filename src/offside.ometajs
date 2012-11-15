@@ -3,7 +3,7 @@
 
 ometa OffsideRule <: UnicodeText {
 
-	source = lines:lines block(lines),
+	source = ^source:lines block(lines),
 
 	block = [beginBlock (skip | section | offside)*:x endBlock] -> x,
 
