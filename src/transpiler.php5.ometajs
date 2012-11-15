@@ -15,7 +15,7 @@ ometa PHP5Transpiler {
 
 	node ignore,
 	node [string:nodeType [number number] apply(nodeType):x] -> x,
-	node :unknown -> ['/*', unknown, '*/'],
+	node :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 
 	doctype = [#comment [number number] [output:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	output = [outputMethod:x] -> x,
@@ -34,13 +34,15 @@ ometa PHP5Transpiler {
 	trans ["." trans:x [#Symbol :y]]
 		-> (x + '->' + y),
 	trans [#Call trans:x trans:y]
-		-> (x + y),
+		-> (x + '(' + y + ')'),
 	trans [#Tuple [trans*:list]] -> ('(' + list.join(', ') + ')'),
 
 	trans [#Tuple [tupleItem*:list]] -> ('[' + list.join(', ') + ']'),
 
+	trans [#BinaryOp '...' trans:x trans:y]
+		-> ('(range(' + x + ', ' + y + '))'),
 	trans [#BinaryOp :op trans:x trans:y]
-		-> ('(' + x + ' ' + util.flattenString(op) + ' ' + y + ')'),
+		-> ('(' + x + ' ' + op + ' ' + y + ')'),
 	trans [#Symbol '*'] -> '$context',
 	trans [#Symbol :s resolve(s):x] -> x,
 	trans :unknown -> ['/*', JSON.stringify(unknown), '*/'],
@@ -74,7 +76,9 @@ ometa PHP5Transpiler {
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
 
-	instruction #for [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock -> ["foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
+	instruction #for [bindingPattern:bind trans:expr]
+		closeStartTag:x enterBlock(bind[0]) block:b exitBlock
+		-> [x ? "echo '>';" : '', "foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
 
@@ -83,7 +87,8 @@ ometa PHP5Transpiler {
 
 	endElement -> '',
 
-	inject :x :y block:body -> [x.join('') + ' {', body, '}'],
+	inject :x :y [string*:lines] -> [x + ';'].concat(lines.map(function(l){ return '//' + l })),
+	inject :x :y block:body -> [x, '{', body, '}'],
 	/*filter [#Symbol [``if'']] [spaces Expression.expression:exp node(exp):x] block:body
 		-> ['if (' + x + ') {', body, '}'],
 	filter [#Symbol [``else'']] :x block:body
