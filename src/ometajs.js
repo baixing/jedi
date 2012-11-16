@@ -13,7 +13,7 @@ module.exports = context
 
 require.extensions['.ometajs'] = function(module, filename) {
 	var code, temp = filename.slice(0, -2) + '.js'
-	if (fs.existsSync(temp) && fs.statSync(temp).mtime > Math.max(fs.statSync(filename).mtime, mtime)) {
+	if (fs.existsSync(temp) && fs.statSync(temp).mtime + 1000 >= Math.max(fs.statSync(filename).mtime, mtime)) {
 		//console.log(temp, fs.statSync(temp).mtime)
 		//console.log(filename, fs.statSync(filename).mtime)
 		//console.log(mtime)
@@ -55,8 +55,9 @@ function wrapModule(code) {
 			}
 		}
 	]
+	//TODO: resolve ometajs relative path or refactor this file to ometajs lib
 	var targetCode = [
-		'var ometajs = require(' + JSON.stringify(__filename) + ')',
+		'var ometajs = require("./ometajs")',
 		'var OMeta = ometajs.OMeta',
 		'var fail = ometajs.fail',
 		'var objectThatDelegatesTo = ometajs.objectThatDelegatesTo',
