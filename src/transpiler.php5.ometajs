@@ -17,6 +17,8 @@ ometa PHP5Transpiler {
 	node [string:nodeType [number number] apply(nodeType):x] -> x,
 	node :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 
+	Section :head :body -> ['/*', JSON.stringify(util.string(head)), '*/'],
+
 	doctype = [#comment [number number] [output:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	output = [outputMethod:x] -> x,
 	outputMethod spaces ("html" spaces? "5"?) spaces -> ["echo '<!doctype html>', \"\\n\";"],
@@ -39,8 +41,11 @@ ometa PHP5Transpiler {
 
 	trans [#Tuple [tupleItem*:list]] -> ('[' + list.join(', ') + ']'),
 
-	trans [#BinaryOp '...' trans:x trans:y]
+	trans ['...' trans:x trans:y]
 		-> ('(range(' + x + ', ' + y + '))'),
+	trans ['..<' trans:x trans:y]
+		-> ('(range(' + x + ', ' + y + ' - 1))'),
+
 	trans [#BinaryOp :op trans:x trans:y]
 		-> ('(' + x + ' ' + op + ' ' + y + ')'),
 	trans [#Symbol '*'] -> '$context',
@@ -67,6 +72,7 @@ ometa PHP5Transpiler {
 	element [:tag :cls :id] :bind {startTag(tag, cls, id)}:startT block:body {endTag(tag)}:endT
 		-> [startT, body, endT],
 
+	attribute :name :op undefined -> ["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
 	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', " + exp + ", '\"';"],
 
