@@ -26,7 +26,7 @@ ometa Expression {
 	numberLiteral "Infinity" -> [#PosInf],
 	numberLiteral "+Infinity" -> [#PosInf],
 	numberLiteral "-Infinity" -> [#NegInf],
-	numberLiteral <signedInt ('.' digit*)? ('e' signedInt)?>:n
+	numberLiteral <signedInt ('.' digit+)? ('e' signedInt)?>:n
 		-> [#Number, parseFloat(string(n))],
 	signedInt = <('+' | '-')? digit+>,
 
@@ -100,7 +100,8 @@ ometa Expression {
 	refExp = refExp:x space+ primary:y -> [#Call, x, y], // x y
 	refExp = primary,
 
-	rangeExp = refExp:x (``''),
+	rangeExp = refExp:x spaces (``...'' | ``..<''):op spaces refExp:y -> [op, x, y],
+	rangeExp = refExp,
 
 	concatExp = concatExp:x "++" exp1 -> [#Concat, x, y], // x ++ y
 
@@ -112,19 +113,17 @@ ometa Expression {
 	exp5 = exp5:x op5:op exp6:y -> [#BinaryOp, op, x, y] | exp6,
 	exp6 = exp6:x op6:op exp7:y -> [#BinaryOp, op, x, y] | exp7,
 	exp7 = exp7:x op7:op exp8:y -> [#BinaryOp, op, x, y] | exp8,
-	exp8 = exp9:x op8:op exp9:y -> [#BinaryOp, op, x, y] | exp9,
+	exp8 = rangeExp,
 	exp9 = op9:op refExp:x -> [#UnaryOp, op, x] | refExp,
-	expA = expA:x opA:op symbol:y -> [#BinaryOp, op, x, y] | primary,
+
 	op1 = spaces ("->" | "<-"):x spaces -> x,
 	op2 = spaces ("||" | "&&"):x spaces -> x,
 	op3 = spaces ("===" | "!==" | "==" | "!=" | "<=>" | ">=" | "<=" | ">" | "<"):x spaces -> x,
 	op4 = spaces ("<<<" | ">>>" | "<<" | ">>"):x spaces -> x,
 	op5 = spaces ("?:"):x spaces -> x,
 	op6 = spaces ("+" | "-"):x spaces -> x,
-	op7 = spaces ("¡Á" | "¡Â"):x spaces -> x,
-	op8 = spaces ("..." | "..<"):x spaces -> x,
+	op7 = spaces ("Ã—" | "Ã·"):x spaces -> x,
 	op9 = spaces ('!'):x spaces -> x,
-	opA = spaces ("?." | "." | "!"):x spaces -> x,
 
 	END
 }
