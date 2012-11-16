@@ -9,6 +9,7 @@ ometa PlainParser <: OffsideRule {
 	tabSize -> null,
 
 	parse :rule = position:pos apply(rule):x -> [rule, pos].concat(x),
+	error = offsetCol position:pos char* -> [#Error, pos],
 
 	processSection = jediSection | ^processSection,
 	jediSection = parse('suppress')
@@ -25,29 +26,25 @@ ometa PlainParser <: OffsideRule {
 	injectFlag = '-',
 
 	binding = [bindingPattern:e] block:b -> e.concat(b),
-	/*binding = [elementPattern:y pos:col offset(0, col):pos bindingPattern:x] block:b
-		-> [x[0], x[1], [
-				[#element, pos, y[0], y[1], b]
-			]],*/
 	bindingPattern = bindingFlag spaces bindingArg:expr spaces -> [expr, []],
 	bindingFlag = '=',
 	bindingArg = Expression.expression | error,
 
 	text = ['\'' spaces char*:x] :xs -> [undefined, [x].concat(xs).map(string)],
 	text = [Expression.symbol?:tag '"' spaces templateString:x] templateStrings:xs
-		-> [tag, [x].concat(xs)],
+			-> [tag, [x].concat(xs)],
 	text = ['\u2018' spaces char*:x] :xs
-		-> [#Unicode, [x].concat(xs)],
+			-> [#Unicode, [x].concat(xs)],
 	text = ['\u201c' spaces templateString:x] templateStrings:xs
-		-> [#Unicode, [x].concat(xs)],
+			-> [#Unicode, [x].concat(xs)],
 	//templateStrings = [[anything*]*],
 	templateString = (Expression.interpolation | stringLiteralSection)*,
 	stringLiteralSection = <(Expression.escapedChar | ~'{' char)+:cooked>:raw
-		-> [#String, string(cooked), string(raw)],
+							-> [#String, string(cooked), string(raw)],
 	templateStrings = [(skip | [templateString:x] -> x)*:y] -> y,
 
 	fragment = [idName:id spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
-		-> [id, null, x ? [[#binding, pos, x[0], x[1], b]] : b],
+				-> [id, null, x ? [[#binding, pos, x[0], x[1], b]] : b],
 
 	END
 }
@@ -61,20 +58,8 @@ ometa Parser <: PlainParser {
 		//| parse('endElement')
 		| parse('element'),
 
-	error = offsetCol position:pos char* -> [#Error, pos],
-
 	comment = [commentFlag spaces char*:x] :xs -> [[x].concat(xs).map(string)],
 	commentFlag = '!',
-
-
-	attribute = [attributeFlag attrName:attr assignmentOperator?:op char*:x] :xs
-		expr([].concat.apply(x, xs)):expr
-		-> [attr, op, expr],
-	attributeFlag = '@',
-	attrName = (~(space | '=' | '+' | '-' | '^' | '$') char)+:x -> x.join(''),
-	assignmentOperator = spaces <('+' | '-' | '^' | '$')? '='>:x spaces -> x,
-
-	expr = [spaces (Expression.expression | Expression.interpolation):x spaces] -> x,
 
 	macro = [macroStart macroPattern:x] block:b -> [x[0], x[1], b],
 	macroStart = ':' ':',
@@ -83,9 +68,9 @@ ometa Parser <: PlainParser {
 
 	instruction = [instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
 	instruction = [elementPattern:y offsetCol position:pos instructionPattern:x] block:b
-		-> [x[0], x[1], [
-				[#element, pos, y, null, b]
-			]],
+					-> [x[0], x[1], [
+							[#element, pos, y, null, b]
+						]],
 	instructionStart = ':',
 	instructionPattern = "if" spaces Expression.expression:x spaces -> [#if, x],
 	instructionPattern = "else if" spaces Expression.expression:x spaces -> [#elseif, x],
@@ -107,24 +92,44 @@ ometa Parser <: PlainParser {
 
 	element = [elementPattern:e bindingPattern?:b] block:children -> [e, b, children],
 	element = [elementPattern:e childCombinator offsetCol char+:rest]
-		parse('element', rest):child
-		-> [e, undefined, [child]],
+				parse('element', rest):child
+				-> [e, undefined, [child]],
 	element = [elementPattern:e offsetCol char+:rest]
-		parse('text', rest):child
-		-> [e, undefined, [child]],
-	element = [elementPattern:e offsetCol char+:rest] block:children
-		parse('attribute', rest, []):a
-		-> [e, undefined, [a].concat(children)],
+				parse('text', rest):child
+				-> [e, undefined, [child]],
+	element = [elementPattern:e offsetCol attributes:attrs] block:children
+				-> [e, undefined, attrs.concat(children)],
 
-	childCombinator = '>' spaces,
 	elementPattern = tagName:tag classList:cls idName?:id spaces -> [tag, cls, id],
 	simpleName = (Expression.escapedChar
-		| ~(space|'.'|'#'|'='|'@'|'\''|'"'|'!') char)+:x
-		-> x.join(''),
+				| ~(space|'.'|'#'|'='|'@'|'\''|'"'|'!') char)+:x
+				-> string(x),
 	tagName = simpleName,
 	aclass = '.' simpleName,
 	classList = aclass*,
 	idName = '#' simpleName,
+
+	childCombinator = '>' spaces,
+	attributes = (
+					position:pos
+					attributeFlag attrName:attr
+					(assignOperator:op
+						(Expression.expression | Expression.interpolation):expr
+						-> [op, expr])?:assign
+					spaces
+					-> [#attribute, pos, attr].concat(assign)
+				)*,
+
+	attribute = [attributeFlag attrName:attr assignOperator?:op char*:x] :xs
+				expr([].concat.apply(x, xs)):expr
+				-> [attr, op, expr],
+	attributeFlag = '@',
+	attrName = (~(space | assignOperator | '@') char)+:x -> string(x),
+	assignOperator = spaces <('+' | '-' | '^' | '$')? '='>:x spaces -> x,
+
+	expr = [spaces] -> undefined
+		| [spaces (Expression.expression | Expression.interpolation):x spaces] -> x
+		| error,
 
 	END
 }
