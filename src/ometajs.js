@@ -13,12 +13,10 @@ module.exports = context
 
 require.extensions['.ometajs'] = function(module, filename) {
 	var code, temp = filename.slice(0, -2) + '.js'
-	if (fs.existsSync(temp) && fs.statSync(temp).mtime + 1000 >= Math.max(fs.statSync(filename).mtime, mtime)) {
-		//console.log(temp, fs.statSync(temp).mtime)
-		//console.log(filename, fs.statSync(filename).mtime)
-		//console.log(mtime)
+	if (fs.existsSync(temp) && fs.statSync(temp).mtime.getTime() + 1000 >= Math.max(fs.statSync(filename).mtime, mtime)) {
 		code = fs.readFileSync(temp).toString()
 	} else {
+		console.log('recompile', filename)
 		code = fs.readFileSync(filename).toString()
 		code = context.translateCode(code)
 		code = wrapModule(temp, code)
