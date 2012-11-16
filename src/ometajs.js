@@ -1,6 +1,6 @@
 'use strict'
 
-var vm = require('vm'), fs = require('fs')
+var vm = require('vm'), fs = require('fs'), path = require('path')
 
 var filename = require.resolve('../lib/ometa-js/all')
 var mtime = Math.max(fs.statSync(filename).mtime, fs.statSync(__filename).mtime)
@@ -21,14 +21,14 @@ require.extensions['.ometajs'] = function(module, filename) {
 	} else {
 		code = fs.readFileSync(filename).toString()
 		code = context.translateCode(code)
-		code = wrapModule(code)
+		code = wrapModule(temp, code)
 		fs.writeFileSync(temp, code)
 	}
 	//console.log(code)
 	module._compile(code, filename)
 }
 
-function wrapModule(code) {
+function wrapModule(filename, code) {
 	var dpProcs = [
 		{
 			re: /^module\s+(.*?)\s+at\s+(.*)/,
@@ -55,9 +55,10 @@ function wrapModule(code) {
 			}
 		}
 	]
-	//TODO: resolve ometajs relative path or refactor this file to ometajs lib
+	//TODO: refactor this file to ometajs lib
+	var ometajsPath = './' + path.relative(filename + '/..', __filename)
 	var targetCode = [
-		'var ometajs = require("./ometajs")',
+		'var ometajs = require(' + JSON.stringify(ometajsPath) + ')',
 		'var OMeta = ometajs.OMeta',
 		'var fail = ometajs.fail',
 		'var objectThatDelegatesTo = ometajs.objectThatDelegatesTo',
