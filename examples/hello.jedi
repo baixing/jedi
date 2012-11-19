@@ -1,50 +1,140 @@
 !html5
-! Jedi简单示例
+
 html
-	! 这里是HTML注释
-
-	!	注释可以有
-		很多
-		很多
-		行……
-
-	! 注释中的 -- 会被自动 escape
-
 	head
-		--	这是代码注释，
-			不会被输出到HTML
-
 		meta @charset='utf-8'
-		title
-			"{page.title} - Jedi
+		title "{page.title} - Jedi
+
+		link @rel='stylesheet' @href={url.statics 'common.css'}
+
 	body
 
-		p
-			'	普通文本，可以包含任何字符，包括 ' 和 "，
-				HTML特殊字符如 < > & 会被自动 escape，
-				也可以折行。
+		section#comment
 
-			"	插值文本，可以插入表达式，
-				如 1 + 1 = {1 + 1}
+			h1 '注释
 
-		! 子元素可写在一行内
-		div > h1 = page.title
-			"{*}
+			! 这里是HTML注释
 
-		:if x > 1
+			!	注释可以有
+				很多
+				很多
+				行……
+
+			!	注释中的 -- 会被自动 escape，
+				确保浏览器不会解析出错
+
+		section#suppress
+
+			h1 '代码抑制
+
+			--	这是代码抑制，与HTML注释不同，其内容不会被输出
+
+			--p
+				'代码抑制可以很方便的
+				'禁用一整块的代码
+
+		section#text
+
+			h1 '文本
+
 			p
-				"x > 1
-		:else
+				'	普通文本，可以包含任何字符，包括 ' 和 "，
+					HTML特殊字符如 < > & 会被自动 escape，
+					也可以折行。
+
+			p "插值文本，可以插入表达式，如 1 + 1 = {1 + 1}
+
+			--p
+				'注意，所有的空白符包括换行符在HTML中通常会被压缩成单个空格，
+				'对于中文来说就会出现多余的空格。解决方法很简单，像这样使用
+				'多个文本块就可以精确控制空白。
+
+		section#element
+
+			h1 '元素
+
+			p '元素直接写tag就可以了，Jedi会自动处理闭合等问题。
+
+			p.note '可以带有class
+
+			p.help.note '多class也行
+
+			p#element-with-id '可带有ID
+
+			p.help.note#element-with-classlist-and-id
+				'也可混合多个class和ID，但注意顺序必须是Tag之后先class后ID。
+				'另外也不能不写tag光写class或ID（如.naked-class），
+				'因为这鼓励了不动脑子全退化到div的错误做法。
+
 			p
-				"x <= 1
+				'子元素可写在一行内，比如：
+				nav > ul#standard-bodies
+					li > a @href='http://www.w3.org/'
+						'W3C
+					li > a @href='http://www.whatwg.org/'
+						'WHATWG
+					li > a @href='http://www.ecmascript.org/'
+						'ECMA TC39
 
-		:for x in [1, 2, 3]
-			"x = {x}
+			p
+				'元素上当然可以有属性
+				@title = '属性会自动前置'
 
-		! 属性访问
-		"{page.title}
-		! 方法调用
-		"{url.static()}
-		"{url.static('test.css')}
-		-- 命名元组
-		--"{url.listing(1, (name:'hax'))}
+			p '元素可以绑定模型，这是Jedi比较独特的地方
+
+			p.greeting = user
+
+			p
+				'默认情况下相当于 echo 数据，如果不能 toString 就进行 var_dump，
+				'但是你可以非常容易的改写这个行为。
+
+			p.greeting = user
+				"Hello {user.name}
+
+			p
+				'如果你觉得这个部分有被复用的价值，可以这样定义一个宏，
+				'然后使用即可
+
+			div
+				p.greeting = user
+
+				:: p.greeting (user)
+					"Hello {*.name}
+
+
+
+		section#instruction
+
+			h1 '指令
+
+			:if user.age < 18
+				p 'NO ENTER!
+			:else
+				p 'Welcome to the lost paradise.
+
+			ul
+				:for x in [1, 2, 3]
+					li "x = {x}
+
+			p '指令后置使得HTML结构更清晰
+
+			p if user.age < 18
+				'NO ENTER!'
+			p else
+				'Welcome to the lost paradise.
+
+			ul
+				li for x in 1...10
+					"x = {x}
+
+		section#inject
+
+			h1 '注入
+
+			- echo '这里是代码注入，也就是开了个后门'
+
+			- $test = 'test'
+			- if ($test)
+				p
+					'测试
+					- echo $test
