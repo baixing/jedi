@@ -1,12 +1,6 @@
 [submodule "lib/Tabish"]
 	path = lib/Tabish
 	url = https://github.com/hax/Tabish.git
-[submodule "lib/mmclass"]
-	path = lib/mmclass
-	url = https://github.com/hax/mmclass.git
 [submodule "lib/ometa-js"]
 	path = lib/ometa-js
 	url = https://github.com/hax/ometa-js.git
-[submodule "lib/r.js"]
-	path = lib/r.js
-	url = https://github.com/jrburke/r.js.git
