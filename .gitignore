@@ -1,6 +1,7 @@
 #node modules
 node_modules/
 *.ometa.js
+sandbox
 
 #################
 ## Eclipse
