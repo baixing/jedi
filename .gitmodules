@@ -1,6 +1,3 @@
-[submodule "lib/Tabish"]
-	path = lib/Tabish
-	url = https://github.com/hax/Tabish.git
 [submodule "lib/ometa-js"]
 	path = lib/ometa-js
 	url = https://github.com/hax/ometa-js.git

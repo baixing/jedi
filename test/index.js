@@ -1,7 +1,7 @@
 'use strict'
 
 require('js-yaml')
-require('../src/ometajs')
+require('../lib/ometa-js')
 
 var util = require('../src/util')
 var offside = require('../src/offside')
