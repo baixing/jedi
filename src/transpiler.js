@@ -1,6 +1,6 @@
 'use strict'
 
-var ometajs = require('./ometajs')
+var ometajs = require('../lib/ometa-js')
 var fs = require('fs')
 var util = require('./util')
 
@@ -10,18 +10,15 @@ var php = require('./transpiler.php5')
 var LineSep = /\r\n|\n\r?|\r|\u2028|\u2029/
 
 function transpile(source, target) {
-	//var lines = source.split(LineSep)
-	var tree = jedi.Parser.match(source, 'source')
-	tree = jedi.Optimizer.match(tree, 'source')
-	util.dir(tree)
-
-	return php.PHP5Transpiler.match(tree, 'php')
 }
 
 function jedi2php(path) {
-	var source = fs.readFileSync(path).toString()
-	var code = transpile(source, 'php')
-	//console.log(code)
+	//var source = fs.readFileSync(path).toString()
+	var tree = jedi.Parser.match(path, 'load')
+	tree = jedi.Optimizer.match(tree, 'source')
+	util.dir(tree)
+
+	var code = php.PHP5Transpiler.match(tree, 'php')
 	return code
 }
 

@@ -3,7 +3,7 @@
 
 ometa PHP5Transpiler {
 	php = topBlock:xs -> (
-		'<?php\n//jedi@baixing.com\n' +
+		'<?php\n' +
 		//flattenString(x) +
 		util.flattenLines(xs).join('\n') +
 		'\n?>'),
@@ -69,8 +69,17 @@ ometa PHP5Transpiler {
 	echoTemplateString [trans*:exprList] -> ('echo ' + exprList.join(', ') + ';'),
 	//	-> dom.text(lines),
 
-	element [:tag :cls :id] :bind {startTag(tag, cls, id)}:startT block:body {endTag(tag)}:endT
-		-> [startT, body, endT],
+	element [:tag :cls :id] [trans:bind []]
+		{startTag(tag, cls, id)}:startT
+		enterBlock([]) block:body exitBlock
+		{endTag(tag)}:endT
+		-> this.elementOutput(tag, cls, id, bind, body, startT, endT),
+
+	element [:tag :cls :id] :bind
+		{startTag(tag, cls, id)}:startT
+		enterBlock([]) block:body exitBlock
+		{endTag(tag)}:endT
+		-> this.elementOutput(tag, cls, id, bind, body, startT, endT),
 
 	attribute :name :op undefined -> ["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
@@ -90,6 +99,10 @@ ometa PHP5Transpiler {
 
 	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
 	fragment :name :_ block:b -> ['//  #' + name, b],
+	macro :elementPattern paramPattern:parameter enterBlock(parameter) block:b exitBlock saveMacro(elementPattern, parameter, b)
+		-> ['// define ' + elementPattern],
+
+	paramPattern [#TuplePattern [([#Symbol :name] -> name)*:names]] -> names,
 
 	endElement -> '',
 
@@ -128,6 +141,31 @@ PHP5Transpiler.initialize = function() {
 			if (this._stack[i].indexOf(symbol) >= 0) return '$' + symbol
 		}
 		return '$model->' + symbol
+	}
+	this.saveMacro = function(elementPattern, parameter, block) {
+		console.log('macro: ', block)
+		if (this._stack[0].macros === undefined) this._stack[0].macros = []
+		this._stack[0].macros.push([elementPattern, parameter, block])
+	}
+	this.elementOutput = function (tag, cls, id, bind, body, startT, endT) {
+		if (bind === undefined || body && body.length > 0) return [startT, body, endT]
+		else {
+			return closure(bind, [startT, this.findMacro(tag, cls, id, bind), endT]) // || ['//call macro']
+		}
+	}
+	this.findMacro = function (tag, cls, id, param) {
+		for (var n = 0; n < this._stack.length; n++) {
+			if (this._stack[n].macros)
+				for (var i = 0; i < this._stack[n].macros.length; i++) {
+					var m = this._stack[n].macros[i]
+					var elemPattern = m[0]
+					if (elemPattern[0] === tag &&
+						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })) {
+						return m[2]
+					}
+				}
+		}
+		return ["echo '>';", 'var_dump($context);']
 	}
 }
 
@@ -182,7 +220,9 @@ function startTag(tag, cls, id) {
 	closed = false
 	return r
 }
+var voidElements = 'area,base,br,col,command,embed,hr,img,input,keygen,link,meta,param,source,track,wbr'.split(',')
 function endTag(tag) {
+	if (voidElements.indexOf(tag) >= 0) return []
 	return echo(closeStartTag(), '</', tag, '>')
 }
 

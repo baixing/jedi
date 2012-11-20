@@ -1,9 +1,13 @@
+"module path at 'path'"
+"module fs at 'fs'"
 "import OffsideRule from './offside'"
 "import Expression from './expression'"
-"import string from './util'"
+"import string, concat from './util'"
 "export Parser, Optimizer"
 
 ometa PlainParser <: OffsideRule {
+
+	load string:filename readFile(filename):content source(content),
 
 	ignore = '/' '/',
 	tabSize -> null,
@@ -46,32 +50,14 @@ ometa PlainParser <: OffsideRule {
 	fragment = [idName:id spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
 				-> [id, null, x ? [[#binding, pos, x[0], x[1], b]] : b],
 
-	END
-}
-
-ometa Parser <: PlainParser {
-
-	jediSection = parse('comment')
-		| parse('attribute')
-		| parse('macro')
-		| ^jediSection
-		//| parse('endElement')
-		| parse('element'),
-
-	comment = [commentFlag spaces char*:x] :xs -> [[x].concat(xs).map(string)],
-	commentFlag = '!',
-
-	macro = [macroStart macroPattern:x] block:b -> [x[0], x[1], b],
-	macroStart = ':' ':',
-	macroPattern = elementPattern:sel spaces macroParam:param spaces -> [sel, param],
-	macroParam = Expression.tupleLiteral,
-
 	instruction = [instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
 	instruction = [elementPattern:y offsetCol position:pos instructionPattern:x] block:b
 					-> [x[0], x[1], [
 							[#element, pos, y, null, b]
 						]],
 	instructionStart = ':',
+
+	instructionPattern = "import" spaces char*:path -> [#import, this.importFile(string(path))],
 	instructionPattern = "if" spaces Expression.expression:x spaces -> [#if, x],
 	instructionPattern = "else if" spaces Expression.expression:x spaces -> [#elseif, x],
 	instructionPattern = "else" spaces -> [#else, null],
@@ -89,6 +75,26 @@ ometa Parser <: PlainParser {
 	instructionName:name spaces instructionParam:param spaces -> [name, param],
 	instructionName = Expression.symbol,
 	instructionParam = Expression.expression,
+
+	END
+}
+
+ometa Parser <: PlainParser {
+
+	jediSection = parse('comment')
+		| parse('attribute')
+		| parse('macro')
+		| ^jediSection
+		//| parse('endElement')
+		| parse('element'),
+
+	comment = [commentFlag spaces char*:x] :xs -> [[x].concat(xs).map(string)],
+	commentFlag = '!',
+
+	macro = [macroStart macroPattern:x] block:b -> x.concat([b]),
+	macroStart = ':' ':' spaces,
+	macroPattern = elementPattern:sel spaces macroParam:param spaces -> [sel, param],
+	macroParam = Expression.tuplePattern,
 
 	element = [elementPattern:e bindingPattern?:b] block:children -> [e, b, children],
 	element = [elementPattern:e childCombinator offsetCol char+:rest]
@@ -136,9 +142,56 @@ ometa Parser <: PlainParser {
 
 ometa Optimizer {
 	source = block,
-	block = [node*:x] -> x,
+	block = [node*:x] -> sortNodes(x),
+	node [string:type [number number]:pos anything:x anything:y block:block] -> [type, pos, x, y, block],
 	node :x -> x,
 	END
+}
+
+function sortNodes(nodes) {
+	var attributes = [], macros = [], normalNodes = []
+	nodes.forEach(function(node){
+		switch (node[0]) {
+			case 'attribute':
+				attributes.push(node)
+				break
+			case 'macro':
+				macros.push(node)
+				break
+			case 'instruction':
+				if (node[2] === 'import') {
+					[].push.apply(normalNodes, node[3])
+					break
+				}
+			default:
+				normalNodes.push(node)
+				break
+		}
+	})
+	return concat(attributes, [['closeStartTag']], macros, normalNodes)
+}
+
+
+Parser.initialize = function() {
+	PlainParser.initialize.apply(this)
+	this.readFile = function(filename) {
+		if (!fs.existsSync(filename)) {
+			filename += '.jedi'
+		}
+		this.filename = filename
+		console.log('read ', filename)
+		return fs.readFileSync(filename).toString()
+	}
+	this.importFile = function(filename) {
+		var filename = path.resolve(path.dirname(this.filename), filename)
+		if (!fs.existsSync(filename)) {
+			filename += '.jedi'
+		}
+		console.log(filename)
+		var tree = Parser.match(filename, 'load')
+		console.log('tree', tree)
+		return tree
+	}
 }
 
 
