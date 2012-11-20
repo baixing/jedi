@@ -14,6 +14,9 @@ util.string = function (a) {
 	if (typeof a === 'string') return a
 	throw a
 }
+util.concat = function() {
+	return [].concat.apply([], arguments)
+}
 
 util.flattenString = function flatten(a) {
 	if (!util.isArray(a)) return a
