@@ -1,9 +1,10 @@
 "import UnicodeText from './text'"
 "export OffsideRule"
 
-ometa OffsideRule <: UnicodeText {
+ometa OffsideRule {
 
-	source = ^source:lines block(lines),
+	source = UnicodeText.source:lines block(lines),
+	whitespace = UnicodeText.whitespace,
 
 	block = [beginBlock (skip | section | offside)*:x endBlock] -> x,
 
@@ -35,6 +36,8 @@ ometa OffsideRule <: UnicodeText {
 
 	tab = tabChar
 		| tabSize:n ?n <repeat('spaceChar', n) | spaceChar+ tabChar>,
+
+	useTab -> true, //TODO
 	tabSize -> 4,
 
 	tabChar = '\t',
