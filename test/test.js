@@ -1,12 +1,8 @@
 'use strict'
 
-require('js-yaml')
-require('../src/ometajs')
+exports.testOMeta = testOMeta
 
 var util = require('../src/util')
-var offside = require('../src/offside')
-var expression = require('../src/expression')
-var jedi = require('../src/jedi')
 
 function diff(a, b) {
 	if (a === b) return
@@ -95,32 +91,3 @@ function testOMeta(grm, testsuites, rules) {
 	})
 	console.log()
 }
-
-var offsideTests = require('./offside')
-//util.dir(offsideTests.OffsideRule)
-testOMeta(offside.OffsideRule, offsideTests.OffsideRule, [
-	'skip', 'tab',
-	//'block',
-	'source',
-])
-
-var exprTests = require('./expression')
-testOMeta(expression.Expression, exprTests.Expression, [
-	'symbol',
-	//'path',
-	'literal',
-	//'quasiLiteral',
-	//'listLiteral',
-	//'tupleLiteral',
-	//'primary',
-	'expression',
-])
-
-var jediTests = require('./jedi')
-testOMeta(jedi.Parser, jediTests.Text, [
-	'source'
-	//'text',
-	//'blocks',
-	//element,
-])
-
