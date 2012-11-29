@@ -34,7 +34,7 @@ ometa Expression {
 		'\''
 		(~'\'' char | '\'' '\'' -> '\'')*:s
 		'\''
-		-> [#String, s],
+		-> [#String, string(s)],
 
 	quasiLiteral
 		symbol?:tag
@@ -44,7 +44,7 @@ ometa Expression {
 		-> [#Quasi, tag, s],
 	interpolation = '{' expression:expr '}' -> expr,
 	stringLiteralSection = <(escapedChar | ~('"' | '{') char)+:cooked>:raw
-		-> [#String, cooked, raw],
+		-> [#String, string(cooked), string(raw)],
 
 	escapedChar '\\' 'b' -> '\u0008',
 	escapedChar '\\' 't' -> '\u0009',
