@@ -112,25 +112,59 @@ exports.Parser =
 					[
 						['String', 'Hello ', 'Hello ']
 						['Symbol', 'user'],
-						['String', '!\\n', '!\\n']
+						['String', '!\n', '!\\n']
 					]
 				]]
 			]
-		'double quot multiple lines text ':
-			input: """
-				'	Hello world!
+		'double quot multiple lines text with tag':
+			input: '''
+				r"	Hello world!
 					foo bar baz
 					rawr rawr
 					super cool
-			"""
+			'''
 			expect: [
-				['text', [1, 1], undefined, ['Hello world!', 'foo bar baz', 'rawr rawr', 'super cool']]
-			]
-		'double quot text with double quot':
-			input: """
-				'	I'm ok!
-			"""
-			expect: [
-				['text', [1, 1], undefined, ["I'm ok!"]]
+				['text', [1, 1], ['Symbol', 'r'],
+					[
+						[['String', 'Hello world!', 'Hello world!']]
+						[['String', 'foo bar baz', 'foo bar baz']]
+						[['String', 'rawr rawr', 'rawr rawr']]
+						[['String', 'super cool', 'super cool']]
+					]
+				]
 			]
 
+		'element':
+			input: '''
+				div.test1
+			'''
+			expect: [
+				['element', [1, 1], ['div', ['test1'], undefined], undefined, []]
+			]
+		'element with binding':
+			input: '''
+				div.test1 = x
+			'''
+			expect: [
+				['element', [1, 1], ['div', ['test1'], undefined], ['Symbol', 'x'], []]
+			]
+		'nested element with binding':
+			input: '''
+				div.test1 > div.test2 = x
+			'''
+			expect: [
+				['element', [1, 1], ['div', ['test1'], undefined], undefined, [
+					['element', [1, 23], ['div', ['test2'], undefined], ['Symbol', 'x'], []]
+				]]
+			]
+			###
+			should be [1, 13]
+			###
+
+		'element with attributes in one line':
+			input: "input @required @type='email'"
+			expect: [
+				['element', [1, 1], ['input', [], undefined], undefined, [
+
+				]]
+			]
