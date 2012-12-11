@@ -1,7 +1,9 @@
 "use strict"
 
 exports.Parser =
+
 	source:
+
 		'comment single line':
 			input: '! comment line'
 			expect: [
@@ -15,6 +17,8 @@ exports.Parser =
 			expect: [
 				['comment', [1, 1], ['comment line 1', 'comment line 2']]
 			]
+		'doctype':
+			input: '!html5'
 
 		'suppress single line':
 			input: '-- suppress line'
@@ -61,6 +65,16 @@ exports.Parser =
 					[]
 				]
 			]
+		'binding of a tuple':
+			input: "= ('hax', 18)"
+			expect: [
+				['binding', [ 1, 1 ], null,
+					['Tuple', [['String', 'hax'], ['Number', 18]]],
+					[]
+				]
+			]
+		'binding of a named tuple':
+			input: "= (name:'hax', age:18)"
 
 		'single quot text':
 			input: """
@@ -134,6 +148,64 @@ exports.Parser =
 				]
 			]
 
+		'if':
+			input: '''
+				:if x > y
+					"{x} > {y}
+			'''
+			expect: [
+				['instruction', [1, 1], 'if',
+					['BinaryOp', '>', ['Symbol', 'x'], ['Symbol', 'y']]
+					[
+						['text', [2, 2], undefined, [
+							[['Symbol', 'x'], ['String', ' > ', ' > '], ['Symbol', 'y']]
+						]]
+					]
+				]
+			]
+
+		'iterate values':
+			input: '''
+				:for v in x
+					"{v}
+			'''
+			expect: [
+				['instruction', [1, 1], 'for',
+					[['Symbol', 'v'], ['Symbol', 'x']]
+					[['text', [2, 2], undefined, [
+						[['Symbol', 'v']]
+					]]]
+				]
+			]
+
+		'iterate key, value pairs':
+			input: '''
+				:for (key, value) in x
+					"{key} = {value}"
+			'''
+
+		'multiple for':
+			input: '''
+				:for x in list1, y in list2
+					"{x}, {y}
+			'''
+
+		'let binding':
+			input: '''
+				:let x = 1, y = 2
+					"{x}, {y}
+			'''
+		'let binding with pattern match':
+			input: '''
+				:let (x, y) = (1, 2)
+					"{x}, {y}
+			'''
+		'let binding with named pattern match':
+			input: '''
+				:let (name:haxName, age) = (name:"hax", age:18)
+					"{haxName}, {age}
+			'''
+
 		'element':
 			input: '''
 				div.test1
@@ -148,7 +220,7 @@ exports.Parser =
 			expect: [
 				['element', [1, 1], ['div', ['test1'], undefined], ['Symbol', 'x'], []]
 			]
-		'nested element with binding':
+		'nested elements with binding':
 			input: '''
 				div.test1 > div.test2 = x
 			'''
@@ -157,14 +229,26 @@ exports.Parser =
 					['element', [1, 23], ['div', ['test2'], undefined], ['Symbol', 'x'], []]
 				]]
 			]
-			###
-			should be [1, 13]
-			###
+			# should be [1, 13]
 
 		'element with attributes in one line':
 			input: "input @required @type='email'"
 			expect: [
 				['element', [1, 1], ['input', [], undefined], undefined, [
-
+					['attribute', [1, 19], 'required', undefined]
+					['attribute', [1, 19], 'type', '=', ['String', 'email']]
 				]]
 			]
+			# should be [1, 7] and [1, 17]
+
+		'nested elements with attribute':
+			input: "li > a @href=url"
+			expect: [
+				['element', [1, 1], ['li', [], undefined], undefined, [
+					['element', [1, 9], ['a', [], undefined], undefined, [
+						['attribute', [1, 13], 'href', '=', ['Symbol', 'url']]
+					]]
+				]]
+			]
+			# should be [1, 6], [1, 8]
+

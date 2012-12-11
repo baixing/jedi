@@ -1,6 +1,7 @@
 'use strict'
 
 require('js-yaml')
+require('coffee-script')
 require('../lib/ometa-js')
 
 var testOMeta = require('./test').testOMeta
@@ -29,7 +30,7 @@ testOMeta(expression.Expression, exprTests.Expression, [
 
 var jedi = require('../src/jedi')
 var jediTests = require('./jedi')
-testOMeta(jedi.Parser, jediTests.Text, [
+testOMeta(jedi.Parser, jediTests.Parser, [
 	'source'
 	//'text',
 	//'blocks',

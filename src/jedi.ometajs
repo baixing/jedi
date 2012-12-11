@@ -3,148 +3,164 @@
 "import OffsideRule from './offside'"
 "import Expression from './expression'"
 "import string, concat from './util'"
-"export Parser, Optimizer"
+"export Parser, Sorter, TemplateMatcher"
 
 ometa PlainParser <: OffsideRule {
 
-	load string:filename readFile(filename):content source(content),
+	load string:filename readFile(filename):content source(content):nodes
+		->	[#document, [filename, 1, 1], content, undefined, nodes],
 
-	ignore = '/' '/',
-	tabSize -> null,
+	ignore	=	'/' '/',
+	shiftwidth	->	0,
+	tabsize	->	0,
 
-	parse :rule = position:pos apply(rule):x -> [rule, pos].concat(x),
-	error = offsetCol position:pos char* -> [#Error, pos],
+	parse :rule	=	position:pos apply(rule):x	->	[rule, pos].concat(x),
+	error	=	offsetCol position:pos char*	->	[#Error, pos],
 
-	processSection = jediSection | ^processSection,
-	jediSection = parse('suppress')
-		| parse('inject')
-		| parse('text')
-		| parse('binding')
-		| parse('instruction')
-		| parse('fragment'),
+	processSection	=	jediSection | ^processSection,
+	jediSection	=	parse('suppress')
+		|	parse('inject')
+		|	parse('text')
+		|	parse('binding')
+		|	parse('instruction')
+		|	parse('fragment'),
 
-	suppress = [suppressFlag spaces char*:x] :xs -> [[x].concat(xs).map(string)],
-	suppressFlag = '-' '-',
-
-	inject = [injectFlag spaces char*:x] block:b -> [string(x), null, b],
-	injectFlag = '-',
-
-	binding = [bindingPattern:e] block:b -> e.concat(b),
-	bindingPattern = bindingFlag spaces bindingArg:expr spaces -> [expr, []],
-	bindingFlag = '=',
-	bindingArg = Expression.expression | error,
-
-	text = ['\'' spaces char*:x] :xs -> [undefined, [x].concat(xs).map(string)],
-	text = [Expression.symbol?:tag '"' spaces templateString:x] templateStrings:xs
+	suppress	=	[suppressFlag spaces char*:x] :xs	->	[[x].concat(xs).map(string)],
+	suppressFlag	=	'-' '-',	
+				
+	inject	=	[injectFlag spaces char*:x] block:b	->	[string(x), null, b],
+	injectFlag	=	'-',	
+					
+	binding	=	[bindingPattern:e] block:b	->	[null, e, b],
+	bindingPattern	=	bindingFlag spaces bindingArg:expr spaces	->	expr,
+	bindingFlag	=	'=',
+	bindingArg	=	Expression.expression | error,
+		
+	text	=	['\'' spaces char*:x] :xs	->	[undefined, [x].concat(xs).map(string)],
+	text	=	[Expression.symbol?:tag '"' spaces templateString:x] templateStrings:xs
 			-> [tag, [x].concat(xs)],
-	text = ['\u2018' spaces char*:x] :xs
+	text	=	['\u2018' spaces char*:x] :xs
 			-> [#Unicode, [x].concat(xs)],
-	text = ['\u201c' spaces templateString:x] templateStrings:xs
+	text	=	['\u201c' spaces templateString:x] templateStrings:xs
 			-> [#Unicode, [x].concat(xs)],
-	//templateStrings = [[anything*]*],
-	templateString = (Expression.interpolation | stringLiteralSection)*,
-	stringLiteralSection = <(Expression.escapedChar | ~'{' char)+:cooked>:raw
-							-> [#String, string(cooked), string(raw)],
-	templateStrings = [(skip | [templateString:x] -> x)*:y] -> y,
-
-	fragment = [idName:id spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
-				-> [id, null, x ? [[#binding, pos, x[0], x[1], b]] : b],
-
-	instruction = [instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
-	instruction = [elementPattern:y offsetCol position:pos instructionPattern:x] block:b
-					-> [x[0], x[1], [
-							[#element, pos, y, null, b]
-						]],
-	instructionStart = ':',
-
-	instructionPattern = "import" spaces char*:path -> [#import, this.importFile(string(path))],
-	instructionPattern = "if" spaces Expression.expression:x spaces -> [#if, x],
-	instructionPattern = "else if" spaces Expression.expression:x spaces -> [#elseif, x],
-	instructionPattern = "else" spaces -> [#else, null],
-	instructionPattern = "end if" spaces -> [#endif, null],
-	instructionPattern = "for" spaces Expression.bindingPattern:x
-		spaces "in" spaces Expression.expression:y -> [#for, [x, y]],
-	instructionPattern = "for" spaces Expression.expression:x -> [#for, x],
-	instructionPattern = "end for" spaces -> [#endfor, null],
-	instructionPattern = "match" spaces Expression.expression:x -> [#match, x],
-	instructionPattern = "case" spaces Expression.expression:x -> [#case, x],
-	instructionPattern = "end match" spaces -> [#endmatch, null],
-	instructionPattern = "let" spaces Expression.bindingPattern:x
-		spaces '=' spaces Expression.expression:y -> [#let, [x, y]],
-
-	instructionName:name spaces instructionParam:param spaces -> [name, param],
-	instructionName = Expression.symbol,
-	instructionParam = Expression.expression,
+//	templateStrings	=	[[anything*]*],
+	templateString	=	(Expression.interpolation | stringLiteralSection)*,
+	stringLiteralSection	=	<(Expression.escapedChar | ~'{' char)+:cooked>:raw
+			-> [#String, string(cooked), string(raw)],
+	templateStrings	=	[(skip | [templateString:x] -> x)*:y] -> y,
+			
+	fragment	=	[idName:id spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
+			-> [id, null, x ? [[#binding, pos, null, x, b]] : b],
+		
+	instruction	=	[instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
+	instruction	=	[elementPattern:y offsetCol position:pos instructionPattern:x] block:b
+			-> [x[0], x[1], [
+						[#element, pos, y, null, b]
+					]],
+	instructionStart	=	':',
+		
+	instructionPattern	=	"import" spaces char*:path	->	[#import, this.importFile(string(path))],
+	instructionPattern	=	"if" spaces Expression.expression:x spaces	->	[#if, x],
+	instructionPattern	=	"else if" spaces Expression.expression:x spaces	->	[#elseif, x],
+	instructionPattern	=	"else" spaces	->	[#else, null],
+	instructionPattern	=	"end if" spaces	->	[#endif, null],
+	instructionPattern	=	"for" spaces Expression.bindingPattern:x	
+			spaces "in" spaces Expression.expression:y	->	[#for, [x, y]],
+	instructionPattern	=	"for" spaces Expression.expression:x	->	[#for, x],
+	instructionPattern	=	"end for" spaces	->	[#endfor, null],
+	instructionPattern	=	"match" spaces Expression.expression:x	->	[#match, x],
+	instructionPattern	=	"case" spaces Expression.expression:x	->	[#case, x],
+	instructionPattern	=	"end match" spaces	->	[#endmatch, null],
+	instructionPattern	=	"let" spaces Expression.bindingPattern:x	
+			spaces '=' spaces Expression.expression:y	->	[#let, [x, y]],
+			
+	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
+	instructionName	=	Expression.symbol,
+	instructionParam	=	Expression.expression,
 
 	END
 }
 
 ometa Parser <: PlainParser {
 
-	jediSection = parse('comment')
-		| parse('attribute')
-		| parse('macro')
-		| ^jediSection
-		//| parse('endElement')
-		| parse('element'),
-
-	comment = [commentFlag spaces char*:x] :xs -> [[x].concat(xs).map(string)],
-	commentFlag = '!',
-
-	macro = [macroStart macroPattern:x] block:b -> x.concat([b]),
-	macroStart = ':' ':' spaces,
-	macroPattern = elementPattern:sel spaces macroParam:param spaces -> [sel, param],
-	macroParam = Expression.tuplePattern,
-
-	element = [elementPattern:e bindingPattern?:b] block:children -> [e, b, children],
-	element = [elementPattern:e childCombinator offsetCol char+:rest]
-				parse('element', rest):child
-				-> [e, undefined, [child]],
-	element = [elementPattern:e offsetCol char+:rest]
-				parse('text', rest):child
-				-> [e, undefined, [child]],
-	element = [elementPattern:e offsetCol attributes:attrs] block:children
-				-> [e, undefined, attrs.concat(children)],
-
-	elementPattern = tagName:tag classList:cls idName?:id spaces -> [tag, cls, id],
-	simpleName = (Expression.escapedChar
+	jediSection	=	parse('comment')
+		|	parse('attribute')
+		|	parse('macro')
+		|	^jediSection
+	//	|	parse('endElement')
+		|	parse('element'),
+		
+	comment	=	[commentFlag spaces char*:x] :xs	->	[[x].concat(xs).map(string)],
+	commentFlag	=	'!',	
+				
+	macro	=	[macroStart macroPattern:x] block:b	->	x.concat([b]),
+	macroStart	=	':' ':' spaces,	
+	macroPattern	=	elementPattern:sel spaces macroParam:param spaces	->	[sel, param],
+	macroParam	=	Expression.tuplePattern,	
+				
+	element	=	[elementPattern:e bindingPattern?:b] block:children	->	[e, b, children],
+	element	=	[elementPattern:e childCombinator offsetCol char+:rest]
+			parse('element', rest):child
+			-> [e, undefined, [child]],
+	element	=	[elementPattern:e offsetCol char+:rest]
+			parse('text', rest):child
+			-> [e, undefined, [child]],
+	element	=	[elementPattern:e offsetCol attributes:attrs] block:children
+			-> [e, undefined, attrs.concat(children)],
+		
+	elementPattern	=	tagName:tag classList:cls idName?:id spaces	->	[tag, cls, id],
+	simpleName	=	(Expression.escapedChar
 				| ~(space|'.'|'#'|'='|'@'|'\''|'"'|'!') char)+:x
-				-> string(x),
-	tagName = simpleName,
-	aclass = '.' simpleName,
-	classList = aclass*,
-	idName = '#' simpleName,
-
-	childCombinator = '>' spaces,
-	attributes = (
-					position:pos
-					attributeFlag attrName:attr
-					(assignOperator:op
-						(Expression.expression | Expression.interpolation):expr
-						-> [op, expr])?:assign
-					spaces
-					-> [#attribute, pos, attr].concat(assign)
-				)*,
-
-	attribute = [attributeFlag attrName:attr assignOperator?:op char*:x] :xs
-				expr([].concat.apply(x, xs)):expr
-				-> [attr, op, expr],
-	attributeFlag = '@',
-	attrName = (~(space | assignOperator | '@') char)+:x -> string(x),
-	assignOperator = spaces <('+' | '-' | '^' | '$')? '='>:x spaces -> x,
-
-	expr = [spaces] -> undefined
-		| [spaces (Expression.expression | Expression.interpolation):x spaces] -> x
-		| error,
+			-> string(x),
+	tagName	=	simpleName,
+	aclass	=	'.' simpleName,
+	classList	=	aclass*,
+	idName	=	'#' simpleName,
+		
+	childCombinator	=	'>' spaces,
+	attributes	=	(
+				position:pos
+				attributeFlag attrName:attr
+				(assignOperator:op
+					(Expression.expression | Expression.interpolation):expr
+					-> [op, expr])?:assign
+				spaces
+				-> [#attribute, pos, attr].concat(assign)
+			)*,
+		
+	attribute	=	[attributeFlag attrName:attr assignOperator?:op char*:x] :xs
+			expr([].concat.apply(x, xs)):expr
+			-> [attr, op, expr],
+	attributeFlag	=	'@',
+	attrName	=	(~(space | assignOperator | '@') char)+:x -> string(x),
+	assignOperator	=	spaces <('+' | '-' | '^' | '$')? '='>:x spaces -> x,
+		
+	expr	=	[spaces]	->	undefined
+		|	[spaces (Expression.expression | Expression.interpolation):x spaces]	->	x
+		|	error,
 
 	END
 }
 
-ometa Optimizer {
-	source = block,
-	block = [node*:x] -> sortNodes(x),
-	node [string:type [number number]:pos anything:x anything:y block:block] -> [type, pos, x, y, block],
-	node :x -> x,
+ometa Transformer {
+	document	=	block(#document),
+	block nodeType:_	=	[node*:x]	->	x,
+	node	=	[:type :pos :x :y block(type):block]	->	[type, pos, x, y, block],
+	node	=	:x	->	x,
+	nodeType	=	string,
+	END
+}
+
+ometa Sorter <: Transformer {
+	block #element	=	[node*:x]	->	sortNodes(x),
+	block #macro	=	[node*:x]	->	sortNodes(x),
+	block	=	^block,
+	END
+}
+
+ometa TemplateMatcher <: Transformer {
+	node	=	[#element :pos :x :y block(#element):block]	->	[#element, pos, x, y, block],
+	node	=	^node,
 	END
 }
 
