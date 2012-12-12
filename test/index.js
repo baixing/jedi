@@ -10,7 +10,8 @@ var offside = require('../src/offside')
 var offsideTests = require('./offside')
 //util.dir(offsideTests.OffsideRule)
 testOMeta(offside.OffsideRule, offsideTests.OffsideRule, [
-	'skip', 'tab',
+	'skip',
+	'tab',
 	//'block',
 	'source',
 ])
@@ -35,4 +36,10 @@ testOMeta(jedi.Parser, jediTests.Parser, [
 	//'text',
 	//'blocks',
 	//element,
+])
+
+var transpilerPhp = require('../src/transpiler.php5')
+var transpilerPhpTests = require('./transpiler.php5')
+testOMeta(transpilerPhp.PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
+	'block',
 ])
