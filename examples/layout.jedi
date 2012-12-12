@@ -1,0 +1,18 @@
+!html5
+
+html
+	head
+		-- start head
+		
+		#headBlock
+			-- content of head
+		
+		-- end head
+			
+	body
+		-- start body
+		
+		#bodyBlock
+			-- content of body
+		
+		-- end body

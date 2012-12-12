@@ -15,9 +15,12 @@ function transpile(source, target) {
 function jedi2php(path) {
 	//var source = fs.readFileSync(path).toString()
 	var tree = jedi.Parser.match(path, 'load')
+	util.dir(tree)
+	tree = jedi.InstructionsProcessor.match(tree, 'document')
+	util.dir(tree)
 	tree = jedi.Sorter.match(tree, 'document')
 	tree = jedi.TemplateMatcher.match(tree, 'document')
-	util.dir(tree)
+	//util.dir(tree)
 
 	var code = php.PHP5Transpiler.match(tree, 'document')
 	return code

@@ -43,4 +43,3 @@ var transpilerPhpTests = require('./transpiler.php5')
 testOMeta(transpilerPhp.PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
 	'block',
 ])
-

@@ -1,6 +1,8 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
+cli/* text=LF
+
 *.js text
 *.ometajs text
 *.jedi text

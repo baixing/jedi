@@ -3,7 +3,7 @@
 "import OffsideRule from './offside'"
 "import Expression from './expression'"
 "import string, concat from './util'"
-"export Parser, Sorter, TemplateMatcher"
+"export Parser, InstructionsProcessor, Sorter, TemplateMatcher"
 
 ometa PlainParser <: OffsideRule {
 
@@ -11,8 +11,8 @@ ometa PlainParser <: OffsideRule {
 		->	[#document, [filename, 1, 1], content, undefined, nodes],
 
 	ignore	=	'/' '/',
-	shiftwidth	->	0,
-	tabsize	->	0,
+	indentChar	->	#tab,
+	tabSize	->	0,
 
 	parse :rule	=	position:pos apply(rule):x	->	[rule, pos].concat(x),
 	error	=	offsetCol position:pos char*	->	[#Error, pos],
@@ -60,12 +60,13 @@ ometa PlainParser <: OffsideRule {
 	instructionStart	=	':',
 		
 	instructionPattern	=	"import" spaces char*:path	->	[#import, this.importFile(string(path))],
+	instructionPattern	=	"extends" spaces char*:path	->	[#extends, string(path)],
 	instructionPattern	=	"if" spaces Expression.expression:x spaces	->	[#if, x],
 	instructionPattern	=	"else if" spaces Expression.expression:x spaces	->	[#elseif, x],
 	instructionPattern	=	"else" spaces	->	[#else, null],
 	instructionPattern	=	"end if" spaces	->	[#endif, null],
-//	instructionPattern	=	"for" (for1 | for2)+:x	->	[#for, x],
-	instructionPattern	=	"for" spaces Expression.bindingPattern:x spaces "in" spaces Expression.expression:y	->	[#for, [x, y]],
+	instructionPattern	=	"for" spaces Expression.bindingPattern:x	
+			spaces "in" spaces Expression.expression:y	->	[#for, [x, y]],
 	instructionPattern	=	"for" spaces Expression.expression:x	->	[#for, x],
 	instructionPattern	=	"end for" spaces	->	[#endfor, null],
 	instructionPattern	=	"match" spaces Expression.expression:x	->	[#match, x],
@@ -77,9 +78,6 @@ ometa PlainParser <: OffsideRule {
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
 	instructionName	=	Expression.symbol,
 	instructionParam	=	Expression.expression,
-	
-	for1	=	spaces Expression.bindingPattern:x spaces "in" spaces Expression.expression:y	->	[x, y],
-	for2	=	spaces Expression.expression:x	->	[x],
 
 	END
 }
@@ -146,12 +144,56 @@ ometa Parser <: PlainParser {
 }
 
 ometa Transformer {
-	document	=	block(#document),
-	block nodeType:_	=	[node*:x]	->	x,
-	node	=	[:type :pos :x :y block(type):block]	->	[type, pos, x, y, block],
-	node	=	:x	->	x,
+
+	document	=	[#document [filename number number]:pos
+			string:content undefined block(#document):nodes]
+			-> [#document, pos, content, undefined, nodes],
+	
+	tr [string:type :pos :x :y tr:children]	->	[type, pos, x, y, children],
+	tr string:s	-> s,
+	
+	block nodeType:t	=	[node*:x]	->	x,
+	filename	=	string:f !(this.filename = f),
 	nodeType	=	string,
+	node	=	[:type :pos :x :y block(type):block]	->	[type, pos, x, y, block],
+	node	=	string:x	->	x,
 	END
+}
+Transformer.initialize = function () {
+	this.load = function (filename) {
+		var filename = path.resolve(path.dirname(this.filename), filename)
+		if (!fs.existsSync(filename)) {
+			filename += '.jedi'
+		}
+		//console.log(filename)
+		var tree = Parser.match(filename, 'load')
+		//console.log('tree', tree)
+		return tree
+	}
+}
+
+ometa InstructionsProcessor <: Transformer {
+	block #document	=	[[#instruction :pos #extends string:path load(path):base anything:children] node*:sub]
+			doExtend(sub, base[4])
+		|	^block,
+	doExtend :sub [#fragment :pos string:name :param :children] findFragment(sub, name, param),
+	doExtend :sub [:type :pos :x :y [doExtend(sub)*:children]]	->	[type, pos, x, y, children],
+	doExtend :sub :x	->	x,
+	
+	children #document	=	[extendsInst node*:rest] ,
+	tr document:doc	=	doc.children
+	END
+}
+InstructionsProcessor.initialize = function () {
+	Transformer.initialize.apply(this)
+	this.findFragment = function(nodes, name, param) {
+		return nodes.reduce(function(x, node){
+			if (node[0] === 'fragment' && node[2] === name) {
+				node[4] = x[4].concat(node[4])
+				return node
+			} else return x
+		}, [])
+	}
 }
 
 ometa Sorter <: Transformer {
@@ -159,6 +201,58 @@ ometa Sorter <: Transformer {
 	block #macro	=	[node*:x]	->	sortNodes(x),
 	block	=	^block,
 	END
+}
+
+ometa TemplateMatcher <: Transformer {
+	node	=	[#element :pos :x :y block(#element):block]	->	[#element, pos, x, y, block],
+	node	=	^node,
+	END
+}
+
+function sortNodes(nodes) {
+	var attributes = [], macros = [], normalNodes = []
+	nodes.forEach(function(node){
+		switch (node[0]) {
+			case 'attribute':
+				attributes.push(node)
+				break
+			case 'macro':
+				macros.push(node)
+				break
+			case 'instruction':
+				if (node[2] === 'import') {
+					[].push.apply(normalNodes, node[3])
+					break
+				}
+			default:
+				normalNodes.push(node)
+				break
+		}
+	})
+	return concat(attributes, [['closeStartTag']], macros, normalNodes)
+}
+
+
+Parser.initialize = function() {
+	PlainParser.initialize.apply(this)
+	this.readFile = function(filename) {
+		if (!fs.existsSync(filename)) {
+			filename += '.jedi'
+		}
+		this.filename = filename
+		console.log('read ', filename)
+		return fs.readFileSync(filename).toString()
+	}
+	this.importFile = function(filename) {
+		var filename = path.resolve(path.dirname(this.filename), filename)
+		if (!fs.existsSync(filename)) {
+			filename += '.jedi'
+		}
+		console.log(filename)
+		var tree = Parser.match(filename, 'load')
+		console.log('tree', tree)
+		return tree
+	}
 }
 
 ometa TemplateMatcher <: Transformer {
