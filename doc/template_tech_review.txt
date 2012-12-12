@@ -1,0 +1,25 @@
+PHP
+Smarty
+JSP+JSTL
+JSF+Facelets
+ASP.NET MVC
+GSP
+
+Velocity
+Freemaker http://freemarker.sourceforge.net/
+Webworker
+
+Jade
+
+XSLT3
+Saxon-CE http://www.saxonica.com/ce/doc/contents.html
+STX http://stx.sourceforge.net/
+CDUCE http://www.cduce.org/
+
+Mustache
+Handlebar
+Dust
+
+Sinatra
+Cocoon
+Symphony http://getsymphony.com/

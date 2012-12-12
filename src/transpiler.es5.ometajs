@@ -1,2 +1,5 @@
-ometa JSTranspiler {
+"export ES5Transpiler"
+
+ometa ES5Transpiler {
+
 }

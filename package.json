@@ -1,9 +1,9 @@
 {
 	"name": "jedi",
-	"version": "0.9.4-patch7",
+	"version": "0.9.7",
 	"author": "Hax <johnhax@gmail.com>",
 	"description": "jedi -- a language for Web",
-	"keywords": ["template", "view", "dsl"],
+	"keywords": ["view", "template", "dsl"],
 	"dependencies": {
 		"my": "",
 		"commander": ""

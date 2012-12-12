@@ -1,5 +1,13 @@
 # Auto detect text files and perform LF normalization
 
+*.js text
+*.ometajs text
+*.jedi text
+*.php text
+*.html text
+*.css text
+*.styl text
+
 # Custom for Visual Studio
 *.cs     diff=csharp
 *.sln    merge=union
