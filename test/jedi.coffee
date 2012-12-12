@@ -108,6 +108,9 @@ exports.Parser =
 					[]
 				]
 			]
+		'binding of a named tuple':
+			input: "= (name:'hax', age:18)"
+
 		'single quot text':
 			input: """
 				'Hello world!
@@ -128,6 +131,14 @@ exports.Parser =
 			
 		'single quot multiple lines text ':
 		
+		'single quot text no escape/interpolation':
+			input: """
+				'Hello {user}!\\n
+			"""
+			expect: [
+				['text', [1, 1], undefined, ['Hello {user}!\\n']]
+			]
+		'single quot multiple lines text ':
 			input: """
 				'	Hello world!
 					foo bar baz
