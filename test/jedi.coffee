@@ -54,8 +54,8 @@ exports.Parser =
 			'''
 			expect: [
 				['inject', [1, 1], 'inject line', null, [
-					['comment', [2, 2], ['line 1']]
-					['comment', [3, 2], ['line 2']]
+					['comment', [2, Number], ['line 1']]
+					['comment', [3, Number], ['line 2']]
 				]]
 			]
 
@@ -80,18 +80,18 @@ exports.Parser =
 					[]
 				]
 			]
-			
+
 		'binding of a named tuple':
-		
+
 			input: "= (name:'hax', age:18)"
-			
+
 			expect: [
 				[
-					'binding', 
-					[ 1, 1 ], 
+					'binding',
+					[ 1, 1 ],
 					null,
 					[
-						'Tuple', 
+						'Tuple',
 						[
 							[
 								'Mapping',
@@ -116,17 +116,17 @@ exports.Parser =
 			expect: [
 				['text', [1, 1], undefined, ['Hello world!']]
 			]
-			
+
 		'single quot text no escape/interpolation':
-		
+
 			input: '''
 				'Hello {user}!\\n
 			'''
-			
+
 			expect: [
 				['text', [1, 1], undefined, ['Hello {user}!\\n']]
 			]
-			
+
 		'single quot multiple lines text ':
 			input: """
 				'	Hello world!
@@ -137,7 +137,7 @@ exports.Parser =
 			expect: [
 				['text', [1, 1], undefined, ['Hello world!', 'foo bar baz', 'rawr rawr', 'super cool']]
 			]
-			
+
 		'single quot text with single quot':
 			input: """
 				'	I'm ok!
@@ -195,7 +195,7 @@ exports.Parser =
 				['instruction', [1, 1], 'if',
 					['BinaryOp', '>', ['Symbol', 'x'], ['Symbol', 'y']]
 					[
-						['text', [2, 2], undefined, [
+						['text', [2, Number], undefined, [
 							[['Symbol', 'x'], ['String', ' > ', ' > '], ['Symbol', 'y']]
 						]]
 					]
@@ -210,7 +210,7 @@ exports.Parser =
 			expect: [
 				['instruction', [1, 1], 'for',
 					[['Symbol', 'v'], ['Symbol', 'x']]
-					[['text', [2, 2], undefined, [
+					[['text', [2, Number], undefined, [
 						[['Symbol', 'v']]
 					]]]
 				]
@@ -238,8 +238,8 @@ exports.Parser =
 					],
 					[
 						[
-							'text', 
-							[2, 2], 
+							'text',
+							[2, 2],
 							undefined,
 							[
 								[
