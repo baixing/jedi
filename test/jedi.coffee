@@ -80,18 +80,18 @@ exports.Parser =
 					[]
 				]
 			]
-			
+
 		'binding of a named tuple':
-		
+
 			input: "= (name:'hax', age:18)"
-			
+
 			expect: [
 				[
 					'binding', 
 					[ 1, Number ], 
 					null,
 					[
-						'Tuple', 
+						'Tuple',
 						[
 							[
 								'Mapping',
@@ -116,17 +116,17 @@ exports.Parser =
 			expect: [
 				['text', [1, Number], undefined, ['Hello world!']]
 			]
-			
+
 		'single quot text no escape/interpolation':
-		
+
 			input: '''
 				'Hello {user}!\\n
 			'''
-			
+
 			expect: [
 				['text', [1, Number], undefined, ['Hello {user}!\\n']]
 			]
-			
+
 		'single quot multiple lines text ':
 			input: """
 				'	Hello world!
@@ -137,7 +137,7 @@ exports.Parser =
 			expect: [
 				['text', [1, Number], undefined, ['Hello world!', 'foo bar baz', 'rawr rawr', 'super cool']]
 			]
-			
+
 		'single quot text with single quot':
 			input: """
 				'	I'm ok!
