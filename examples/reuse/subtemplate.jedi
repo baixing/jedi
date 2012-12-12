@@ -1,0 +1,8 @@
+:import layout
+
+	#head::after
+		style @src='test.css'
+			
+	#body
+		'Hello world!
+	
