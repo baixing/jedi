@@ -36,4 +36,3 @@ testOMeta(jedi.Parser, jediTests.Parser, [
 	//'blocks',
 	//element,
 ])
-
