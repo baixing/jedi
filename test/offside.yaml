@@ -6,7 +6,7 @@ OffsideRule:
     - "# test"
     - "  # test"
 
-  '[tab]':
+  '[shift]':
     - "\t"
     - "    "
     - "  \t"

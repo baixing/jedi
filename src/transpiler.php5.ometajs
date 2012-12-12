@@ -1,11 +1,11 @@
-"module util at './util'"
+"import string, concat, flattenLines, isCharArray from './util'"
 "export PHP5Transpiler"
 
 ometa PHP5Transpiler {
-	php = topBlock:xs -> (
-		'<?php\n//jedi@baixing.com\n' +
+	document = [#document [string:filename number number] string:source undefined topBlock:xs] -> (
+		'<?php\n' +
 		//flattenString(x) +
-		util.flattenLines(xs).join('\n') +
+		flattenLines(xs).join('\n') +
 		'\n?>'),
 
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
@@ -14,10 +14,11 @@ ometa PHP5Transpiler {
 	ignore string:x -> x, // empty or ignore
 
 	node ignore,
+	node [#closeStartTag] -> "echo '>';",
 	node [string:nodeType [number number] apply(nodeType):x] -> x,
 	node :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 
-	Section :head :body -> ['/*', JSON.stringify(util.string(head)), '*/'],
+	Section :head :body -> ['/*', JSON.stringify(string(head)), '*/'],
 
 	doctype = [#comment [number number] [output:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	output = [outputMethod:x] -> x,
@@ -28,11 +29,11 @@ ometa PHP5Transpiler {
 	trans [#True] -> 'true',
 	trans [#False] -> 'false',
 	trans [#Number :n] -> String(n),
-	trans [#String :s] -> ("'" + util.flattenString(s).replace(/'/g, '\\\'') + "'"),
-	trans [#String :s :raw] -> ("'" + util.flattenString(s).replace(/'/g, '\\\'') + "'"),
+	trans [#String :s] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
+	trans [#String :s :raw] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
 	trans [#List [trans*:list]] -> ('[' + list.join(', ') + ']'),
-	trans ["." [#Symbol 'url'] [#Symbol :y]]
-		-> ('UrlBuilder::' + y),
+	trans ["." [#Symbol 'url'] [#Symbol 'static']]
+		-> 'UrlBuilder::staticResource',
 	trans ["." trans:x [#Symbol :y]]
 		-> (x + '->' + y),
 	trans [#Call trans:x trans:y]
@@ -53,43 +54,58 @@ ometa PHP5Transpiler {
 	trans :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 	//trans [trans*:x] -> ( x ),
 
-	comment [:line] -> ["echo '" + closeStartTag() + "<!-- " + escapeComment(simpleString(line)) + " -->';"],
+	comment [:line] -> ["echo '<!-- " + escapeComment(simpleString(line)) + " -->';"],
 	comment [echoComment*:xs] -> [].concat(
-			"echo '" + closeStartTag() + "<!--', \"\\n\";",
+			"echo '<!--', \"\\n\";",
 			xs,
 			"echo '-->';"
 		),
 	echoComment [char*:s] -> ("echo '" + escapeComment(simpleString(s)) + "', \"\\n\";"),
 
-	text closeStartTag:x undefined [echoLine*:lines] -> [x].concat(lines),
-	text closeStartTag:x undefined [echoTemplateString*:lines] -> [x].concat(lines),
-	closeStartTag -> (closeStartTag() ? "echo '>';" : ''),
+	text undefined [echoLine*:lines] -> lines,
+	text undefined [echoTemplateString*:lines] -> lines,
 
-	echoLine string:s -> ("echo htmlSpecialChars('" + simpleString(s) + "'), \"\\n\";"),
-	echoTemplateString [trans*:exprList] -> ('echo ' + exprList.join(', ') + ';'),
+	echoLine string:s -> ("echo '" + escapeText(simpleString(s)) + "', \"\\n\";"),
+	echoTemplateString [trans*:exprList] -> ('echo htmlSpecialChars(' + exprList.join('), htmlSpecialChars(') + ');'),
 	//	-> dom.text(lines),
 
-	element [:tag :cls :id] :bind {startTag(tag, cls, id)}:startT block:body {endTag(tag)}:endT
-		-> [startT, body, endT],
+	element [:tag :cls :id] undefined
+		{startTag(tag, cls, id)}:startT
+		enterBlock([]) block:body exitBlock
+		{endTag(tag)}:endT
+		-> this.elementOutput(tag, cls, id, undefined, body, startT, endT),
+
+	element [:tag :cls :id] trans:bind
+		{startTag(tag, cls, id)}:startT
+		enterBlock([]) block:body exitBlock
+		{endTag(tag)}:endT
+		-> this.elementOutput(tag, cls, id, bind, body, startT, endT),
+
 
 	attribute :name :op undefined -> ["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
-	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', " + exp + ", '\"';"],
+	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', htmlSpecialChars(" + exp + "), '\"';"],
 
-	binding closeStartTag:x trans:expr :_ block:body
-		-> [x].concat(closure(expr, body)),
+	binding :_ trans:expr [] -> ['echo htmlSpecialChars(' + expr + ');'],
+	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlSpecialChars($__temp); else print_r($__temp);"],
+	binding :_ trans:expr block:body
+		-> closure(expr, body),
 
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
 
 	instruction #for [bindingPattern:bind trans:expr]
-		closeStartTag:x enterBlock(bind[0]) block:b exitBlock
-		-> [x ? "echo '>';" : '', "foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
+		enterBlock(bind[0]) block:b exitBlock
+		-> ["foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
 
 	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
 	fragment :name :_ block:b -> ['//  #' + name, b],
+	macro :elementPattern paramPattern:parameter enterBlock(parameter) :body exitBlock saveMacro(elementPattern, parameter, body)
+		-> ['// define ' + elementPattern],
+
+	paramPattern [#TuplePattern [([#Symbol :name] -> name)*:names]] -> names,
 
 	endElement -> '',
 
@@ -129,11 +145,40 @@ PHP5Transpiler.initialize = function() {
 		}
 		return '$model->' + symbol
 	}
+	this.saveMacro = function(elementPattern, parameter, body) {
+		if (this._stack[0].macros === undefined) this._stack[0].macros = []
+		this._stack[0].macros.push([elementPattern, parameter, body])
+	}
+	this.elementOutput = function (tag, cls, id, bind, body, startT, endT) {
+		if (bind === undefined) return [startT, body, endT]
+		else {
+			var m = this.findMacro(tag, cls, id, bind)
+			body.some(function(node){
+				return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
+			})
+			return closure(bind, [startT, m, endT]) // || ['//call macro']
+		}
+	}
+	this.findMacro = function (tag, cls, id, param) {
+		for (var n = 0; n < this._stack.length; n++) {
+			if (this._stack[n].macros)
+				for (var i = 0; i < this._stack[n].macros.length; i++) {
+					var m = this._stack[n].macros[i]
+					var elemPattern = m[0]
+					if (elemPattern[0] === tag &&
+						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })) {
+						return m[2]
+					}
+				}
+		}
+		//return "echo '>', htmlSpecialChars($context);"
+		return [['text', [0, 0], undefined, [['Symbol', '*']]]]
+	}
 }
 
 function echo() {
 	var args = [].slice.call(arguments).reduce(function(a, b){
-		if (util.isCharArray(b)) b = b.join('')
+		if (isCharArray(b)) b = b.join('')
 		if (typeof b === 'string' && typeof a[a.length - 1] === 'string') {
 			a[a.length - 1] += b
 		} else {
@@ -159,38 +204,34 @@ function escapeComment(s) {
 	// Comment must not contain two consecutive U+002D HYPHEN-MINUS characters (--)
 	return s.replace(/--/g, '- -')
 }
+function escapeText(s) {
+	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+}
 function simpleString(s) {
-	if (util.isCharArray(s)) s = s.join('')
-	return s.replace(/'/g, "\\'")
+	return string(s).replace(/'/g, "\\'")
 }
 function attrValue(s) {
-	return s.replace(/"/g, '\\"')
+	return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
-var closed = true
-function closeStartTag() {
-	if (closed) return ''
-	closed = true
-	return '>'
-}
 function startTag(tag, cls, id) {
 	var r = echo(
-		closeStartTag(),
 		"<", tag,
 		cls.length > 0 ? ' class="' + cls.join(' ') + '"': '',
 		id ? ' id="' + id + '"' : '')
-	closed = false
 	return r
 }
+var voidElements = 'area,base,br,col,command,embed,hr,img,input,keygen,link,meta,param,source,track,wbr'.split(',')
 function endTag(tag) {
-	return echo(closeStartTag(), '</', tag, '>')
+	if (voidElements.indexOf(tag) >= 0) return []
+	return echo('</', tag, '>')
 }
 
 function closure(context, body) {
 	return [
-		'$_binding = function($context) {',
+		'call_user_func(function($context) {',
 		body,
-		'}; $_binding(' + context + ');'
+		'}, ' + context + ');'
 	]
 }
 

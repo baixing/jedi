@@ -2,8 +2,10 @@
 
 exports.Text = {
 	source:
-		require('fs').readFileSync(require.resolve('./jedi.txt')).
-			toString().split(/(?:^|\r?\n)\r?\n?={4}.*\r?\n?(?:\r?\n|$)/),
+		/*require('fs').readFileSync(require.resolve('./jedi.txt')).
+			toString().split(/(?:^|\r?\n)\r?\n?={4}.*\r?\n?(?:\r?\n|$)/),*/
+		[
+		],
 	block: [
 		[],
 		[''],

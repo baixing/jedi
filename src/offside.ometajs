@@ -1,94 +1,107 @@
 "import UnicodeText from './text'"
 "export OffsideRule"
 
-ometa OffsideRule <: UnicodeText {
+ometa OffsideRule {
 
-	source = ^source:lines block(lines),
+	source	=	UnicodeText.lines:x block(x),
+	whitespace	=	UnicodeText.whitespace,
+		
+	block	=	[beginBlock (skip | section | offside)*:x endBlock]	->	x,
+		
+	skip	=	[whitespace* (ignore char*)?],
+	ignore	=	'#',
+		
+	section	=	headLine:head bodyLines:body processSection(head, body),
+	headLine	=	posLn [indent:n ~whitespace posIndent(n) char+:x]	-> x,
+	bodyLine	=	[indent:n shift char+:x]	-> x,
+	bodyLines	=	skip*:x bodyLine+:y bodyLines:rest	-> [].concat(x, y, rest)
+		|	empty	-> [],
+				
+	processSection		(position:pos) :head block:body	->	[#Section, pos, head, body],
+		
+	offside	=	posLn [shift*:indent posIndent(indent.length) whitespace?:w char+]
+			position:pos -> [w ? #MixedWhitespace : #Offside, pos],
 
-	block = [beginBlock (skip | section | offside)*:x endBlock] -> x,
+	indent	=	getIndent:n undefined(n) shift*:s setIndent(s.length)
+		|	repeat('shift', n) -> n,
+	
+	shiftwidth	->	4, // 0 means not use space
+	tabsize	->	4, // 0 means not use tab, or use Elastic tabstops if shiftwidth is 0
 
-	skip = [whitespace* (ignore char*)?],
-	ignore = '#',
+	shift	=	tabChar
+		|	shiftwidth:n ?n <repeat('spaceChar', n) | spaceChar+ tabChar>,
 
-	section = headLine:head bodyLines:body processSection(head, body),
-	processSection (position:pos) :head block:body -> [#Section, pos, head, body],
+	tabChar	= '\t',
+	spaceChar	= ' ',
 
-	headLine = posLn [indent:n ~whitespace posIndent(n) char+:x] -> x,
-	bodyLine = [indent:n tab char+:x] -> x,
-	bodyLines = skip*:x bodyLine+:y bodyLines:rest -> [].concat(x, y, rest)
-		| empty -> [],
+	repeat :rule number:n	=	?(n < 1) -> []
+		|	apply(rule):x repeat(rule, n - 1):xs -> [x].concat(xs),
 
-	offside = posLn [tab*:tabs posIndent(tabs.length) whitespace?:w char+]
-		position:pos -> [w ? #MixedWhitespace : #Offside, pos],
-
-	posLn = pos:ln setLine(ln),
-	posCol = getIndent:n posIndent(n) offsetCol,
-	posIndent number:indent = tabSize:t setColumn((t || 1) * indent),
-	offsetLn number:x = getLine:ln setLine(ln + x),
-	offsetLn pos:x = offsetLn(x),
-	offsetCol number:x = getColumn:ln setColumn(ln + x),
-	offsetCol pos:x = offsetCol(x),
-	offset number:ln number:col = offsetLn(ln) offsetCol(col),
-
-	indent = getIndent:n undefined(n) tab*:tabs setIndent(tabs.length)
-		| repeat('tab', n) -> n,
-
-	tab = tabChar
-		| tabSize:n ?n <repeat('spaceChar', n) | spaceChar+ tabChar>,
-	tabSize -> 4,
-
-	tabChar = '\t',
-	spaceChar = ' ',
-
-	repeat :rule number:n = ?(n < 1) -> []
-		| apply(rule):x repeat(rule, n - 1):xs -> [x].concat(xs),
+	posLn	= 	pos:ln setLine(ln),
+	posCol	=	getIndent:n posIndent(n) offsetCol,
+	posIndent number:indent	=	shiftwidth:t setColumn((t || 1) * indent),
+	offsetLn number:x	=	getLine:ln setLine(ln + x),
+	offsetLn pos:x	=	offsetLn(x),
+	offsetCol number:x	=	getColumn:ln setColumn(ln + x),
+	offsetCol pos:x	=	offsetCol(x),
+	offset number:ln number:col	=	offsetLn(ln) offsetCol(col),
 
 	END
 }
 
 OffsideRule.initialize = function() {
-	this._stack = []
-	this._pos = [1, 1]
-	this.beginBlock = function() {
-		if (this._stack.length > 0) {
-			this._pos[0] += this.getLine() + 1
-			this._pos[1] += (this.getIndent() + 1) * (this.tabSize() || 1)
+	this._stack	= []
+	this._pos	= [1, 1]
+	this.beginBlock	= function() {
+			if (this._stack.length > 0) {
+				this._pos[0] += this.getLine() + 1
+				this._pos[1] += (this.getIndent() + 1) * (this.shiftwidth() || this.tabsize() || 1)
+			}
+			this._stack.unshift({})
 		}
-		this._stack.unshift({})
-	}
-	this.endBlock = function() {
-		this._stack.shift()
-		if (this._stack.length > 0) {
-			this._pos[0] -= this.getLine() + 1
-			this._pos[1] -= (this.getIndent() + 1) * (this.tabSize() || 1)
+	this.endBlock	= function() {
+			this._stack.shift()
+			if (this._stack.length > 0) {
+				this._pos[0] -= this.getLine() + 1
+				this._pos[1] -= (this.getIndent() + 1) * (this.shiftwidth() || this.tabsize() || 1)
+			}
 		}
-	}
-	this.getIndent = function() {
-		return this._stack[0].indent
-	}
-	this.setIndent = function(v) {
-		this._stack[0].indent = v
-		return v
-	}
-
-	this.getLine = function() {
-		return this._stack[0].ln
-	}
-	this.setLine = function(n) {
-		this._stack[0].ln = n
-		return n
-	}
-	this.getColumn = function() {
-		return this._stack[0].col
-	}
-	this.setColumn = function(n) {
-		this._stack[0].col = n
-		return n
-	}
-	this.position = function() {
-		return [
-			this._pos[0] + this.getLine(),
-			this._pos[1] + this.getColumn()
-		]
-	}
+	this.getIndent	= function() {
+			return this._stack[0].indent
+		}
+	this.setIndent	= function(v) {
+			this._stack[0].indent = v
+			return v
+		}
+	this.getLine	= function() {
+			return this._stack[0].ln
+		}
+	this.setLine	= function(n) {
+			this._stack[0].ln = n
+			return n
+		}
+	this.getColumn	= function() {
+			return this._stack[0].col
+		}
+	this.setColumn	= function(n) {
+			this._stack[0].col = n
+			return n
+		}
+	this.position	= function() {
+			return [
+				this._pos[0] + this.getLine(),
+				this._pos[1] + this.getColumn()
+			]
+		}
 }
+
+function expandTabs(tabsize, line) {
+	return line.replace(/\t/g, function(_, offset){
+		return repeat(' ', offset % tabsize || tabsize)
+	})
+}
+
+function repeat(s, n) {
+	return new Array(n + 1).join(s)
+}
+

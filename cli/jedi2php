@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+var fs = require('fs')
 var transpiler = require('../src/transpiler')
 
 var program = require('commander')
@@ -14,7 +15,14 @@ program.
 if (program.args.length > 0) {
 
 	var srcPath = program.args[0]
-	var destPath = program.args[1] || srcPath.replace(/\.jedi$/, '.php')
+	if (!fs.existsSync(srcPath)) {
+		srcPath += '.jedi'
+		if (!fs.existsSync(srcPath)) {
+			console.error('文件' + srcPath + '不存在')
+			throw new Error('file not exists: ' + srcPath)
+		}
+	}
+	var destPath = program.args[1] || srcPath.replace(/(\.jedi)?$/, '.php')
 
 	if (program.watch) transpiler.watch(srcPath, destPath)
 	else transpiler.compile(srcPath, destPath)
