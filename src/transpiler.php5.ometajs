@@ -11,7 +11,7 @@ ometa PHP5Transpiler {
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
 	block = [node*:x] -> x,
 
-	ignore string:x -> x, // empty or ignore
+	ignore	=	[char*:s]	->	string(s), // empty or ignore
 
 	node ignore,
 	node [#closeStartTag] -> "echo '>';",
