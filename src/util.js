@@ -12,7 +12,7 @@ util.isCharArray = function(a) {
 util.string = function (a) {
 	if (util.isCharArray(a)) return a.join('')
 	if (typeof a === 'string') return a
-	throw a
+	throw Error(a + ' is not a string')
 }
 util.concat = function() {
 	return [].concat.apply([], arguments)
@@ -23,9 +23,9 @@ util.flattenString = function flatten(a) {
 	if (a.every(util.isChar)) return a.join('')
 	else return a.map(flatten)
 }
-util.flattenArray = function flatten(a) {
-	if (!util.isArray(a)) return a
-	return [].concat.apply([], a.map(flatten))
+util.flattenArray = function flatten(a, rec) {
+	if (!util.isArray(a)) throw Error(a + ' is not an array')
+	return [].concat.apply([], rec ? a.map(flatten) : a)
 }
 util.flattenLines = function flattenLines(lines, indent) {
 	if (indent === undefined) indent = ''

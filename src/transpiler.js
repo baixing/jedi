@@ -21,9 +21,11 @@ function jedi2php(path) {
 	tree = transformer.InstructionsProcessor.match(tree, 'document')
 	console.log('transformed:')
 	util.dir(tree)
-	tree = transformer.Sorter.match(tree, 'document')
 	tree = transformer.TemplateMatcher.match(tree, 'document')
-	//util.dir(tree)
+	console.log('transformed:')
+	util.dir(tree)
+	tree = transformer.Sorter.match(tree, 'document')
+	util.dir(tree)
 
 	var code = transpiler.PHP5Transpiler.match(tree, 'document')
 	return code
