@@ -323,24 +323,5 @@ exports.Parser =
 			# should be [1, 6], [1, 8]
 
 		'extend':
-			input: '''
-				!html5
-				
-				html
-					head
-						-- start head
-						
-						#headBlock
-							-- content of head
-						
-						-- end head
-							
-					body
-						-- start body
-						
-						#bodyBlock
-							-- content of body
-						
-						-- end body				
-			'''
+			input: ''':import layout'''
 			
