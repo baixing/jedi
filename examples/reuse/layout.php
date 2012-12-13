@@ -8,7 +8,9 @@ echo '<!doctype html>', "\n";
      echo '<!-- start head -->';
     	
      //  #headBlock
-       echo '<!-- content of head -->';
+       echo '<meta';
+         echo ' charset="utf-8"';
+        echo '>';
     	
      echo '<!-- end head -->';
     	
@@ -18,7 +20,7 @@ echo '<!doctype html>', "\n";
      echo '<!-- start body -->';
     	
      //  #bodyBlock
-       echo '<!-- content of body -->';
+       echo 'Hello world!', "\n";
     	
      echo '<!-- end body -->';
    echo '</body>';

@@ -5,7 +5,7 @@ html
 		! start head
 		
 		#headBlock
-			! content of head
+			meta @charset='utf-8'
 		
 		! end head
 			
@@ -13,6 +13,6 @@ html
 		! start body
 		
 		#bodyBlock
-			! content of body
+			'Hello world!
 		
 		! end body

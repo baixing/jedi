@@ -1,19 +1,24 @@
 "module path at 'path'"
 "module fs at 'fs'"
 "import Parser from './jedi'"
+"import flattenArray from './util'"
 "export InstructionsProcessor, Sorter, TemplateMatcher"
 
 ometa Transformer {
 	
 	document = node,
 	node	=	[nodeType:type position:pos :x :y nodeList(type):children]	->	[type, pos, x, y, children],
-	node	=	:x,
+	node	=	[nodeType:type position:pos anything*],
+	node	=	[#closeStartTag],
+	node	=	[char*],
 	
-	nodeType	=	string,
+	nodeType	=	#document | #element | #attribute | #text | #comment
+		|	#supperess | #inject | #instruction | #macro | #fragment,
 	position	=	[number number] | [string number number],
 	
-	nodeList nodeType	=	[node*:s]	->	s,
-		
+	nodeList nodeType	=	[(node+ | [node*])*:x]	->	flattenArray(x),
+	
+	
 	END
 }
 
@@ -24,13 +29,13 @@ ometa InstructionsProcessor <: Transformer {
 	node	=	^node,
 	
 	nodeList	=	^nodeList:s importDocs(s),
-	importDocs	=	[(importNodes | anything+)*:x]	->	[].concat.apply([], x),
+	importDocs	=	[(importNodes | anything+)*:x]	->	flattenArray(x),
 	
 	importNodes	=	[#document :pos :x :y :children] -> children,
 	
 	src	=	string:f !(this.filename = f),
 	
-	override :sub [#fragment :pos string:name :param :children] findFragment(sub, name, param),
+	override :sub [#fragment :pos string:name undefined :children]:base findFragment(sub, name, base),
 	override :sub [:type :pos :x :y [override(sub)*:children]]	->	[type, pos, x, y, children],
 	override :sub :x	->	x,
 	
@@ -47,13 +52,20 @@ InstructionsProcessor.initialize = function () {
 		//console.log('tree', tree)
 		return tree
 	}
-	this.findFragment = function (nodes, name, param) {
-		return nodes.reduce(function(x, node){
-			if (node[0] === 'fragment' && node[2] === name) {
-				node[4] = x[4].concat(node[4])
-				return node
-			} else return x
-		}, [])
+	this.findFragment = function (nodes, name, base) {
+		var fragments = nodes.filter(function(node){
+			return node[0] === 'fragment' && node[2] === name
+		})
+		if (fragments.length === 0) throw fail
+		if (fragments.every(function(node){ return !!node[3] })) fragments.push(base)
+		fragments.sort(function(a, b){
+			if (a[3] === b[3]) return 0
+			else if (a[3] === 'before') return -1
+			else if (a[3] === 'after') return 1
+			else if (b[3] === 'before') return 1
+			else if (b[3] === 'after') return -1
+		})
+		return fragments
 	}
 }
 
