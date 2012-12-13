@@ -2,9 +2,6 @@
 
 	#headBlock::after
 		style @src='test.css'
-			
+
 	#bodyBlock
-		'Hello world!
-		
-	#headBlock::before
-		style @src='test.css'
+		'It's a wonderful day!
