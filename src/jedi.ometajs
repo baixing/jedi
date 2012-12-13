@@ -49,8 +49,9 @@ ometa PlainParser <: OffsideRule {
 			-> [#String, string(cooked), string(raw)],
 	templateStrings	=	[(skip | [templateString:x] -> x)*:y] -> y,
 			
-	fragment	=	[idName:id spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
-			-> [id, null, x ? [[#binding, pos, null, x, b]] : b],
+	fragment	=	[idName:id pseudoElement?:pe spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
+			-> [id, pe, x ? [[#binding, pos, null, x, b]] : b],
+	pseudoElement	=	':' ':' simpleName,
 		
 	instruction	=	[instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
 	instruction	=	[elementPattern:y offsetCol position:pos instructionPattern:x] block:b
@@ -110,7 +111,7 @@ ometa Parser <: PlainParser {
 		
 	elementPattern	=	tagName:tag classList:cls idName?:id spaces	->	[tag, cls, id],
 	simpleName	=	(Expression.escapedChar
-				| ~(space|'.'|'#'|'='|'@'|'\''|'"'|'!') char)+:x
+				| ~(space|'.'|'#'|':'|'='|'@'|'\''|'"'|'!') char)+:x
 			-> string(x),
 	tagName	=	simpleName,
 	aclass	=	'.' simpleName,
@@ -141,95 +142,6 @@ ometa Parser <: PlainParser {
 
 	END
 }
-
-ometa Transformer {
-
-	document	=	[#document [filename number number]:pos
-			string:content undefined block(#document):nodes]
-			-> [#document, pos, content, undefined, nodes],
-	
-	tr [string:type :pos :x :y tr:children]	->	[type, pos, x, y, children],
-	tr string:s	-> s,
-	
-	block nodeType:t	=	[node*:x]	->	x,
-	filename	=	string:f !(this.filename = f),
-	nodeType	=	string,
-	node	=	[:type :pos :x :y block(type):block]	->	[type, pos, x, y, block],
-	node	=	string:x	->	x,
-	END
-}
-Transformer.initialize = function () {
-	this.load = function (filename) {
-		var filename = path.resolve(path.dirname(this.filename), filename)
-		if (!fs.existsSync(filename)) {
-			filename += '.jedi'
-		}
-		//console.log(filename)
-		var tree = Parser.match(filename, 'load')
-		//console.log('tree', tree)
-		return tree
-	}
-}
-
-ometa InstructionsProcessor <: Transformer {
-	block #document	=	[[#instruction :pos #import string:path load(path):base anything:children] node*:sub]
-			doExtend(sub, base[4])
-		|	^block,
-	doExtend :sub [#fragment :pos string:name :param :children] findFragment(sub, name, param),
-	doExtend :sub [:type :pos :x :y [doExtend(sub)*:children]]	->	[type, pos, x, y, children],
-	doExtend :sub :x	->	x,
-	
-	children #document	=	[extendsInst node*:rest] ,
-	END
-}
-InstructionsProcessor.initialize = function () {
-	Transformer.initialize.apply(this)
-	this.findFragment = function(nodes, name, param) {
-		return nodes.reduce(function(x, node){
-			if (node[0] === 'fragment' && node[2] === name) {
-				node[4] = x[4].concat(node[4])
-				return node
-			} else return x
-		}, [])
-	}
-}
-
-ometa Sorter <: Transformer {
-	block #element	=	[node*:x]	->	sortNodes(x),
-	block #macro	=	[node*:x]	->	sortNodes(x),
-	block	=	^block,
-	END
-}
-
-ometa TemplateMatcher <: Transformer {
-	node	=	[#element :pos :x :y block(#element):block]	->	[#element, pos, x, y, block],
-	node	=	^node,
-	END
-}
-
-function sortNodes(nodes) {
-	var attributes = [], macros = [], normalNodes = []
-	nodes.forEach(function(node){
-		switch (node[0]) {
-			case 'attribute':
-				attributes.push(node)
-				break
-			case 'macro':
-				macros.push(node)
-				break
-			case 'instruction':
-				if (node[2] === 'import') {
-					[].push.apply(normalNodes, node[3])
-					break
-				}
-			default:
-				normalNodes.push(node)
-				break
-		}
-	})
-	return concat(attributes, [['closeStartTag']], macros, normalNodes)
-}
-
 
 Parser.initialize = function() {
 	PlainParser.initialize.apply(this)

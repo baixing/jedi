@@ -2,17 +2,17 @@
 
 html
 	head
-		-- start head
+		! start head
 		
 		#headBlock
-			-- content of head
+			! content of head
 		
-		-- end head
+		! end head
 			
 	body
-		-- start body
+		! start body
 		
 		#bodyBlock
-			-- content of body
+			! content of body
 		
-		-- end body
+		! end body

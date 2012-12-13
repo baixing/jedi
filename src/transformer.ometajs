@@ -1,0 +1,95 @@
+"module path at 'path'"
+"module fs at 'fs'"
+"import Parser from './jedi'"
+"export InstructionsProcessor, Sorter, TemplateMatcher"
+
+ometa Transformer {
+	
+	document = node,
+	node	=	[nodeType:type position:pos :x :y nodeList(type):children]	->	[type, pos, x, y, children],
+	node	=	:x,
+	
+	nodeType	=	string,
+	position	=	[number number] | [string number number],
+	
+	nodeList nodeType	=	[node*:s]	->	s,
+		
+	END
+}
+
+ometa InstructionsProcessor <: Transformer {
+
+	node	=	&[#document [src number number] anything*] ^node,
+	node	=	[#instruction :pos #import string:path anything:sub] load(path):base override(sub, base),
+	node	=	^node,
+	
+	nodeList	=	^nodeList:s importDocs(s),
+	importDocs	=	[(importNodes | anything+)*:x]	->	[].concat.apply([], x),
+	
+	importNodes	=	[#document :pos :x :y :children] -> children,
+	
+	src	=	string:f !(this.filename = f),
+	
+	override :sub [#fragment :pos string:name :param :children] findFragment(sub, name, param),
+	override :sub [:type :pos :x :y [override(sub)*:children]]	->	[type, pos, x, y, children],
+	override :sub :x	->	x,
+	
+	END
+}
+InstructionsProcessor.initialize = function () {
+	this.load = function (filename) {
+		var filename = path.resolve(path.dirname(this.filename), filename)
+		if (!fs.existsSync(filename)) {
+			filename += '.jedi'
+		}
+		//console.log(filename)
+		var tree = Parser.match(filename, 'load')
+		//console.log('tree', tree)
+		return tree
+	}
+	this.findFragment = function (nodes, name, param) {
+		return nodes.reduce(function(x, node){
+			if (node[0] === 'fragment' && node[2] === name) {
+				node[4] = x[4].concat(node[4])
+				return node
+			} else return x
+		}, [])
+	}
+}
+
+ometa Sorter <: Transformer {
+	nodeList #element	=	[node*:x]	->	sortNodes(x),
+	nodeList #macro	=	[node*:x]	->	sortNodes(x),
+	nodeList	=	^nodeList,
+	
+	END
+}
+
+function sortNodes(nodes) {
+	var attributes = [], macros = [], normalNodes = []
+	nodes.forEach(function(node){
+		switch (node[0]) {
+			case 'attribute':
+				attributes.push(node)
+				break
+			case 'macro':
+				macros.push(node)
+				break
+			case 'instruction':
+				if (node[2] === 'import') {
+					[].push.apply(normalNodes, node[3])
+					break
+				}
+			default:
+				normalNodes.push(node)
+				break
+		}
+	})
+	return [].concat(attributes, [['closeStartTag']], macros, normalNodes)
+}
+
+ometa TemplateMatcher <: Transformer {
+	//node	=	[#element :pos :x :y block(#element):block]	->	[#element, pos, x, y, block],
+	//node	=	^node,
+	END
+}
