@@ -81,7 +81,7 @@ exports.PHP5Transpiler =
 				'binding', [1, 1], null, ['Symbol', 'x'], []
 			]]
 			
-			expect: [['echo htmlSpecialChars($model->x);']]
+			expect: [['echo htmlspecialchars($model->x);']]
 			
 		'binding of a list':
 			input: [
@@ -177,7 +177,7 @@ exports.PHP5Transpiler =
 				]]
 			]
 			
-			expect: [['echo htmlspecialchars('Hello'), htmlspecialchars($medel->user), htmlspecialchars('!')']]
+			expect: [['echo htmlspecialchars(\'Hello \'), htmlspecialchars($model->user), htmlspecialchars(\'!\n\');']]
 			
 		'double quot multiple lines text with tag':
 			input: [
@@ -204,9 +204,9 @@ exports.PHP5Transpiler =
 			]
 			
 			expect: [[
-				'if (($medel->x > $medel->y)) {',
+				'if (($model->x > $model->y)) {',
 				[[
-					'echo htmls'
+					'echo htmlspecialchars($model->x), htmlspecialchars(\' > \'), htmlspecialchars($model->y);'
 				]],
 				'}'
 			]]
