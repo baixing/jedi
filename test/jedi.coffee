@@ -7,7 +7,7 @@ exports.Parser =
 		'comment single line':
 			input: '! comment line'
 			expect: [
-				['comment', [1, 1], ['comment line']]
+				['comment', [1, Number], ['comment line']]
 			]
 		'comment multiple lines':
 			input: '''
@@ -15,14 +15,14 @@ exports.Parser =
 					comment line 2
 			'''
 			expect: [
-				['comment', [1, 1], ['comment line 1', 'comment line 2']]
+				['comment', [1, Number], ['comment line 1', 'comment line 2']]
 			]
 		'doctype':
 			input: '!html5'
 			expect: [
 				[
 					'comment',
-					[1,1],
+					[1, Number],
 					['html5']
 				]
 			]
@@ -30,7 +30,7 @@ exports.Parser =
 		'suppress single line':
 			input: '-- suppress line'
 			expect: [
-				['suppress', [1, 1], ['suppress line']]
+				['suppress', [1, Number], ['suppress line']]
 			]
 		'suppress multiple lines':
 			input: '''
@@ -38,13 +38,13 @@ exports.Parser =
 					suppress line 2
 			'''
 			expect: [
-				['suppress', [1, 1], ['suppress line 1', 'suppress line 2']]
+				['suppress', [1, Number], ['suppress line 1', 'suppress line 2']]
 			]
 
 		'inject line':
 			input: '- inject line'
 			expect: [
-				['inject', [1, 1], 'inject line', null, []]
+				['inject', [1, Number], 'inject line', null, []]
 			]
 		'inject line with block':
 			input: '''
@@ -53,7 +53,7 @@ exports.Parser =
 					! line 2
 			'''
 			expect: [
-				['inject', [1, 1], 'inject line', null, [
+				['inject', [1, Number], 'inject line', null, [
 					['comment', [2, Number], ['line 1']]
 					['comment', [3, Number], ['line 2']]
 				]]
@@ -62,12 +62,12 @@ exports.Parser =
 		'binding of a simple symbol':
 			input: '= x'
 			expect: [
-				['binding', [1, 1], null, ['Symbol', 'x'], []]
+				['binding', [1, Number], null, ['Symbol', 'x'], []]
 			]
 		'binding of a list':
 			input: '= [1, 2, 3]'
 			expect: [
-				['binding', [1, 1], null,
+				['binding', [1, Number], null,
 					['List', [['Number', 1], ['Number', 2], ['Number', 3]]],
 					[]
 				]
@@ -75,7 +75,7 @@ exports.Parser =
 		'binding of a tuple':
 			input: "= ('hax', 18)"
 			expect: [
-				['binding', [ 1, 1 ], null,
+				['binding', [ 1, Number ], null,
 					['Tuple', [['String', 'hax'], ['Number', 18]]],
 					[]
 				]
@@ -87,8 +87,8 @@ exports.Parser =
 
 			expect: [
 				[
-					'binding',
-					[ 1, 1 ],
+					'binding', 
+					[ 1, Number ], 
 					null,
 					[
 						'Tuple',
@@ -114,7 +114,7 @@ exports.Parser =
 				'Hello world!
 			"""
 			expect: [
-				['text', [1, 1], undefined, ['Hello world!']]
+				['text', [1, Number], undefined, ['Hello world!']]
 			]
 
 		'single quot text no escape/interpolation':
@@ -124,7 +124,7 @@ exports.Parser =
 			'''
 
 			expect: [
-				['text', [1, 1], undefined, ['Hello {user}!\\n']]
+				['text', [1, Number], undefined, ['Hello {user}!\\n']]
 			]
 
 		'single quot multiple lines text ':
@@ -135,7 +135,7 @@ exports.Parser =
 					super cool
 			"""
 			expect: [
-				['text', [1, 1], undefined, ['Hello world!', 'foo bar baz', 'rawr rawr', 'super cool']]
+				['text', [1, Number], undefined, ['Hello world!', 'foo bar baz', 'rawr rawr', 'super cool']]
 			]
 
 		'single quot text with single quot':
@@ -143,7 +143,7 @@ exports.Parser =
 				'	I'm ok!
 			"""
 			expect: [
-				['text', [1, 1], undefined, ["I'm ok!"]]
+				['text', [1, Number], undefined, ["I'm ok!"]]
 			]
 
 		'double quot text':
@@ -151,7 +151,7 @@ exports.Parser =
 				"Hello world!
 			'''
 			expect: [
-				['text', [1, 1], undefined, [
+				['text', [1, Number], undefined, [
 					[['String', 'Hello world!', 'Hello world!']]
 				]]
 			]
@@ -160,7 +160,7 @@ exports.Parser =
 				"Hello {user}!\\n
 			'''
 			expect: [
-				['text', [1, 1], undefined, [
+				['text', [1, Number], undefined, [
 					[
 						['String', 'Hello ', 'Hello ']
 						['Symbol', 'user'],
@@ -176,7 +176,7 @@ exports.Parser =
 					super cool
 			'''
 			expect: [
-				['text', [1, 1], ['Symbol', 'r'],
+				['text', [1, Number], ['Symbol', 'r'],
 					[
 						[['String', 'Hello world!', 'Hello world!']]
 						[['String', 'foo bar baz', 'foo bar baz']]
@@ -192,7 +192,7 @@ exports.Parser =
 					"{x} > {y}
 			'''
 			expect: [
-				['instruction', [1, 1], 'if',
+				['instruction', [1, Number], 'if',
 					['BinaryOp', '>', ['Symbol', 'x'], ['Symbol', 'y']]
 					[
 						['text', [2, Number], undefined, [
@@ -208,7 +208,7 @@ exports.Parser =
 					"{v}
 			'''
 			expect: [
-				['instruction', [1, 1], 'for',
+				['instruction', [1, Number], 'for',
 					[['Symbol', 'v'], ['Symbol', 'x']]
 					[['text', [2, Number], undefined, [
 						[['Symbol', 'v']]
@@ -224,7 +224,7 @@ exports.Parser =
 			expect: [
 				[
 					'instruction',
-					[1,1],
+					[1, Number],
 					'for',
 					[
 						[
@@ -238,8 +238,8 @@ exports.Parser =
 					],
 					[
 						[
-							'text',
-							[2, 2],
+							'text', 
+							[2, Number], 
 							undefined,
 							[
 								[
@@ -281,22 +281,22 @@ exports.Parser =
 				div.test1
 			'''
 			expect: [
-				['element', [1, 1], ['div', ['test1'], undefined], undefined, []]
+				['element', [1, Number], ['div', ['test1'], undefined], undefined, []]
 			]
 		'element with binding':
 			input: '''
 				div.test1 = x
 			'''
 			expect: [
-				['element', [1, 1], ['div', ['test1'], undefined], ['Symbol', 'x'], []]
+				['element', [1, Number], ['div', ['test1'], undefined], ['Symbol', 'x'], []]
 			]
 		'nested elements with binding':
 			input: '''
 				div.test1 > div.test2 = x
 			'''
 			expect: [
-				['element', [1, 1], ['div', ['test1'], undefined], undefined, [
-					['element', [1, 23], ['div', ['test2'], undefined], ['Symbol', 'x'], []]
+				['element', [1, Number], ['div', ['test1'], undefined], undefined, [
+					['element', [1, Number], ['div', ['test2'], undefined], ['Symbol', 'x'], []]
 				]]
 			]
 			# should be [1, 13]
@@ -304,9 +304,9 @@ exports.Parser =
 		'element with attributes in one line':
 			input: "input @required @type='email'"
 			expect: [
-				['element', [1, 1], ['input', [], undefined], undefined, [
-					['attribute', [1, 19], 'required', undefined]
-					['attribute', [1, 19], 'type', '=', ['String', 'email']]
+				['element', [1, Number], ['input', [], undefined], undefined, [
+					['attribute', [1, Number], 'required', undefined]
+					['attribute', [1, Number], 'type', '=', ['String', 'email']]
 				]]
 			]
 			# should be [1, 7] and [1, 17]
@@ -314,11 +314,33 @@ exports.Parser =
 		'nested elements with attribute':
 			input: "li > a @href=url"
 			expect: [
-				['element', [1, 1], ['li', [], undefined], undefined, [
-					['element', [1, 9], ['a', [], undefined], undefined, [
-						['attribute', [1, 13], 'href', '=', ['Symbol', 'url']]
+				['element', [1, Number], ['li', [], undefined], undefined, [
+					['element', [1, Number], ['a', [], undefined], undefined, [
+						['attribute', [1, Number], 'href', '=', ['Symbol', 'url']]
 					]]
 				]]
 			]
 			# should be [1, 6], [1, 8]
 
+		'extend':
+			input: '''
+				!html5
+				
+				html
+					head
+						-- start head
+						
+						#headBlock
+							-- content of head
+						
+						-- end head
+							
+					body
+						-- start body
+						
+						#bodyBlock
+							-- content of body
+						
+						-- end body				
+			'''
+			

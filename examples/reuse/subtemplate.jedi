@@ -1,8 +1,10 @@
 :import layout
 
-	#head::after
+	#headBlock::after
 		style @src='test.css'
 			
-	#body
+	#bodyBlock
 		'Hello world!
-	
+		
+	#headBlock::before
+		style @src='test.css'

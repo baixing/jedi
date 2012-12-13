@@ -66,7 +66,7 @@ ometa PHP5Transpiler {
 	text undefined [echoTemplateString*:lines] -> lines,
 
 	echoLine string:s -> ("echo '" + escapeText(simpleString(s)) + "', \"\\n\";"),
-	echoTemplateString [trans*:exprList] -> ('echo htmlspecialchars(' + exprList.join('), htmlSpecialChars(') + ');'),
+	echoTemplateString [trans*:exprList] -> ('echo htmlspecialchars(' + exprList.join('), htmlspecialchars(') + ');'),
 	//	-> dom.text(lines),
 
 	element [:tag :cls :id] undefined
@@ -84,10 +84,10 @@ ometa PHP5Transpiler {
 
 	attribute :name :op undefined -> ["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
-	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', htmlSpecialChars(" + exp + "), '\"';"],
+	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', htmlspecialchars(" + exp + "), '\"';"],
 
-	binding :_ trans:expr [] -> ['echo htmlSpecialChars(' + expr + ');'],
-	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlSpecialChars($__temp); else print_r($__temp);"],
+	binding :_ trans:expr [] -> ['echo htmlspecialchars(' + expr + ');'],
+	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlspecialchars($__temp); else print_r($__temp);"],
 	binding :_ trans:expr block:body
 		-> closure(expr, body),
 
@@ -171,7 +171,7 @@ PHP5Transpiler.initialize = function() {
 					}
 				}
 		}
-		//return "echo '>', htmlSpecialChars($context);"
+		//return "echo '>', htmlspecialchars($context);"
 		return [['text', [0, 0], undefined, [['Symbol', '*']]]]
 	}
 }
