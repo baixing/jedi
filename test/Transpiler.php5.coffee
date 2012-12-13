@@ -220,6 +220,14 @@ exports.PHP5Transpiler =
 					]]]
 				]
 			]
+			
+			expect: [[
+				'foreach ($model->x as $v) {',
+				[[
+					'echo htmlspecialchars($v);'
+				]],
+				'}'
+			]]
 
 		'iterate key, value pairs':
 			input: [[
@@ -253,10 +261,24 @@ exports.PHP5Transpiler =
 				]
 			]]
 
+			expect: [[
+				'foreach ($model->x as $key => $value) {',
+				[[
+					'echo htmlspecialchars($key), htmlspecialchars(\' = \'), htmlspecialchars($value), htmlspecialchars(\'"\');'
+				]],
+				'}'
+			]]
+
 		'element':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, []]
 			]
+			
+			expect: [[
+				'echo \'<div class="test1"\';',
+				'',
+				'echo \'</div>\';'
+			]]
 			
 		'element with binding':
 			input: [
@@ -270,3 +292,7 @@ exports.PHP5Transpiler =
 				]]
 			]
 
+		'extend whitout hook':
+			input: [
+				['instruction', [1, 1], 'import', 'layout', '']
+			]
