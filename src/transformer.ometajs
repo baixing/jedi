@@ -13,7 +13,7 @@ ometa Transformer {
 	node	=	Parser.skip,
 	
 	nodeType	=	#document | #element | #attribute | #text | #comment
-		|	#suppress | #inject | #instruction | #macro | #fragment
+		|	#suppress | #inject | #binding | #instruction | #macro | #fragment
 		|	#Section | #Offside | #MixedWhitespace,
 	position	=	[number number] | [string number number],
 	
@@ -71,8 +71,8 @@ InstructionsProcessor.initialize = function () {
 }
 
 ometa Sorter <: Transformer {
-	nodeList #element	=	[node*:x]	->	sortNodes(x),
-	nodeList #macro	=	[node*:x]	->	sortNodes(x),
+
+	nodeList (#element | #macro)	=	[node*:x]	->	sortNodes(x),
 	nodeList	=	^nodeList,
 	
 	END
@@ -102,7 +102,62 @@ function sortNodes(nodes) {
 }
 
 ometa TemplateMatcher <: Transformer {
-	//node	=	[#element :pos :x :y block(#element):block]	->	[#element, pos, x, y, block],
-	//node	=	^node,
+
+/*	
+	nodeList #element	=
+	nodeList #macro	=
+	nodeList #instruction	=
+	nodeList	=	^nodeList,
+	
+	node	=	[#element :pos :x :y enterScope nodeList(#element):children exitScope]	->	[#element, pos, x, y, block],
+	node	=	[#macro :pos :x :y nodeList(#macro):children]	->	
+	node	=	^node,*/
 	END
 }
+
+/*
+TemplateMatcher.initialize = function () {
+	this._stack = [['page']]
+	this.enterScope = function(bindings) {
+		this._stack.unshift(bindings)
+	}
+	this.exitScope = function() {
+		this._stack.shift()
+	}
+	this.resolve = function(symbol) {
+		for (var i = 0; i < this._stack.length; i++) {
+			if (this._stack[i].indexOf(symbol) >= 0) return '$' + symbol
+		}
+		return '$model->' + symbol
+	}
+	this.saveMacro = function(elementPattern, parameter, body) {
+		if (this._stack[0].macros === undefined) this._stack[0].macros = []
+		this._stack[0].macros.push([elementPattern, parameter, body])
+	}
+	this.elementOutput = function (tag, cls, id, bind, body, startT, endT) {
+		if (bind === undefined) return [startT, body, endT]
+		else {
+			var m = this.findMacro(tag, cls, id, bind)
+			body.some(function(node){
+				return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
+			})
+			return closure(bind, [startT, m, endT]) // || ['//call macro']
+		}
+	}
+	this.findMacro = function (tag, cls, id, param) {
+		for (var n = 0; n < this._stack.length; n++) {
+			if (this._stack[n].macros)
+				for (var i = 0; i < this._stack[n].macros.length; i++) {
+					var m = this._stack[n].macros[i]
+					var elemPattern = m[0]
+					if (elemPattern[0] === tag &&
+						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })) {
+						return m[2]
+					}
+				}
+		}
+		//return "echo '>', htmlspecialchars($context);"
+		return [['text', [0, 0], undefined, [['Symbol', '*']]]]
+	}
+}
+*/
