@@ -15,19 +15,14 @@ function transpile(source, target) {
 
 function jedi2php(path) {
 	//var source = fs.readFileSync(path).toString()
-	var tree = parser.Parser.match(path, 'load')
-	console.log('ast:')
-	util.dir(tree)
-	tree = transformer.InstructionsProcessor.match(tree, 'document')
-	console.log('transformed:')
-	util.dir(tree)
-	tree = transformer.TemplateMatcher.match(tree, 'document')
-	console.log('transformed:')
-	util.dir(tree)
-	tree = transformer.Sorter.match(tree, 'document')
-	util.dir(tree)
+	var tree1 = parser.Parser.match(path, 'load')
+	var tree2 = transformer.InstructionsProcessor.match(tree1, 'document')
+	var tree3 = transformer.TemplateMatcher.match(tree2, 'document')
+	var tree4 = transformer.Sorter.match(tree3, 'document')
+	util.dir(util.diff(tree1, tree3))
+	util.dir(tree4)
 
-	var code = transpiler.PHP5Transpiler.match(tree, 'document')
+	var code = transpiler.PHP5Transpiler.match(tree4, 'document')
 	return code
 }
 

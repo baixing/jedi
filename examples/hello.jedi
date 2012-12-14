@@ -94,11 +94,12 @@ html
 			p '可以通过指令后置来保持HTML结构
 
 			p if user.age < 18
-				'NO ENTER!'
+				'NO ENTER!
 			p else
 				'Welcome to the lost paradise.
 
-			ul > li for x in 1...10
+			ul
+				li for x in 1...10
 					"x = {x}
 
 		section#inject

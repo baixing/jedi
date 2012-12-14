@@ -2,7 +2,7 @@
 "module fs at 'fs'"
 "import Parser from './jedi'"
 "import flattenArray from './util'"
-"export InstructionsProcessor, Sorter, TemplateMatcher"
+"export Transformer, InstructionsProcessor, Sorter, TemplateMatcher"
 
 ometa Transformer {
 	
@@ -10,10 +10,11 @@ ometa Transformer {
 	node	=	[nodeType:type position:pos :x :y nodeList(type):children]	->	[type, pos, x, y, children],
 	node	=	[nodeType:type position:pos anything*],
 	node	=	[#closeStartTag],
-	node	=	[char*],
+	node	=	Parser.skip,
 	
 	nodeType	=	#document | #element | #attribute | #text | #comment
-		|	#supperess | #inject | #instruction | #macro | #fragment,
+		|	#suppress | #inject | #instruction | #macro | #fragment
+		|	#Section | #Offside | #MixedWhitespace,
 	position	=	[number number] | [string number number],
 	
 	nodeList nodeType	=	[(node+ | [node*])*:x]	->	flattenArray(x),
