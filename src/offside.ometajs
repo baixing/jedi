@@ -12,7 +12,7 @@ ometa OffsideRule {
 	ignore	=	'#',
 		
 	section	=	headLine:head bodyLines:body processSection(head, body),
-	headLine	=	posLn [indent:n posIndent(n) ~whitespace char+:x]	-> x,
+	headLine	=	posLn [indent:n ~whitespace posIndent(n) char+:x]	-> x,
 	bodyLine	=	[indent shift char+:x]	-> x,
 	bodyLines	=	skip*:x bodyLine+:y bodyLines:rest	-> [].concat(x, y, rest)
 		|	empty	-> [],

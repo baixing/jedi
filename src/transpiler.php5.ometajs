@@ -18,7 +18,7 @@ ometa PHP5Transpiler {
 	node [string:nodeType [number number] apply(nodeType):x] -> x,
 	node :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 
-	Section :head :body -> ['/*', JSON.stringify(string(head)), '*/'],
+	Section :head :body -> ['/* Unknown section: ', JSON.stringify(string(head)), ' ... */'],
 
 	doctype = [#comment [number number] [output:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	output = [outputMethod:x] -> x,
@@ -102,7 +102,7 @@ ometa PHP5Transpiler {
 
 	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
 	fragment :name :_ block:b -> ['//  #' + name, b],
-	macro :elementPattern paramPattern:parameter enterBlock(parameter) :body exitBlock saveMacro(elementPattern, parameter, body)
+	macro :elementPattern paramPattern:parameter enterBlock(parameter) block:body exitBlock saveMacro(elementPattern, parameter, body)
 		-> ['// define ' + elementPattern],
 
 	paramPattern [#TuplePattern [([#Symbol :name] -> name)*:names]] -> names,
@@ -171,8 +171,11 @@ PHP5Transpiler.initialize = function() {
 					}
 				}
 		}
-		//return "echo '>', htmlspecialchars($context);"
-		return [['text', [0, 0], undefined, [['Symbol', '*']]]]
+		return "echo '>', htmlspecialchars($context);"
+		/*return [
+			['closeStartTag'],
+			['text', [0, 0], undefined, [['Symbol', '*']]]
+		]*/
 	}
 }
 

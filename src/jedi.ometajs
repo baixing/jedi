@@ -54,31 +54,37 @@ ometa PlainParser <: OffsideRule {
 	pseudoElement	=	':' ':' simpleName,
 		
 	instruction	=	[instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
-	instruction	=	[elementPattern:y offsetCol position:pos instructionPattern:x] block:b
+	instruction	=	[elementPattern:y offsetCol position:pos postInstruction:x] block:b
 			-> [x[0], x[1], [
-						[#element, pos, y, null, b]
+						[#element, pos, y, undefined, b]
 					]],
 	instructionStart	=	':',
 		
-	instructionPattern	=	"import" spaces char*:path	->	[#import, string(path)],
-	instructionPattern	=	"if" spaces Expression.expression:x spaces	->	[#if, x],
-	instructionPattern	=	"else if" spaces Expression.expression:x spaces	->	[#elseif, x],
-	instructionPattern	=	"else" spaces	->	[#else, null],
-	instructionPattern	=	"end if" spaces	->	[#endif, null],
-	instructionPattern	=	"for" spaces Expression.bindingPattern:x	
+	import_	=	"import" spaces char*:path	->	[#import, string(path)],
+	if_	=	"if" spaces Expression.expression:x spaces	->	[#if, x],
+	elseif_	=	"else if" spaces Expression.expression:x spaces	->	[#elseif, x],
+	else_	=	"else" spaces	->	[#else],
+	for_	=	"for" spaces Expression.bindingPattern:x	
 			spaces "in" spaces Expression.expression:y	->	[#for, [x, y]],
-	instructionPattern	=	"for" spaces Expression.expression:x	->	[#for, x],
-	instructionPattern	=	"end for" spaces	->	[#endfor, null],
-	instructionPattern	=	"match" spaces Expression.expression:x	->	[#match, x],
-	instructionPattern	=	"case" spaces Expression.expression:x	->	[#case, x],
-	instructionPattern	=	"end match" spaces	->	[#endmatch, null],
-	instructionPattern	=	"let" spaces Expression.bindingPattern:x	
+	for_	=	"for" spaces Expression.expression:x	->	[#for, x],
+	match_	=	"match" spaces Expression.expression:x	->	[#match, x],
+	case_	=	"case" spaces Expression.expression:x	->	[#case, x],
+	let_	=	"let" spaces Expression.bindingPattern:x	
 			spaces '=' spaces Expression.expression:y	->	[#let, [x, y]],
-			
+	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
+	
+	instructionPattern	=	import_
+		|	if_ | elseif_ | else_
+		|	for_
+		|	match_ | case_
+		|	let_
+		|	end_,
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
 	instructionName	=	Expression.symbol,
 	instructionParam	=	Expression.expression,
-
+	
+	postInstruction	=	if_ | for_ | let_ | else_,
+		
 	END
 }
 

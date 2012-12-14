@@ -51,3 +51,17 @@ util.toUTF16 = function toUTF16(codePoint) {
 	var trail = (codePoint & 0x3ff) + 0xdc00
 	return String.fromCharCode(lead, trail)
 }
+
+util.diff = function diff(a, b) {
+	if (a === b) return
+	if (typeof b === 'function') return a instanceof b
+	if (Array.isArray(a)) {
+		if (a.length !== b.length) return [a, b, 'length', a.length, b.length]
+		for (var i = 0; i < a.length; i++) {
+			var r = diff(a[i], b[i])
+			if (r) return r
+		}
+		return
+	}
+	return [a, b]
+}

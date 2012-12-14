@@ -4,20 +4,6 @@ exports.testOMeta = testOMeta
 
 var util = require('../src/util')
 
-function diff(a, b) {
-	if (a === b) return
-	if (typeof b === 'function') return a instanceof b
-	if (Array.isArray(a)) {
-		if (a.length !== b.length) return [a, b, 'length', a.length, b.length]
-		for (var i = 0; i < a.length; i++) {
-			var r = diff(a[i], b[i])
-			if (r) return r
-		}
-		return
-	}
-	return [a, b]
-}
-
 function heading(s, level) {
 	var p = new Array((level || 2) + 1).join('=')
 	console.log()
@@ -61,7 +47,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 			throw e
 		}
 		if (expect) {
-			var r = diff(actual, expect)
+			var r = util.diff(actual, expect)
 			if (r) {
 				console.error('input:')
 				console.log(input)
@@ -74,7 +60,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 				console.assert(false)
 			} else ok++
 		} else {
-			if (diff(actual, input)) {
+			if (util.diff(actual, input)) {
 				console.log('input:', input)
 				util.dir(actual)
 				console.log()
