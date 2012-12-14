@@ -325,3 +325,185 @@ exports.Parser =
 		'extend':
 			input: ''':import layout'''
 			
+			expect: [[
+				'instruction',
+				[1,1],
+				'import',
+				'layout',
+				''
+			]]
+			
+		'extend with after hook':
+			input: '''
+			:import layout
+				#headBlock::after
+					style @src='test.css'
+			'''
+			
+			expect:[[
+				'instruction',
+				[1,1],
+				'import',
+				'layout',
+				[[
+					'fragment',
+					[ 2, Number ],
+					'headBlock',
+					'after',
+					[[
+						'element',
+						[ 3, 9 ],
+						[ 'style', '', undefined ],
+						undefined,
+						[[ 
+							'attribute',
+							[ 3, Number ],
+							'src',
+							'=',
+							[ 'String', 'test.css' ]
+						 ]]
+					 ]]
+				]]
+			]]
+
+		'extend with before hook':
+			input: '''
+			:import layout
+				#headBlock::before
+					style @src='test.css'
+			'''
+
+			expect:[[
+				'instruction',
+				[1,1],
+				'import',
+				'layout',
+				[[
+					'fragment',
+					[ 2, Number ],
+					'headBlock',
+					'before',
+					[[
+						'element',
+						[ 3, 9 ],
+						[ 'style', '', undefined ],
+						undefined,
+						[[ 
+							'attribute',
+							[ 3, Number ],
+							'src',
+							'=',
+							[ 'String', 'test.css' ]
+						 ]]
+					 ]]
+				]]
+			]]
+
+		'extend with replace hook':
+			input: '''
+				:import layout
+					#headBlock
+						style @src='test.css'
+			'''
+			expect: [[
+				'instruction',
+				[1,1],
+				'import',
+				'layout',
+				[[
+					'fragment',
+					[ 2, Number ],
+					'headBlock',
+					undefined,
+					[[
+						'element',
+						[ 3, 9 ],
+						[ 'style', '', undefined ],
+						undefined,
+						[[ 
+							'attribute',
+							[ 3, Number ],
+							'src',
+							'=',
+							[ 'String', 'test.css' ]
+						 ]]
+					 ]]
+				]]
+			]]
+
+		'extend with mutiple hook':
+			input: '''
+			:import layout
+				#headBlock::after
+					style @src='test.css'
+				#headBlock
+					style @src='test.css'
+				#headBlock::before
+					style @src='test.css'
+			'''
+			
+			expect:[[
+				'instruction',
+				[1,1],
+				'import',
+				'layout',
+				[
+					[
+						'fragment',
+						[ 2, Number ],
+						'headBlock',
+						'after',
+						[[
+							'element',
+							[ 3, Number ],
+							[ 'style', '', undefined ],
+							undefined,
+							[[ 
+								'attribute',
+								[ 3, Number ],
+								'src',
+								'=',
+								[ 'String', 'test.css' ]
+							 ]]
+						 ]]
+					]
+					[
+						'fragment',
+						[ Number, Number ],
+						'headBlock',
+						undefined,
+						[[
+							'element',
+							[ Number, Number ],
+							[ 'style', '', undefined ],
+							undefined,
+							[[ 
+								'attribute',
+								[ Number, Number ],
+								'src',
+								'=',
+								[ 'String', 'test.css' ]
+							 ]]
+						 ]]
+					]
+					[
+						'fragment',
+						[ Number, Number ],
+						'headBlock',
+						'before',
+						[[
+							'element',
+							[ Number, Number ],
+							[ 'style', '', undefined ],
+							undefined,
+							[[ 
+								'attribute',
+								[ Number, Number ],
+								'src',
+								'=',
+								[ 'String', 'test.css' ]
+							 ]]
+						 ]]
+					]
+				]
+			]]
