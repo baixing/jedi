@@ -1,9 +1,7 @@
-#node modules
 node_modules/
+sandbox/
 *.ometa.js
-sandbox
-examples/*.php
-examples/reuse/*.php
+*.php
 
 #################
 ## Eclipse
