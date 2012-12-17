@@ -40,8 +40,8 @@ util.indent = function indent(s) {
 	return typeof s === 'string' ? '  ' + s : s
 }
 util.dir = function dir(obj) {
-	//console.log(util.inspect(obj, false, 16, true))
-	console.log(util.inspect(util.flattenString(obj), false, 32, true))
+	console.log(util.inspect(obj, false, 32, true))
+	//console.log(util.inspect(util.flattenString(obj), false, 32, true))
 }
 
 util.toUTF16 = function toUTF16(codePoint) {

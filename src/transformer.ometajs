@@ -37,7 +37,7 @@ ometa InstructionsProcessor <: Transformer {
 	src	=	string:f !(this.filename = f),
 	
 	override :sub [#fragment :pos string:name undefined :children]:base findFragment(sub, name, base),
-	override :sub [:type :pos :x :y [override(sub)*:children]]	->	[type, pos, x, y, children],
+	override :sub [nodeType:type :pos :x :y [override(sub)*:children]]	->	[type, pos, x, y, children],
 	override :sub :x	->	x,
 	
 	END
