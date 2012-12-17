@@ -1,7 +1,6 @@
-#node modules
 node_modules/
+sandbox/
 *.ometa.js
-sandbox
 *.php
 
 #################

@@ -1,0 +1,7 @@
+:import layout
+
+	#headBlock::after
+		style @src='test.css'
+
+	#bodyBlock
+		'It's a wonderful day!

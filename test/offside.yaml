@@ -6,7 +6,7 @@ OffsideRule:
     - "# test"
     - "  # test"
 
-  '[tab]':
+  '[shift]':
     - "\t"
     - "    "
     - "  \t"
@@ -209,7 +209,7 @@ OffsideRule:
 
         	head2
         offside line
-        	    offside line
+        		offside line
         	line
       expect:
         - '# test'

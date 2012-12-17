@@ -3,51 +3,46 @@
 
 ometa OffsideRule {
 
-	source	= UnicodeText.source:lines block(lines),
-	whitespace	= UnicodeText.whitespace,
-
-	block	= [beginBlock (skip | section | offside)*:x endBlock] -> x,
-
-	skip	= [whitespace* (ignore char*)?],
-	ignore	= '#',
-
-	section	= headLine:head bodyLines:body processSection(head, body),
-	processSection (position:pos) :head block:body -> [#Section, pos, head, body],
-
-	headLine	= posLn [indent:n ~whitespace posIndent(n) char+:x] -> x,
-	bodyLine	= [indent:n tab char+:x] -> x,
-	bodyLines	= skip*:x bodyLine+:y bodyLines:rest -> [].concat(x, y, rest)
-		| empty -> [],
-
-	offside	= posLn [tab*:tabs posIndent(tabs.length) whitespace?:w char+]
-		position:pos -> [w ? #MixedWhitespace : #Offside, pos],
-
-	posLn	= pos:ln setLine(ln),
-	posCol	= getIndent:n posIndent(n) offsetCol,
-	posIndent number:indent	= tabSize:t setColumn((t || 1) * indent),
-	offsetLn number:x	= getLine:ln setLine(ln + x),
-	offsetLn pos:x	= offsetLn(x),
-	offsetCol number:x	= getColumn:ln setColumn(ln + x),
-	offsetCol pos:x	= offsetCol(x),
-	offset number:ln number:col	= offsetLn(ln) offsetCol(col),
-
-	indent	=	getIndent:n undefined(n) tab*:tabs setIndent(tabs.length)
-		|	repeat('tab', n) -> n,
-
-	tab	=	tabChar
-		|	tabSize:n ?n <repeat('spaceChar', n) | spaceChar+ tabChar>,
-
-	/*	TODO:
-		tabstop -> 4, // 0 means Elastic tabstops, null means not use tab
-		shiftwidth -> 2,
-	*/
-	tabSize	-> 4,
-
-	tabChar	= '\t',
-	spaceChar	= ' ',
+	source	=	UnicodeText.lines:x block(x),
+	whitespace	=	UnicodeText.whitespace,
+		
+	block	=	[beginBlock (skip | section | offside)*:x endBlock]	->	x,
+		
+	skip	=	[whitespace* (ignore char*)?],
+	ignore	=	'#',
+		
+	section	=	headLine:head bodyLines:body processSection(head, body),
+	headLine	=	posLn [indent:n ~whitespace posIndent(n) char+:x]	-> x,
+	bodyLine	=	[indent shift char+:x]	-> x,
+	bodyLines	=	skip*:x bodyLine+:y bodyLines:rest	-> [].concat(x, y, rest)
+		|	empty	-> [],
+				
+	processSection		(position:pos) :head block:body	->	[#Section, pos, head, body],
+		
+	offside	=	posLn [shift*:indent posIndent(indent.length) whitespace?:w char+]
+			position:pos -> [w ? #MixedWhitespace : #Offside, pos],
+		
+	indent	=	getIndent:n undefined(n) shift*:s setIndent(s.length)
+		|	repeat(#shift, n) -> n,
+		
+	indentChar	->	#auto,	// #auto | #tab | #space | #mixed
+	tabSize	->	4,	// 0 means use Elastic tabstops
+	shiftWidth	->	4,	// 0 means not use space
+		
+	shift	=	getShift():s undefined(s) (&' ' setShift(#space) shift | &'\t' setShift(#tab) shift | '\t')
+		|	exactly(s),
 
 	repeat :rule number:n	=	?(n < 1) -> []
 		|	apply(rule):x repeat(rule, n - 1):xs -> [x].concat(xs),
+		
+	posLn	= 	pos:ln setLine(ln),
+	posCol	=	getIndent:n posIndent(n) offsetCol,
+	posIndent number:indent	=	shiftWidth:t setColumn((t || 1) * indent),
+	offsetLn number:x	=	getLine:ln setLine(ln + x),
+	offsetLn pos:x	=	offsetLn(x),
+	offsetCol number:x	=	getColumn:ln setColumn(ln + x),
+	offsetCol pos:x	=	offsetCol(x),
+	offset number:ln number:col	=	offsetLn(ln) offsetCol(col),
 
 	END
 }
@@ -58,7 +53,7 @@ OffsideRule.initialize = function() {
 	this.beginBlock	= function() {
 			if (this._stack.length > 0) {
 				this._pos[0] += this.getLine() + 1
-				this._pos[1] += (this.getIndent() + 1) * (this.tabSize() || 1)
+				this._pos[1] += (this.getIndent() + 1) * (this.shiftWidth() || this.tabsize() || 1)
 			}
 			this._stack.unshift({})
 		}
@@ -66,9 +61,20 @@ OffsideRule.initialize = function() {
 			this._stack.shift()
 			if (this._stack.length > 0) {
 				this._pos[0] -= this.getLine() + 1
-				this._pos[1] -= (this.getIndent() + 1) * (this.tabSize() || 1)
+				this._pos[1] -= (this.getIndent() + 1) * (this.shiftWidth() || this.tabsize() || 1)
 			}
 		}
+	this.getShift	=	function () {
+				var indentChar = this.indentChar()
+				if (indentChar === 'auto') indentChar = this._stack[0].indentChar
+				switch (indentChar) {
+					case 'tab': return '\t'
+					case 'space': return new Array(this.shiftWidth() + 1).join(' ')
+				}
+			}
+	this.setShift	=	function (c) {
+				this._stack[0].indentChar = c
+			}
 	this.getIndent	= function() {
 			return this._stack[0].indent
 		}
@@ -97,3 +103,14 @@ OffsideRule.initialize = function() {
 			]
 		}
 }
+
+function expandTabs(tabsize, line) {
+	return line.replace(/\t/g, function(_, offset){
+		return repeat(' ', offset % tabsize || tabsize)
+	})
+}
+
+function repeat(s, n) {
+	return new Array(n + 1).join(s)
+}
+

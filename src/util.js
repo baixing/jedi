@@ -12,7 +12,7 @@ util.isCharArray = function(a) {
 util.string = function (a) {
 	if (util.isCharArray(a)) return a.join('')
 	if (typeof a === 'string') return a
-	throw a
+	throw Error(a + ' is not a string')
 }
 util.concat = function() {
 	return [].concat.apply([], arguments)
@@ -23,9 +23,9 @@ util.flattenString = function flatten(a) {
 	if (a.every(util.isChar)) return a.join('')
 	else return a.map(flatten)
 }
-util.flattenArray = function flatten(a) {
-	if (!util.isArray(a)) return a
-	return [].concat.apply([], a.map(flatten))
+util.flattenArray = function flatten(a, rec) {
+	if (!util.isArray(a)) throw Error(a + ' is not an array')
+	return [].concat.apply([], rec ? a.map(flatten) : a)
 }
 util.flattenLines = function flattenLines(lines, indent) {
 	if (indent === undefined) indent = ''
@@ -50,4 +50,18 @@ util.toUTF16 = function toUTF16(codePoint) {
 	var lead = (codePoint >> 10) + 0xd800
 	var trail = (codePoint & 0x3ff) + 0xdc00
 	return String.fromCharCode(lead, trail)
+}
+
+util.diff = function diff(a, b) {
+	if (a === b) return
+	if (typeof b === 'function') return a instanceof b
+	if (Array.isArray(a)) {
+		if (a.length !== b.length) return [a, b, 'length', a.length, b.length]
+		for (var i = 0; i < a.length; i++) {
+			var r = diff(a[i], b[i])
+			if (r) return r
+		}
+		return
+	}
+	return [a, b]
 }

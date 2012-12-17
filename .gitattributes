@@ -1,5 +1,15 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+cli/* text eol=LF
+
+*.txt text
+*.js text
+*.ometajs text
+*.jedi text
+*.php text
+*.html text
+*.css text
+*.styl text
 
 # Custom for Visual Studio
 *.cs     diff=csharp

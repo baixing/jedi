@@ -1,0 +1,163 @@
+"module path at 'path'"
+"module fs at 'fs'"
+"import Parser from './jedi'"
+"import flattenArray from './util'"
+"export Transformer, InstructionsProcessor, Sorter, TemplateMatcher"
+
+ometa Transformer {
+	
+	document = node,
+	node	=	[nodeType:type position:pos :x :y nodeList(type):children]	->	[type, pos, x, y, children],
+	node	=	[nodeType:type position:pos anything*],
+	node	=	[#closeStartTag],
+	node	=	Parser.skip,
+	
+	nodeType	=	#document | #element | #attribute | #text | #comment
+		|	#suppress | #inject | #binding | #instruction | #macro | #fragment
+		|	#Section | #Offside | #MixedWhitespace,
+	position	=	[number number] | [string number number],
+	
+	nodeList nodeType	=	[(node+ | [node*])*:x]	->	flattenArray(x),
+	
+	
+	END
+}
+
+ometa InstructionsProcessor <: Transformer {
+
+	node	=	&[#document [src number number] anything*] ^node,
+	node	=	[#instruction :pos #import string:path anything:sub] load(path):base override(sub, base),
+	node	=	^node,
+	
+	nodeList	=	^nodeList:s importDocs(s),
+	importDocs	=	[(importNodes | anything+)*:x]	->	flattenArray(x),
+	
+	importNodes	=	[#document :pos :x :y :children] -> children,
+	
+	src	=	string:f !(this.filename = f),
+	
+	override :sub [#fragment :pos string:name undefined :children]:base findFragment(sub, name, base),
+	override :sub [:type :pos :x :y [override(sub)*:children]]	->	[type, pos, x, y, children],
+	override :sub :x	->	x,
+	
+	END
+}
+InstructionsProcessor.initialize = function () {
+	this.load = function (filename) {
+		var filename = path.resolve(path.dirname(this.filename), filename)
+		if (!fs.existsSync(filename)) {
+			filename += '.jedi'
+		}
+		//console.log(filename)
+		var tree = Parser.match(filename, 'load')
+		//console.log('tree', tree)
+		return tree
+	}
+	this.findFragment = function (nodes, name, base) {
+		var fragments = nodes.filter(function(node){
+			return node[0] === 'fragment' && node[2] === name
+		})
+		if (fragments.length === 0) throw fail
+		if (fragments.every(function(node){ return !!node[3] })) fragments.push(base)
+		fragments.sort(function(a, b){
+			if (a[3] === b[3]) return 0
+			else if (a[3] === 'before') return -1
+			else if (a[3] === 'after') return 1
+			else if (b[3] === 'before') return 1
+			else if (b[3] === 'after') return -1
+		})
+		return fragments
+	}
+}
+
+ometa Sorter <: Transformer {
+
+	nodeList (#element | #macro)	=	[node*:x]	->	sortNodes(x),
+	nodeList	=	^nodeList,
+	
+	END
+}
+
+function sortNodes(nodes) {
+	var attributes = [], macros = [], normalNodes = []
+	nodes.forEach(function(node){
+		switch (node[0]) {
+			case 'attribute':
+				attributes.push(node)
+				break
+			case 'macro':
+				macros.push(node)
+				break
+			case 'instruction':
+				if (node[2] === 'import') {
+					[].push.apply(normalNodes, node[3])
+					break
+				}
+			default:
+				normalNodes.push(node)
+				break
+		}
+	})
+	return [].concat(attributes, [['closeStartTag']], macros, normalNodes)
+}
+
+ometa TemplateMatcher <: Transformer {
+
+/*	
+	nodeList #element	=
+	nodeList #macro	=
+	nodeList #instruction	=
+	nodeList	=	^nodeList,
+	
+	node	=	[#element :pos :x :y enterScope nodeList(#element):children exitScope]	->	[#element, pos, x, y, block],
+	node	=	[#macro :pos :x :y nodeList(#macro):children]	->	
+	node	=	^node,*/
+	END
+}
+
+/*
+TemplateMatcher.initialize = function () {
+	this._stack = [['page']]
+	this.enterScope = function(bindings) {
+		this._stack.unshift(bindings)
+	}
+	this.exitScope = function() {
+		this._stack.shift()
+	}
+	this.resolve = function(symbol) {
+		for (var i = 0; i < this._stack.length; i++) {
+			if (this._stack[i].indexOf(symbol) >= 0) return '$' + symbol
+		}
+		return '$model->' + symbol
+	}
+	this.saveMacro = function(elementPattern, parameter, body) {
+		if (this._stack[0].macros === undefined) this._stack[0].macros = []
+		this._stack[0].macros.push([elementPattern, parameter, body])
+	}
+	this.elementOutput = function (tag, cls, id, bind, body, startT, endT) {
+		if (bind === undefined) return [startT, body, endT]
+		else {
+			var m = this.findMacro(tag, cls, id, bind)
+			body.some(function(node){
+				return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
+			})
+			return closure(bind, [startT, m, endT]) // || ['//call macro']
+		}
+	}
+	this.findMacro = function (tag, cls, id, param) {
+		for (var n = 0; n < this._stack.length; n++) {
+			if (this._stack[n].macros)
+				for (var i = 0; i < this._stack[n].macros.length; i++) {
+					var m = this._stack[n].macros[i]
+					var elemPattern = m[0]
+					if (elemPattern[0] === tag &&
+						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })) {
+						return m[2]
+					}
+				}
+		}
+		//return "echo '>', htmlspecialchars($context);"
+		return [['text', [0, 0], undefined, [['Symbol', '*']]]]
+	}
+}
+*/

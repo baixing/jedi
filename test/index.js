@@ -1,6 +1,7 @@
 'use strict'
 
 require('js-yaml')
+require('coffee-script')
 require('../lib/ometa-js')
 
 var testOMeta = require('./test').testOMeta
@@ -9,7 +10,8 @@ var offside = require('../src/offside')
 var offsideTests = require('./offside')
 //util.dir(offsideTests.OffsideRule)
 testOMeta(offside.OffsideRule, offsideTests.OffsideRule, [
-	'skip', 'tab',
+	'skip',
+	'tab',
 	//'block',
 	'source',
 ])
@@ -29,10 +31,15 @@ testOMeta(expression.Expression, exprTests.Expression, [
 
 var jedi = require('../src/jedi')
 var jediTests = require('./jedi')
-testOMeta(jedi.Parser, jediTests.Text, [
+testOMeta(jedi.Parser, jediTests.Parser, [
 	'source'
 	//'text',
 	//'blocks',
 	//element,
 ])
 
+var transpilerPhp = require('../src/transpiler.php5')
+var transpilerPhpTests = require('./transpiler.php5')
+testOMeta(transpilerPhp.PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
+	'block',
+])

@@ -1,0 +1,57 @@
+		p.greeting = user
+			"Hello {user.name ?: 'world'}!
+
+		p.user = user
+
+		div = user
+			span
+				"{*.name}"
+
+		ul = users
+			li > a = *
+			:: a(url, text)
+				@href = url
+				= text
+
+		div
+			:if x < 0
+				@data-id = 1
+			:else
+				@data-id = 2
+
+
+
+
+// Sample
+html
+	head#test
+		title
+			"Jedi Examples - {title}
+	body
+		p.greeting
+			'	Hello!
+				How are you?
+		p
+			:if (user)
+				"	Hello {user}!
+					How are you?
+			:else
+				'Hello world!
+		- if ($a > 0)
+			p
+				'a > 0
+		- else
+			p
+				'not a > 0
+		ul = list
+			li
+				dl
+					dt
+						'Name:
+					dd = *.name
+					dt
+						'Gender:
+					dd = *.gender
+
+		p
+			'THE END!

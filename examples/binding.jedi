@@ -10,14 +10,14 @@ html
 
 		section#binding
 
-			h1 '数据绑定
+			h1 '展现数据
 
-			p '	最简单的情况是直接输出数据的内容，
+			p '	最简单的展现方式是直接输出数据的内容，
 				相当于调用 toString() 方法，或者在没有提供 toString() 时进行 var_dump
 
 			= user
 
-			p '	但是你可以改写这个行为
+			p '	但是你可以改写这个行为，细化数据的展现方式
 
 			= user
 				p "Hello {*.name}
@@ -26,7 +26,7 @@ html
 
 			h1 '子模板
 
-			p '元素绑定数据模型，这构成子模板，这是Jedi所独创的抽象机制
+			p '可以将元素与数据模型绑定，构成子模板，这是Jedi所独创的抽象机制
 
 			p.greeting = user
 
@@ -48,11 +48,12 @@ html
 					"Hello {user.name}
 
 
-		--section#pseudo-element
+		section#fragment
 
 			h1 '片段
 
-			:: table.layout.classic > tbody
+			:: table.layout.classic
+				tbody
 					tr > td @colspan=2 > #top
 					tr
 						td > #left

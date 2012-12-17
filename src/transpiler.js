@@ -4,8 +4,9 @@ var ometajs = require('../lib/ometa-js')
 var fs = require('fs')
 var util = require('./util')
 
-var jedi = require('./jedi')
-var php = require('./transpiler.php5')
+var parser = require('./jedi')
+var transformer = require('./transformer')
+var transpiler = require('./transpiler.php5')
 
 var LineSep = /\r\n|\n\r?|\r|\u2028|\u2029/
 
@@ -14,11 +15,14 @@ function transpile(source, target) {
 
 function jedi2php(path) {
 	//var source = fs.readFileSync(path).toString()
-	var tree = jedi.Parser.match(path, 'load')
-	tree = jedi.Optimizer.match(tree, 'source')
-	util.dir(tree)
+	var tree1 = parser.Parser.match(path, 'load')
+	var tree2 = transformer.InstructionsProcessor.match(tree1, 'document')
+	var tree3 = transformer.TemplateMatcher.match(tree2, 'document')
+	var tree4 = transformer.Sorter.match(tree3, 'document')
+	util.dir(util.diff(tree1, tree3))
+	util.dir(tree4)
 
-	var code = php.PHP5Transpiler.match(tree, 'php')
+	var code = transpiler.PHP5Transpiler.match(tree4, 'document')
 	return code
 }
 
@@ -26,8 +30,9 @@ function compile(source, target) {
 	try {
 		fs.writeFileSync(target, jedi2php(source))
 	} catch(e) {
-		console.error(e)
-		fs.writeFileSync(target, e.stack || e.message || e)
+		var info = e.stack || e.message || e
+		console.error(info)
+		fs.writeFileSync(target, info)
 	}
 }
 

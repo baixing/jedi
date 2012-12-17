@@ -6,6 +6,20 @@ Jedi吸取了以下模板或相关技术
 表达式考虑了各种语言，其中参考最多的是ES6和PHP
 
 
+View的抽象和复用
+
+有如下方式：
+
+Include/Partial
+如SSI、@include指令、jsp:include、Partial等
+
+Jedi支持：
+
+:include view params
+
+
+
+
 PHP
 
 	<? if (isset($info)): ?>

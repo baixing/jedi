@@ -1,0 +1,12 @@
+!html5
+
+html
+	head
+		style
+			body {
+				font-size: 14px;
+			}
+		script
+			console.log('ok')
+	body
+		textarea
