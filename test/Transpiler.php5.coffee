@@ -314,10 +314,23 @@ exports.PHP5Transpiler =
 
 			expect: [
 				[ 'echo \'<meta\';',
-					[[ 'echo \' charset="\', htmlspecialchars(\'utf-8\'), \'"\';' ] ],
+					[[ 'echo \' charset="\';', 'echo htmlspecialchars(\'utf-8\');', 'echo \'"\';' ] ],
 				[]]
 			]
-			    
+			
+		'element double quot with x':
+			input: [ [ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[ [ 'attribute', [ 1, 16 ], 'charset', '=',
+						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ], [ 'Symbol', 'x' ] ] ] 
+					] ]
+				]]
+            
+			expect: [
+				[ 'echo \'<meta\';',
+					[[ 'echo \' charset="\';', 'echo htmlspecialchars(\'utf-8\'), htmlspecialchars($model->x);', 'echo \'"\';' ] ],
+				[]]
+			]
+
 	document:
 			    
 		'extend':
