@@ -292,7 +292,76 @@ exports.PHP5Transpiler =
 				]]
 			]
 
-		'extend whitout hook':
-			input: [
-				['instruction', [1, 1], 'import', 'layout', '']
+		'element bug 001':
+			input: [[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ]
+						['closeStartTag'] ] ] ]
+
+			expect: [
+				[ 'echo \'<meta\';',
+					[[ 'echo \' charset="utf-8"\';' ], 'echo \'>\';' ],
+			    	[]]
 			]
+
+		'element double quot':
+			input: [
+				[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=',
+						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ] ] ] ]
+					]
+				]
+			]
+
+			expect: [
+				[ 'echo \'<meta\';',
+					[[ 'echo \' charset="\', htmlspecialchars(\'utf-8\'), \'"\';' ] ],
+				[]]
+			]
+			    
+	document:
+			    
+		'extend':
+			input: ['document', ['./test/test', 1, 1], '', undefined,
+				[['text', [1, 1], undefined, ['Big sheep testcase']]]
+			]
+			
+			expect: '<?php\necho \'<!doctype html>\', "\\n";\n echo \'Big sheep testcase\', "\\n";\n?>'
+			
+		'extend with before hook':
+			input: [ 'document', [ './test/test', 1, 1 ], '', undefined,
+				[
+					[ 'fragment', [ 2, 3 ], 'headBlock', 'before',
+						[[ 'element', [ 3, 9 ], [ 'style', '', undefined ], undefined,
+							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]] 
+						]]
+					],
+					[ 'fragment', [ 1, 1 ], 'headBlock', undefined,
+						[[ 'text', [ 2, 5 ], undefined, [ 'Big sheep testcase' ]]]
+					]
+				]
+			]
+			
+			expect: '<?php\necho \'<!doctype html>\', "\\n";\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'Big sheep testcase\', "\\n";\n?>'
+
+		'extend with mutiple hooks':			
+			input: [ 'document', [ './test/test', 1, 1 ], '', undefined,
+				[
+					[ 'fragment', [ 2, 3 ], 'headBlock', 'before',
+						[[ 'element', [ 3, 9 ], [ 'style', '', undefined ], undefined,
+							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]] 
+						]]
+					],
+					[ 'fragment', [ 2, 3 ], 'headBlock', undefined,
+						[[ 'element', [ 3, 9 ], [ 'style', '', undefined ], undefined,
+							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]] 
+						]]
+					],
+					[ 'fragment', [ 2, 3 ], 'headBlock', 'after',
+						[[ 'element', [ 3, 9 ], [ 'style', '', undefined ], undefined,
+							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]] 
+						]]
+					],
+				]
+			]
+			expect: '<?php\necho \'<!doctype html>\', "\\n";\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n?>'
+		

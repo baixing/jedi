@@ -84,8 +84,9 @@ ometa PHP5Transpiler {
 
 	attribute :name :op undefined -> ["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
+	attribute :name :op [#Quasi undefined [trans:exp]] -> ["echo ' " + name + '="' + "', htmlspecialchars(" + exp + "), '\"';"],
 	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', htmlspecialchars(" + exp + "), '\"';"],
-
+	
 	binding :_ trans:expr [] -> ['echo htmlspecialchars(' + expr + ');'],
 	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlspecialchars($__temp); else print_r($__temp);"],
 	binding :_ trans:expr block:body
