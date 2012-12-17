@@ -92,7 +92,10 @@ ometa PHP5Transpiler {
 		-> closure(expr, body),
 
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
+	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
+	
+	//instruction #let [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock -> [],
 
 	instruction #for [bindingPattern:bind trans:expr]
 		enterBlock(bind[0]) block:b exitBlock
