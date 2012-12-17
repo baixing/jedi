@@ -38,7 +38,7 @@ Planned:
 2. PHPStorm
 3. CodeMirror / ACE
 
-
+### Copyright & License ###
 
    Copyright 2012 HE Shi-Jun
 
