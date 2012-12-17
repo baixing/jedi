@@ -50,3 +50,7 @@ var transformerTests = require('./transformer')
 testOMeta(transformer.InstructionsProcessor, transformerTests.InstructionsProcessor, [
 	'document',
 ])
+
+testOMeta(transformer.Sorter, transformerTests.Sorter, [
+	'document',
+])

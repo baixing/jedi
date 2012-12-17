@@ -292,7 +292,34 @@ exports.PHP5Transpiler =
 				]]
 			]
 
+		'element bug 001':
+			input: [[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ]
+						['closeStartTag'] ] ] ]
+
+			expect: [
+				[ 'echo \'<meta\';',
+					[[ 'echo \' charset="utf-8"\';' ], 'echo \'>\';' ],
+			    	[]]
+			]
+
+		'element double quot':
+			input: [
+				[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=',
+						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ] ] ] ]
+					]
+				]
+			]
+
+			expect: [
+				[ 'echo \'<meta\';',
+					[[ 'echo \' charset="\', htmlspecialchars(\'utf-8\'), \'"\';' ] ],
+				[]]
+			]
+			    
 	document:
+			    
 		'extend':
 			input: ['document', ['./test/test', 1, 1], '', undefined,
 				[['text', [1, 1], undefined, ['Big sheep testcase']]]
@@ -337,3 +364,4 @@ exports.PHP5Transpiler =
 				]
 			]
 			expect: '<?php\necho \'<!doctype html>\', "\\n";\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n?>'
+		

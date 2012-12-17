@@ -4,6 +4,15 @@ exports.InstructionsProcessor =
 
 	document:
 	
+		'element bug 001':
+			input: ['document', ['./test/test', 1, 1], '', undefined, 
+				[[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ] ] ] ] ]
+			
+			expect: ['document', ['./test/test', 1, 1], '', undefined, 
+				[[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ] ] ] ] ]
+
 		'extend':
 		
 			input: ['document', ['./test/test', 1, 1], '', undefined,
@@ -229,3 +238,18 @@ exports.InstructionsProcessor =
 					],
 				]]
 			]
+
+exports.Sorter =
+
+	document:
+	
+		'element bug 001':
+			input: ['document', ['./test/test', 1, 1], '', undefined, 
+				[[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ] ] ] ] ]
+			
+			expect: ['document', ['./test/test', 1, 1], '', undefined, 
+				[[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ]
+						['closeStartTag'] ] ] ] ]
+	

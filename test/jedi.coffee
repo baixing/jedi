@@ -283,13 +283,47 @@ exports.Parser =
 			expect: [
 				['element', [1, Number], ['div', ['test1'], undefined], undefined, []]
 			]
+
 		'element with binding':
 			input: '''
 				div.test1 = x
 			'''
 			expect: [
 				['element', [1, Number], ['div', ['test1'], undefined], ['Symbol', 'x'], []]
+			]	
+
+		'element bug 001':
+			input: '''
+				meta @charset='utf-8'
+			'''
+			
+			expect: [
+				[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ] ] ] ]
+
+		'element double quot':
+			input: '''
+				meta @charset="utf-8"
+			'''
+			expect: [
+				[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[[ 'attribute', [ 1, 16 ], 'charset', '=',
+						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ] ] ] ]
+					]
+				]
 			]
+
+		'element double quot with x':
+			input: '''
+				meta @charset="utf-8{x}"
+			'''
+		
+			expect: [ [ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
+					[ [ 'attribute', [ 1, 16 ], 'charset', '=',
+						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ], [ 'Symbol', 'x' ] ] ] 
+					] ]
+				]]
+            
 		'nested elements with binding':
 			input: '''
 				div.test1 > div.test2 = x
@@ -310,7 +344,7 @@ exports.Parser =
 				]]
 			]
 			# should be [1, 7] and [1, 17]
-
+			
 		'nested elements with attribute':
 			input: "li > a @href=url"
 			expect: [
