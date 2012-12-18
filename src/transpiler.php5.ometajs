@@ -70,15 +70,15 @@ ometa PHP5Transpiler {
 
 	element [:tag :cls :id] undefined
 		{startTag(tag, cls, id)}:startT
-		enterBlock([]) &anything:children block:body exitBlock
+		enterBlock([]) &anything:children block:body exitBlock:param
 		{endTag(tag)}:endT
-		-> this.elementOutput(tag, cls, id, undefined, children, body, startT, endT),
+		-> this.elementOutput(tag, cls, id, undefined, children, body, startT, endT, param),
 
 	element [:tag :cls :id] trans:bind
 		{startTag(tag, cls, id)}:startT
-		enterBlock([]) &anything:children block:body exitBlock
+		enterBlock([]) &anything:children block:body exitBlock:param
 		{endTag(tag)}:endT
-		-> this.elementOutput(tag, cls, id, bind, children, body, startT, endT),
+		-> this.elementOutput(tag, cls, id, bind, children, body, startT, endT, param),
 
 
 	attribute :name :op undefined -> ["echo ' " + name + "';"],
@@ -88,8 +88,8 @@ ometa PHP5Transpiler {
 	
 	binding :_ trans:expr [] -> ['echo htmlspecialchars(' + expr + ');'],
 	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlspecialchars($__temp); else print_r($__temp);"],
-	binding :_ trans:expr block:body
-		-> closure(expr, body),
+	binding :_ trans:expr enterBlock block:body exitBlock:param
+		-> closure(expr, body, param),
 
 	instruction #external [[#Symbol :x saveExternalSymbol(x)]+] :_	->	'// external\n',
 	
@@ -138,17 +138,33 @@ ometa PHP5Transpiler {
 
 PHP5Transpiler.initialize = function() {
 	this._stack = [['page']]
+	
 	this.enterBlock = function(bindings) {
 		this._stack.unshift(bindings)
 	}
 	this.exitBlock = function() {
+		var needImport = this._stack[0].needImport
 		this._stack.shift()
+		return needImport
 	}
 	this.resolve = function(symbol) {
+		ans = '';
 		for (var i = 0; i < this._stack.length; i++) {
-			if (this._stack[i].indexOf(symbol) >= 0) return '$' + symbol
+			if (this._stack[i].indexOf(symbol) >= 0)  {
+				var ans = '$' + symbol
+				var level = i
+				break
+			}
 		}
-		return '$data->' + symbol
+		if (ans == '') {
+			ans = '$data->' + symbol
+			var level = i
+		}
+		for (var i = 0; i < level; i++) {
+			if (this._stack[i].needImport === undefined) this._stack[i].needImport = [ans]
+			else this._stack[i].needImport.push(ans)
+		}
+		return ans
 	}
 	this.saveExternalSymbol = function (symbol) {
 		if (this._stack[0].externals === undefined) this._stack[0].externals = [symbol]
@@ -161,21 +177,22 @@ PHP5Transpiler.initialize = function() {
 		}
 		throw fail
 	}
+	 
 	this.saveMacro = function(elementPattern, parameter, body) {
 		if (this._stack[0].macros === undefined) this._stack[0].macros = []
 		this._stack[0].macros.push([elementPattern, parameter, body])
 	}
-	this.elementOutput = function (tag, cls, id, bind, children, body, startT, endT) {
+	this.elementOutput = function (tag, cls, id, bind, children, body, startT, endT, param) {
 		if (bind === undefined) return [startT, body, endT]
 		dir(children)
 		var overrided = children.some(function(node){
 			//console.log(node)
 			return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
 		})
-		if (overrided) return closure(bind, [startT, body, endT])
+		if (overrided) return closure(bind, [startT, body, endT], param)
 		else {
 			var m = this.findMacro(tag, cls, id, bind)
-			return closure(bind, [startT, m, endT]) // || ['//call macro']
+			return closure(bind, [startT, m, endT], param) // || ['//call macro']
 		}
 	}
 	this.findMacro = function (tag, cls, id, param) {
@@ -249,13 +266,22 @@ function endTag(tag) {
 	return echo('</', tag, '>')
 }
 
-function closure(context, body) {
+function closure(context, body, param) {
+	var importString = '';
+	if (param) {
+		param.sort();
+		for (var i=0; i < param.length - 1; i++) {
+			if (param[i] != param[i + 1]) importString += param[i] + ','
+		}
+		importString += param[param.length - 1]
+	}
 	return [
-		'call_user_func(function($context) {',
+		'call_user_func(function($context) use (' + importString + ') {',
 		body,
 		'}, ' + context + ');'
 	]
 }
+
 
 function htmlComment(lines) {
 	return '<!--'

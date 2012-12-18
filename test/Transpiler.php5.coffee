@@ -288,9 +288,27 @@ exports.PHP5Transpiler =
 		'nested elements with binding':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, [
-					['element', [1, 23], ['div', ['test2'], undefined], ['Symbol', 'x'], []]
+					['element', [1, 23], ['div', ['test2'], undefined], ['Symbol', 'x'], [
+						['text', [1, 1], undefined, [
+							[
+								['String', 'Hello ', 'Hello ']
+								['Symbol', 'user'],
+								['String', '!\n', '!\\n']
+							]
+						]]
+
+					]]
 				]]
 			]
+			
+			expect: [[ 'echo \'<div class="test1"\';',
+				[[ 'call_user_func(function($context) use ($data->user) {',
+					[ 'echo \'<div class="test2"\';',
+						[ [ 'echo htmlspecialchars(\'Hello \'), htmlspecialchars($data->user), htmlspecialchars(\'!\n\');' ] ],
+					'echo \'</div>\';' ],
+				'}, $data->x);' ] ],
+				'echo \'</div>\';' 
+			]]
 
 		'element bug 001':
 			input: [[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
