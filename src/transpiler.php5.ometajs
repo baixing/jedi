@@ -36,6 +36,7 @@ ometa PHP5Transpiler {
 	trans ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
 	trans ["." trans:x [#Symbol :y]]	->	(x + '->' + y),
 	trans [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
+	trans [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
 	trans [#Call trans:x trans:y]	->	(x + '(' + y + ')'),
 	trans [#Tuple [trans*:list]] -> ('(' + list.join(', ') + ')'),
 
