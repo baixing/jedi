@@ -31,6 +31,7 @@ ometa PHP5Transpiler {
 	trans [#Number :n] -> String(n),
 	trans [#String :s] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
 	trans [#String :s :raw] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
+	trans [#Quasi undefined [trans*:exprList]]	->	('(' + exprList.join(') . (') + ')'),
 	trans [#List [trans*:list]] -> ('[' + list.join(', ') + ']'),
 	trans ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	trans ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
