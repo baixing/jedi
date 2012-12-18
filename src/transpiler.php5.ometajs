@@ -81,6 +81,7 @@ ometa PHP5Transpiler {
 		-> this.elementOutput(tag, cls, id, bind, children, body, startT, endT),
 
 
+	attribute :name undefined -> ["echo ' " + name + "';"],
 	attribute :name :op undefined -> ["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
 	attribute :name :op [#Quasi undefined echoTemplateString:line] -> ["echo ' " + name + '="' + "';",  line, "echo '\"';"],

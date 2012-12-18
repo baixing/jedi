@@ -6,7 +6,4 @@ html
 
 	body
 
-		section#comment
-			-- test
-		section#suppress
-			"{x[a]}
+		input @required
