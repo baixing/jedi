@@ -26,8 +26,8 @@ ometa OffsideRule {
 		|	repeat(#shift, n) -> n,
 		
 	indentChar	->	#auto,	// #auto | #tab | #space | #mixed
-	tabSize	->	4,	// 0 means use Elastic tabstops
-	shiftWidth	->	4,	// 0 means not use space
+	tabSize	->	4,
+	shiftWidth	->	4,
 		
 	shift	=	getShift():s undefined(s) (&' ' setShift(#space) shift | &'\t' setShift(#tab) shift | '\t')
 		|	exactly(s),
