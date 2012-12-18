@@ -1,4 +1,4 @@
-"import string, concat, flattenLines, isCharArray from './util'"
+"import string, concat, flattenLines, isCharArray, dir from './util'"
 "export PHP5Transpiler"
 
 ometa PHP5Transpiler {
@@ -32,25 +32,23 @@ ometa PHP5Transpiler {
 	trans [#String :s] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
 	trans [#String :s :raw] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
 	trans [#List [trans*:list]] -> ('[' + list.join(', ') + ']'),
-	trans ["." [#Symbol 'url'] [#Symbol 'static']]
-		-> 'UrlBuilder::staticResource',
-	trans ["." trans:x [#Symbol :y]]
-		-> (x + '->' + y),
-	trans [#Call trans:x trans:y]
-		-> (x + '(' + y + ')'),
+	trans ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
+	trans ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
+	trans ["." trans:x [#Symbol :y]]	->	(x + '->' + y),
+	trans [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
+	trans [#Call trans:x trans:y]	->	(x + '(' + y + ')'),
 	trans [#Tuple [trans*:list]] -> ('(' + list.join(', ') + ')'),
 
 	trans [#Tuple [tupleItem*:list]] -> ('[' + list.join(', ') + ']'),
 
-	trans ['...' trans:x trans:y]
-		-> ('(range(' + x + ', ' + y + '))'),
-	trans ['..<' trans:x trans:y]
-		-> ('(range(' + x + ', ' + y + ' - 1))'),
-
-	trans [#BinaryOp :op trans:x trans:y]
-		-> ('(' + x + ' ' + op + ' ' + y + ')'),
-	trans [#Symbol '*'] -> '$context',
-	trans [#Symbol :s resolve(s):x] -> x,
+	trans ['...' trans:x trans:y]	->	('(range(' + x + ', ' + y + '))'),
+	trans ['..<' trans:x trans:y]	->	('(range(' + x + ', ' + y + ' - 1))'),
+	trans [#BinaryOp :op trans:x trans:y]	->	('(' + x + ' ' + op + ' ' + y + ')'),
+	
+	trans [#Symbol '*']	->	'$context',
+	trans [#Symbol :s externalSymbol(s):x]	->	x,
+	trans [#Symbol :s resolve(s):x]	->	x,
+	
 	trans :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 	//trans [trans*:x] -> ( x ),
 
@@ -71,15 +69,15 @@ ometa PHP5Transpiler {
 
 	element [:tag :cls :id] undefined
 		{startTag(tag, cls, id)}:startT
-		enterBlock([]) block:body exitBlock
+		enterBlock([]) &anything:children block:body exitBlock
 		{endTag(tag)}:endT
-		-> this.elementOutput(tag, cls, id, undefined, body, startT, endT),
+		-> this.elementOutput(tag, cls, id, undefined, children, body, startT, endT),
 
 	element [:tag :cls :id] trans:bind
 		{startTag(tag, cls, id)}:startT
-		enterBlock([]) block:body exitBlock
+		enterBlock([]) &anything:children block:body exitBlock
 		{endTag(tag)}:endT
-		-> this.elementOutput(tag, cls, id, bind, body, startT, endT),
+		-> this.elementOutput(tag, cls, id, bind, children, body, startT, endT),
 
 
 	attribute :name :op undefined -> ["echo ' " + name + "';"],
@@ -92,6 +90,8 @@ ometa PHP5Transpiler {
 	binding :_ trans:expr block:body
 		-> closure(expr, body),
 
+	instruction #external [[#Symbol :x saveExternalSymbol(x)]+] :_	->	'// external\n',
+	
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
@@ -147,19 +147,33 @@ PHP5Transpiler.initialize = function() {
 		for (var i = 0; i < this._stack.length; i++) {
 			if (this._stack[i].indexOf(symbol) >= 0) return '$' + symbol
 		}
-		return '$model->' + symbol
+		return '$data->' + symbol
+	}
+	this.saveExternalSymbol = function (symbol) {
+		if (this._stack[0].externals === undefined) this._stack[0].externals = [symbol]
+		else this._stack[0].externals.push(symbol)
+	}
+	this.externalSymbol = function(symbol) {
+		for (var i = 0; i < this._stack.length; i++) {
+			var e = this._stack[i].externals || []
+			if (e.indexOf(symbol) >= 0) return symbol
+		}
+		throw fail
 	}
 	this.saveMacro = function(elementPattern, parameter, body) {
 		if (this._stack[0].macros === undefined) this._stack[0].macros = []
 		this._stack[0].macros.push([elementPattern, parameter, body])
 	}
-	this.elementOutput = function (tag, cls, id, bind, body, startT, endT) {
+	this.elementOutput = function (tag, cls, id, bind, children, body, startT, endT) {
 		if (bind === undefined) return [startT, body, endT]
+		dir(children)
+		var overrided = children.some(function(node){
+			//console.log(node)
+			return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
+		})
+		if (overrided) return closure(bind, [startT, body, endT])
 		else {
 			var m = this.findMacro(tag, cls, id, bind)
-			body.some(function(node){
-				return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
-			})
 			return closure(bind, [startT, m, endT]) // || ['//call macro']
 		}
 	}
