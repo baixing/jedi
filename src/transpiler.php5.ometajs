@@ -31,6 +31,7 @@ ometa PHP5Transpiler {
 	trans [#Number :n] -> String(n),
 	trans [#String :s] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
 	trans [#String :s :raw] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
+	trans [#Quasi undefined [trans*:exprList]]	->	('(' + exprList.join(') . (') + ')'),
 	trans [#List [trans*:list]] -> ('[' + list.join(', ') + ']'),
 	trans ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	trans ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
@@ -81,6 +82,7 @@ ometa PHP5Transpiler {
 		-> this.elementOutput(tag, cls, id, bind, children, body, startT, endT, param),
 
 
+	attribute :name undefined -> ["echo ' " + name + "';"],
 	attribute :name :op undefined -> ["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
 	attribute :name :op [#Quasi undefined echoTemplateString:line] -> ["echo ' " + name + '="' + "';",  line, "echo '\"';"],
@@ -97,10 +99,14 @@ ometa PHP5Transpiler {
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
 	
-	//instruction #let [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock -> [],
+	instruction #let [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock
+		-> 	[
+				'call_user_func(function(' + bind[1] + ') {',
+				b,
+				'}, ' + expr + ');'
+			],
 
-	instruction #for [bindingPattern:bind trans:expr]
-		enterBlock(bind[0]) block:b exitBlock
+	instruction #for [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock
 		-> ["foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
