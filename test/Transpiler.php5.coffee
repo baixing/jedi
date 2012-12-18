@@ -2,48 +2,48 @@
 
 exports.PHP5Transpiler =
 
-	block:		
-	
+	block:
+
 		'comment single line':
 			input: [
 				['comment', [1, 1], ['comment line']]
 			]
-			
+
 			expect: [['echo \'<!-- comment line -->\';']]
 
 		'comment multiple lines':
 			input: [
 				['comment', [1, 1], ['comment line 1', 'comment line 2']]
 			]
-			
+
 			expect: [[
 				'echo \'<!--\', "\\n";',
 				'echo \'comment line 1\', "\\n";',
 				'echo \'comment line 2\', "\\n";',
 				'echo \'-->\';'
 			]]
-			
+
 		'doctype':
 			input: [[
 				'comment',
 				[1,1],
 				['html5']
 			]]
-			
+
 			expect: [['echo \'<!-- html5 -->\';']]
 
 		'suppress single line':
 			input: [
 				['suppress', [1, 1], ['suppress line']]
 			]
-			
+
 			expect: [['// suppress line']]
-			
+
 		'suppress multiple lines':
 			input: [
 				['suppress', [1, 1], ['suppress line 1', 'suppress line 2']]
 			]
-			
+
 			expect: [[
 				'// suppress line 1',
 				'// suppress line 2',
@@ -53,11 +53,11 @@ exports.PHP5Transpiler =
 			input: [
 				['inject', [1, 1], 'inject line', null, []]
 			]
-			
+
 			expect: [[
 				'inject line;'
 			]]
-			
+
 		'inject line with block':
 			input: [
 				['inject', [1, 1], 'inject line', null, [
@@ -65,7 +65,7 @@ exports.PHP5Transpiler =
 					['comment', [3, 2], ['line 2']]
 				]]
 			]
-			
+
 			expect: [[
 				'inject line',
 				'{',
@@ -80,9 +80,9 @@ exports.PHP5Transpiler =
 			input: [[
 				'binding', [1, 1], null, ['Symbol', 'x'], []
 			]]
-			
-			expect: [['echo htmlspecialchars($model->x);']]
-			
+
+			expect: [['echo htmlspecialchars($data->x);']]
+
 		'binding of a list':
 			input: [
 				['binding', [1, 1], null,
@@ -90,7 +90,7 @@ exports.PHP5Transpiler =
 					[]
 				]
 			]
-			
+
 		'binding of a tuple':
 			input: [
 				['binding', [ 1, 1 ], null,
@@ -98,15 +98,15 @@ exports.PHP5Transpiler =
 					[]
 				]
 			]
-			
+
 		'binding of a named tuple':
 			input: [
 				[
-					'binding', 
-					[ 1, 1 ], 
+					'binding',
+					[ 1, 1 ],
 					null,
 					[
-						'Tuple', 
+						'Tuple',
 						[
 							[
 								'Mapping',
@@ -128,28 +128,28 @@ exports.PHP5Transpiler =
 			input: [
 				['text', [1, 1], undefined, ['Hello world!']]
 			]
-			
+
 			expect: [['echo \'Hello world!\', "\\n";']]
-			
+
 		'single quot text no escape/interpolation':
 			input: [
 				['text', [1, 1], undefined, ['Hello {user}!\\n']]
 			]
-			
+
 			expect: [['echo \'Hello {user}!\\n\', "\\n";']]
-			
+
 		'single quot multiple lines text ':
 			input: [
 				['text', [1, 1], undefined, ['Hello world!', 'foo bar baz', 'rawr rawr', 'super cool']]
 			]
-			
+
 			expect:[[
 				'echo \'Hello world!\', "\\n";'
 				'echo \'foo bar baz\', "\\n";'
 				'echo \'rawr rawr\', "\\n";'
 				'echo \'super cool\', "\\n";'
 			]]
-			
+
 		'single quot text with single quot':
 			input: [
 				['text', [1, 1], undefined, ["I'm ok!"]]
@@ -163,9 +163,9 @@ exports.PHP5Transpiler =
 					[['String', 'Hello world!', 'Hello world!']]
 				]]
 			]
-			
+
 			expect: [['echo htmlspecialchars(\'Hello world!\');']]
-			
+
 		'double quot text escape/interpolation':
 			input: [
 				['text', [1, 1], undefined, [
@@ -176,9 +176,9 @@ exports.PHP5Transpiler =
 					]
 				]]
 			]
-			
-			expect: [['echo htmlspecialchars(\'Hello \'), htmlspecialchars($model->user), htmlspecialchars(\'!\n\');']]
-			
+
+			expect: [['echo htmlspecialchars(\'Hello \'), htmlspecialchars($data->user), htmlspecialchars(\'!\n\');']]
+
 		'double quot multiple lines text with tag':
 			input: [
 				['text', [1, 1], ['Symbol', 'r'],
@@ -202,15 +202,15 @@ exports.PHP5Transpiler =
 					]
 				]
 			]
-			
+
 			expect: [[
-				'if (($model->x > $model->y)) {',
+				'if (($data->x > $data->y)) {',
 				[[
-					'echo htmlspecialchars($model->x), htmlspecialchars(\' > \'), htmlspecialchars($model->y);'
+					'echo htmlspecialchars($data->x), htmlspecialchars(\' > \'), htmlspecialchars($data->y);'
 				]],
 				'}'
 			]]
-			
+
 		'iterate values':
 			input: [
 				['instruction', [1, 1], 'for',
@@ -220,9 +220,9 @@ exports.PHP5Transpiler =
 					]]]
 				]
 			]
-			
+
 			expect: [[
-				'foreach ($model->x as $v) {',
+				'foreach ($data->x as $v) {',
 				[[
 					'echo htmlspecialchars($v);'
 				]],
@@ -246,8 +246,8 @@ exports.PHP5Transpiler =
 				],
 				[
 					[
-						'text', 
-						[2, 2], 
+						'text',
+						[2, 2],
 						undefined,
 						[
 							[
@@ -262,7 +262,7 @@ exports.PHP5Transpiler =
 			]]
 
 			expect: [[
-				'foreach ($model->x as $key => $value) {',
+				'foreach ($data->x as $key => $value) {',
 				[[
 					'echo htmlspecialchars($key), htmlspecialchars(\' = \'), htmlspecialchars($value), htmlspecialchars(\'"\');'
 				]],
@@ -273,18 +273,18 @@ exports.PHP5Transpiler =
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, []]
 			]
-			
+
 			expect: [[
 				'echo \'<div class="test1"\';',
 				'',
 				'echo \'</div>\';'
 			]]
-			
+
 		'element with binding':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], ['Symbol', 'x'], []]
 			]
-			
+
 		'nested elements with binding':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, [
@@ -317,35 +317,35 @@ exports.PHP5Transpiler =
 					[[ 'echo \' charset="\';', 'echo htmlspecialchars(\'utf-8\');', 'echo \'"\';' ] ],
 				[]]
 			]
-			
+
 		'element double quot with x':
 			input: [ [ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
 					[ [ 'attribute', [ 1, 16 ], 'charset', '=',
-						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ], [ 'Symbol', 'x' ] ] ] 
+						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ], [ 'Symbol', 'x' ] ] ]
 					] ]
 				]]
-            
+
 			expect: [
 				[ 'echo \'<meta\';',
-					[[ 'echo \' charset="\';', 'echo htmlspecialchars(\'utf-8\'), htmlspecialchars($model->x);', 'echo \'"\';' ] ],
+					[[ 'echo \' charset="\';', 'echo htmlspecialchars(\'utf-8\'), htmlspecialchars($data->x);', 'echo \'"\';' ] ],
 				[]]
 			]
 
 	document:
-			    
+
 		'extend':
 			input: ['document', ['./test/test', 1, 1], '', undefined,
 				[['text', [1, 1], undefined, ['Big sheep testcase']]]
 			]
-			
+
 			expect: '<?php\necho \'<!doctype html>\', "\\n";\n echo \'Big sheep testcase\', "\\n";\n?>'
-			
+
 		'extend with before hook':
 			input: [ 'document', [ './test/test', 1, 1 ], '', undefined,
 				[
 					[ 'fragment', [ 2, 3 ], 'headBlock', 'before',
 						[[ 'element', [ 3, 9 ], [ 'style', '', undefined ], undefined,
-							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]] 
+							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]]
 						]]
 					],
 					[ 'fragment', [ 1, 1 ], 'headBlock', undefined,
@@ -353,28 +353,27 @@ exports.PHP5Transpiler =
 					]
 				]
 			]
-			
+
 			expect: '<?php\necho \'<!doctype html>\', "\\n";\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'Big sheep testcase\', "\\n";\n?>'
 
-		'extend with mutiple hooks':			
+		'extend with mutiple hooks':
 			input: [ 'document', [ './test/test', 1, 1 ], '', undefined,
 				[
 					[ 'fragment', [ 2, 3 ], 'headBlock', 'before',
 						[[ 'element', [ 3, 9 ], [ 'style', '', undefined ], undefined,
-							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]] 
+							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]]
 						]]
 					],
 					[ 'fragment', [ 2, 3 ], 'headBlock', undefined,
 						[[ 'element', [ 3, 9 ], [ 'style', '', undefined ], undefined,
-							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]] 
+							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]]
 						]]
 					],
 					[ 'fragment', [ 2, 3 ], 'headBlock', 'after',
 						[[ 'element', [ 3, 9 ], [ 'style', '', undefined ], undefined,
-							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]] 
+							[[ 'attribute', [ 3, 10 ], 'src', '=', [ 'String', 'test.css' ]]]
 						]]
 					],
 				]
 			]
 			expect: '<?php\necho \'<!doctype html>\', "\\n";\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n?>'
-		
