@@ -98,10 +98,14 @@ ometa PHP5Transpiler {
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
 	
-	//instruction #let [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock -> [],
+	instruction #let [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock
+		-> 	[
+				'call_user_func(function(' + bind[1] + ') {',
+				b,
+				'}, ' + expr + ');'
+			],
 
-	instruction #for [bindingPattern:bind trans:expr]
-		enterBlock(bind[0]) block:b exitBlock
+	instruction #for [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock
 		-> ["foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
