@@ -34,9 +34,9 @@ See examples/
 
 Planned:
 
-1. Code Browser
-2. PHPStorm
-3. CodeMirror / ACE
+1. Code Browser, jEdit
+2. PHPStorm, NetBeans
+3. CodeMirror, ACE
 
 ### Copyright & License ###
 
