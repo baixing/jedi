@@ -168,14 +168,14 @@ PHP5Transpiler.initialize = function() {
 		for (var i = 0; i < this._stack.length; i++) {
 			if (this._stack[i].indexOf(symbol) >= 0)  {
 				var ans = '$' + symbol
-				var importSymbol = ans
+				var importSymbol = symbol
 				var level = i
 				break
 			}
 		}
 		if (ans == '') {
 			ans = '$data->' + symbol
-			importSymbol = '$data'
+			importSymbol = 'data'
 			var level = i
 		}
 		for (var i = 0; i < level; i++) {
@@ -285,15 +285,22 @@ function endTag(tag) {
 	return echo('</', tag, '>')
 }
 
-function getImportString(param) {
-	if (param.length === 0) return ''
-	var importString = ' use ('
-	param.sort();
-	for (var i=0; i < param.length - 1; i++) {
-		if (param[i] != param[i + 1]) importString += param[i] + ','
+function unique(param) {
+	var result = [];
+	for (var i=0; i < param.length; i++) {
+		if (result.indexOf(param[i]) == -1) result.push(param[i])
 	}
-	importString += param[param.length - 1] + ')'
-	return importString
+	return result
+}
+
+function phpVariable(param) {
+	return '$' + param
+}
+
+function getImportString(param) {
+	var result = unique(param)
+	result = result.map(phpVariable)
+	return param.length > 0 ? ' use (' + result.join(',') + ')' : ''
 }
 
 function closure(context, body, param) {
