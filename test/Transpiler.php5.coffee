@@ -312,6 +312,38 @@ exports.PHP5Transpiler =
 				'}' 
 			]]
 			            
+		'multiple for with key value':
+			input: [[ 'instruction',
+				[ 1, 1 ],
+				'for',
+				[
+					[[ 'Symbol', 'x' ], [ 'Symbol', 'list1' ]],
+					[[ 'Symbol', 'y' ], [ 'Symbol', 'list2' ]],
+					[[ 'TuplePattern', [[ 'Symbol', 'key' ], [ 'Symbol', 'value' ]]], [ 'Symbol', 'x' ]]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[
+						[ 'Symbol', 'x' ],
+						[ 'String', ', ', ', ' ],
+						[ 'Symbol', 'y' ],
+						[ 'String', 'asjdfhakjsdhfsla', 'asjdfhakjsdhfsla' ],
+						[ 'Symbol', 'key' ],
+						[ 'Symbol', 'value' ]
+					]]
+				]]
+			]]
+			
+			expect: [[ 'foreach ($data->list1 as $x) {',
+				[ 'foreach ($data->list2 as $y) {',
+					[ 'foreach ($data->x as $key => $value) {',
+						[[ 'echo htmlspecialchars($x), htmlspecialchars(\', \'), htmlspecialchars($y), htmlspecialchars(\'asjdfhakjsdhfsla\'), htmlspecialchars($key), htmlspecialchars($value);' ]],
+					'}'],
+				'}'],
+			'}' ]]
+		
 		'element':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, []]

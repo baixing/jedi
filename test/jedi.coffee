@@ -273,7 +273,36 @@ exports.Parser =
 					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ] 
 				]]
 			]]
-			            
+			
+		'multiple for with key value':
+			input: '''
+				:for x in list1, y in list2, (key, value) in list3
+					"{x}, {y}asjdfhakjsdhfsla{key}{value}
+			'''
+			
+			expext: [[ 'instruction',
+				[ 1, 1 ],
+				'for',
+				[
+					[[ 'Symbol', 'x' ], [ 'Symbol', 'list1' ]],
+					[[ 'Symbol', 'y' ], [ 'Symbol', 'list2' ]],
+					[[ 'TuplePattern', [[ 'Symbol', 'key' ], [ 'Symbol', 'value' ]]], [ 'Symbol', 'x' ]]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[
+						[ 'Symbol', 'x' ],
+						[ 'String', ', ', ', ' ],
+						[ 'Symbol', 'y' ],
+						[ 'String', 'asjdfhakjsdhfsla', 'asjdfhakjsdhfsla' ],
+						[ 'Symbol', 'key' ],
+						[ 'Symbol', 'value' ]
+					]]
+				]]
+			]]
+		
 		'let binding':
 			input: '''
 				:let x = 1, y = 2
