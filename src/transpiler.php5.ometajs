@@ -90,7 +90,7 @@ ometa PHP5Transpiler {
 	
 	binding :_ trans:expr [] -> ['echo htmlspecialchars(' + expr + ');'],
 	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlspecialchars($__temp); else print_r($__temp);"],
-	binding :_ trans:expr enterBlock block:body exitBlock:param
+	binding :_ trans:expr enterBlock([]) block:body exitBlock:param
 		-> closure(expr, body, param),
 
 	instruction #external [[#Symbol :x saveExternalSymbol(x)]+] :_	->	'// external\n',

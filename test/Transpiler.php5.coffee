@@ -68,7 +68,7 @@ exports.PHP5Transpiler =
 
 			expect: [[
 				'inject line',
-				'{',
+				'{', 
 				[
 					['echo \'<!-- line 1 -->\';'],
 					['echo \'<!-- line 2 -->\';'],
@@ -82,6 +82,23 @@ exports.PHP5Transpiler =
 			]]
 
 			expect: [['echo htmlspecialchars($data->x);']]
+
+		'binding of a simple symbol with block':
+			input: [[
+				'binding', [1, 1], null, ['Symbol', 'x'], [
+					['text', [1, 1], undefined, [
+						[
+							['String', 'Hello ', 'Hello ']
+							['Symbol', 'user'],
+							['String', '!\n', '!\\n']
+						]
+					]]
+				]
+			]]
+
+			expect: 	[[ 'call_user_func(function($context) use ($data->user) {',
+				[ [ 'echo htmlspecialchars(\'Hello \'), htmlspecialchars($data->user), htmlspecialchars(\'!\n\');' ] ],
+			'}, $data->x);' ] ],
 
 		'binding of a list':
 			input: [
@@ -285,7 +302,7 @@ exports.PHP5Transpiler =
 				['element', [1, 1], ['div', ['test1'], undefined], ['Symbol', 'x'], []]
 			]
 
-		'nested elements with binding':
+		'nested elements with binding and extr block':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, [
 					['element', [1, 23], ['div', ['test2'], undefined], ['Symbol', 'x'], [
@@ -310,6 +327,22 @@ exports.PHP5Transpiler =
 				'echo \'</div>\';' 
 			]]
 
+		'nested elements with binding':
+			input: [
+				['element', [1, 1], ['div', ['test1'], undefined], undefined, [
+					['element', [1, 23], ['div', ['test2'], undefined], ['Symbol', 'x'], []]
+				]]
+			]
+			
+			expect: [[ 'echo \'<div class="test1"\';',
+				[[ 'call_user_func(function($context)  {',
+					[ 'echo \'<div class="test2"\';',
+					'echo \'>\', htmlspecialchars($context);',
+					'echo \'</div>\';' ],
+				'}, $data->x);' ] ],
+				'echo \'</div>\';' 
+			]]
+			
 		'element bug 001':
 			input: [[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
 					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ]
