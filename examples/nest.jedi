@@ -2,5 +2,5 @@ html
 	= 1
 		"{*}
 		= a
-			:let b = x
+			:let b = test(a, b)
 				"{b}
