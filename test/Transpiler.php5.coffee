@@ -96,7 +96,7 @@ exports.PHP5Transpiler =
 				]
 			]]
 
-			expect: 	[[ 'call_user_func(function($context) use ($data->user) {',
+			expect: 	[[ 'call_user_func(function($context) use ($data) {',
 				[ [ 'echo htmlspecialchars(\'Hello \'), htmlspecialchars($data->user), htmlspecialchars(\'!\n\');' ] ],
 			'}, $data->x);' ] ],
 
@@ -319,7 +319,7 @@ exports.PHP5Transpiler =
 			]
 			
 			expect: [[ 'echo \'<div class="test1"\';',
-				[[ 'call_user_func(function($context) use ($data->user) {',
+				[[ 'call_user_func(function($context) use ($data) {',
 					[ 'echo \'<div class="test2"\';',
 						[ [ 'echo htmlspecialchars(\'Hello \'), htmlspecialchars($data->user), htmlspecialchars(\'!\n\');' ] ],
 					'echo \'</div>\';' ],

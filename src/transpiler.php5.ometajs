@@ -158,17 +158,19 @@ PHP5Transpiler.initialize = function() {
 		for (var i = 0; i < this._stack.length; i++) {
 			if (this._stack[i].indexOf(symbol) >= 0)  {
 				var ans = '$' + symbol
+				var importSymbol = ans
 				var level = i
 				break
 			}
 		}
 		if (ans == '') {
 			ans = '$data->' + symbol
+			importSymbol = '$data'
 			var level = i
 		}
 		for (var i = 0; i < level; i++) {
-			if (this._stack[i].needImport === undefined) this._stack[i].needImport = [ans]
-			else this._stack[i].needImport.push(ans)
+			if (this._stack[i].needImport === undefined) this._stack[i].needImport = [importSymbol]
+			else this._stack[i].needImport.push(importSymbol)
 		}
 		return ans
 	}
@@ -219,6 +221,7 @@ PHP5Transpiler.initialize = function() {
 			['text', [0, 0], undefined, [['Symbol', '*']]]
 		]*/
 	}
+	
 }
 
 function echo() {
@@ -272,23 +275,25 @@ function endTag(tag) {
 	return echo('</', tag, '>')
 }
 
+function getImportString(param) {
+	var importString = ''
+	param.sort();
+	for (var i=0; i < param.length - 1; i++) {
+		if (param[i] != param[i + 1]) importString += param[i] + ','
+	}
+	importString += param[param.length - 1]
+	return importString
+}
+
 function closure(context, body, param) {
 	var importString = ''
-	if (param) {
-		importString = 'use ('
-		param.sort();
-		for (var i=0; i < param.length - 1; i++) {
-			if (param[i] != param[i + 1]) importString += param[i] + ','
-		}
-		importString += param[param.length - 1] + ')'
-	}
+	if (param) importString = 'use (' + getImportString(param) + ')'
 	return [
 		'call_user_func(function($context) ' + importString + ' {',
 		body,
 		'}, ' + context + ');'
 	]
 }
-
 
 function htmlComment(lines) {
 	return '<!--'
