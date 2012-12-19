@@ -158,14 +158,14 @@ PHP5Transpiler.initialize = function() {
 		for (var i = 0; i < this._stack.length; i++) {
 			if (this._stack[i].indexOf(symbol) >= 0)  {
 				var ans = '$' + symbol
-				var importSymbol = ans
+				var importSymbol = symbol
 				var level = i
 				break
 			}
 		}
 		if (ans == '') {
 			ans = '$data->' + symbol
-			importSymbol = '$data'
+			importSymbol = 'data'
 			var level = i
 		}
 		for (var i = 0; i < level; i++) {
@@ -275,21 +275,31 @@ function endTag(tag) {
 	return echo('</', tag, '>')
 }
 
-function getImportString(param) {
-	var importString = ''
-	param.sort();
-	for (var i=0; i < param.length - 1; i++) {
-		if (param[i] != param[i + 1]) importString += param[i] + ','
+function unique(param) {
+	var result = [];
+	for (var i in param) {
+		var t = true
+		for (var j in result) 
+			if (result[j] == param[i]) t = false
+		if (t) result.push(param[i])
 	}
-	importString += param[param.length - 1]
-	return importString
+	return result
+}
+
+function phpVariable(param) {
+	var result = param
+	for (var i in result) 
+		result[i] = '$' + result[i]
+	return result
+}
+
+function getImportString(param) {
+	return param ? 'use (' + phpVariable(unique(param)).join(',') + ')' : ''
 }
 
 function closure(context, body, param) {
-	var importString = ''
-	if (param) importString = 'use (' + getImportString(param) + ')'
 	return [
-		'call_user_func(function($context) ' + importString + ' {',
+		'call_user_func(function($context) ' + getImportString(param) + ' {',
 		body,
 		'}, ' + context + ');'
 	]
