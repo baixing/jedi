@@ -273,16 +273,17 @@ function endTag(tag) {
 }
 
 function closure(context, body, param) {
-	var importString = '';
+	var importString = ''
 	if (param) {
+		importString = 'use ('
 		param.sort();
 		for (var i=0; i < param.length - 1; i++) {
 			if (param[i] != param[i + 1]) importString += param[i] + ','
 		}
-		importString += param[param.length - 1]
+		importString += param[param.length - 1] + ')'
 	}
 	return [
-		'call_user_func(function($context) use (' + importString + ') {',
+		'call_user_func(function($context) ' + importString + ' {',
 		body,
 		'}, ' + context + ');'
 	]
