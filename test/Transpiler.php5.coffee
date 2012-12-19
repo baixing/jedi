@@ -231,7 +231,7 @@ exports.PHP5Transpiler =
 		'iterate values':
 			input: [
 				['instruction', [1, 1], 'for',
-					[['Symbol', 'v'], ['Symbol', 'x']]
+					[[['Symbol', 'v'], ['Symbol', 'x']]]
 					[['text', [2, 2], undefined, [
 						[['Symbol', 'v']]
 					]]]
@@ -251,7 +251,7 @@ exports.PHP5Transpiler =
 				'instruction',
 				[1,1],
 				'for',
-				[
+				[[
 					[
 						'TuplePattern',
 						[
@@ -260,7 +260,7 @@ exports.PHP5Transpiler =
 						]
 					],
 					['Symbol', 'x']
-				],
+				]],
 				[
 					[
 						'text',
@@ -286,6 +286,32 @@ exports.PHP5Transpiler =
 				'}'
 			]]
 
+		'multiple for':
+			input: [[ 'instruction',
+				[ 1, 1 ],
+				'for',
+				[ 
+					[ [ 'Symbol', 'x' ], [ 'Symbol', 'list1' ] ],
+					[ [ 'Symbol', 'y' ], [ 'Symbol', 'list2' ] ]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ] 
+				]]
+			]]
+			
+			expect: [[
+				'foreach ($data->list1 as $x) {',
+				[
+					'foreach ($data->list2 as $y) {',
+					[[ 'echo htmlspecialchars($x), htmlspecialchars(\', \'), htmlspecialchars($y);' ]],
+					'}'
+				],
+				'}' 
+			]]
+			            
 		'element':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, []]

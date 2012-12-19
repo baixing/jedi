@@ -116,8 +116,8 @@ ometa PHP5Transpiler {
 				'}, ' + expr + ');'
 			],
 
-	instruction #for [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock
-		-> ["foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
+	instruction #for [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(this.getLoopAttr(binds)) block:b exitBlock
+		-> translateMultiLoops(binds, b),
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
 
@@ -154,6 +154,14 @@ ometa PHP5Transpiler {
 
 PHP5Transpiler.initialize = function() {
 	this._stack = [['page']]
+	
+	this.getLoopAttr = function(binds) {
+		var result = []
+		for (var i=0; i < binds.length; i++) {
+			result = result.concat(binds[i][0][0])
+		}
+		return result
+	}
 	
 	this.enterBlock = function(bindings) {
 		this._stack.unshift(bindings)
@@ -255,6 +263,14 @@ function echoLines(lines) {
 	return lines.map(function(line) {
 		return echo(line, '\n')
 	})
+}
+
+function translateMultiLoops(binds, b) {
+	if (binds.length > 0) {
+		var bind = binds.shift();
+		return ["foreach (" + bind[1] + " as " + bind[0][1] + ") {", translateMultiLoops(binds,b), "}"]
+	}
+	return b;
 }
 
 function escapeComment(s) {

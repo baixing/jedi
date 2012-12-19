@@ -209,7 +209,7 @@ exports.Parser =
 			'''
 			expect: [
 				['instruction', [1, Number], 'for',
-					[['Symbol', 'v'], ['Symbol', 'x']]
+					[[['Symbol', 'v'], ['Symbol', 'x']]]
 					[['text', [2, Number], undefined, [
 						[['Symbol', 'v']]
 					]]]
@@ -226,7 +226,7 @@ exports.Parser =
 					'instruction',
 					[1, Number],
 					'for',
-					[
+					[[
 						[
 							'TuplePattern',
 							[
@@ -235,7 +235,7 @@ exports.Parser =
 							]
 						],
 						['Symbol', 'x']
-					],
+					]],
 					[
 						[
 							'text', 
@@ -259,7 +259,21 @@ exports.Parser =
 				:for x in list1, y in list2
 					"{x}, {y}
 			'''
-
+			expect: [[ 'instruction',
+				[ 1, 1 ],
+				'for',
+				[ 
+					[ [ 'Symbol', 'x' ], [ 'Symbol', 'list1' ] ],
+					[ [ 'Symbol', 'y' ], [ 'Symbol', 'list2' ] ]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ] 
+				]]
+			]]
+			            
 		'let binding':
 			input: '''
 				:let x = 1, y = 2
@@ -327,10 +341,19 @@ exports.Parser =
 		'nested elements with binding':
 			input: '''
 				div.test1 > div.test2 = x
+					"Hello {user}!
 			'''
 			expect: [
 				['element', [1, Number], ['div', ['test1'], undefined], undefined, [
-					['element', [1, Number], ['div', ['test2'], undefined], ['Symbol', 'x'], []]
+					['element', [1, Number], ['div', ['test2'], undefined], ['Symbol', 'x'], [
+						['text', [Number, Number], undefined, [
+							[
+								['String', 'Hello ', 'Hello ']
+								['Symbol', 'user'],
+								['String', '!', '!']
+							]
+						]]
+					]]
 				]]
 			]
 			# should be [1, 13]
