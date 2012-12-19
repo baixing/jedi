@@ -3,10 +3,11 @@
 
 ometa Expression {
 
-	primary = literal | listLiteral | tupleLiteral | path | symbol,
-
-	symbol = ('*' | nameChar+):s -> [#Symbol, string(s)],
-	nameChar = letterOrDigit | '$' | '_' | '-' | '&',
+	keyword	=	"mod" | "div" | "mul",
+	primary	=	literal | listLiteral | tupleLiteral | path | symbol,
+		
+	symbol	=	('*' | ~keyword nameChar+):s -> [#Symbol, string(s)],
+	nameChar	=	letterOrDigit | '$' | '_' | '-' | '&',
 
 	path = symbol?:start segment+:segments
 		-> [#Path, start].concat(segments),
@@ -122,7 +123,7 @@ ometa Expression {
 	op4 = spaces ("<<<" | ">>>" | "<<" | ">>"):x spaces -> x,
 	op5 = spaces ("?:"):x spaces -> x,
 	op6 = spaces ("+" | "-"):x spaces -> x,
-	op7 = spaces ("×" | "÷"):x spaces -> x,
+	op7 = spaces ("×" | "÷" | "*" | "/" | "mod"):x spaces -> x,
 	op9 = spaces ('!'):x spaces -> x,
 
 	END
