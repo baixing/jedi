@@ -57,6 +57,9 @@ ometa PHP5Transpiler {
 
 	trans ['...' trans:x trans:y]	->	('(range(' + x + ', ' + y + '))'),
 	trans ['..<' trans:x trans:y]	->	('(range(' + x + ', ' + y + ' - 1))'),
+	trans [#BinaryOp 'mod' trans:x trans:y]	->	('(' + x + ' ' + '%' + ' ' + y + ')'),
+	trans [#BinaryOp 'div' trans:x trans:y]	->	('(' + x + ' ' + '/' + ' ' + y + ')'),
+	trans [#BinaryOp 'mul' trans:x trans:y]	->	('(' + x + ' ' + '*' + ' ' + y + ')'),
 	trans [#BinaryOp :op trans:x trans:y]	->	('(' + x + ' ' + op + ' ' + y + ')'),
 	
 	trans [#Symbol '*']	->	'$context',
