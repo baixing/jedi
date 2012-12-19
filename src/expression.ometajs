@@ -24,9 +24,13 @@ ometa Expression {
 	booleanLiteral "false" -> [#False],
 
 	numberLiteral "NaN" -> [#NaN],
-	numberLiteral "Infinity" -> [#PosInf],
-	numberLiteral "+Infinity" -> [#PosInf],
-	numberLiteral "-Infinity" -> [#NegInf],
+	numberLiteral "INF" -> [#PosInf],
+	numberLiteral "+INF" -> [#PosInf],
+	numberLiteral "-INF" -> [#NegInf],
+	numberLiteral "∞" -> [#PosInf],
+	numberLiteral "+∞" -> [#PosInf],
+	numberLiteral "-∞" -> [#NegInf],
+	
 	numberLiteral <signedInt ('.' digit+)? ('e' signedInt)?>:n
 		-> [#Number, parseFloat(string(n))],
 	signedInt = <('+' | '-')? digit+>,
@@ -123,7 +127,7 @@ ometa Expression {
 	op4 = spaces ("<<<" | ">>>" | "<<" | ">>"):x spaces -> x,
 	op5 = spaces ("?:"):x spaces -> x,
 	op6 = spaces ("+" | "-"):x spaces -> x,
-	op7 = spaces ("×" | "÷" | "*" | "/" | "mod"):x spaces -> x,
+	op7 = spaces ("×" | "÷" | "mul" | "div" | "mod"):x spaces -> x,
 	op9 = spaces ('!'):x spaces -> x,
 
 	END

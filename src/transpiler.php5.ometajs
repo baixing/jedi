@@ -25,20 +25,30 @@ ometa PHP5Transpiler {
 	outputMethod spaces ("html" spaces? "5"?) spaces -> ["echo '<!doctype html>', \"\\n\";"],
 
 	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),
-	trans [#Null] -> 'null',
-	trans [#True] -> 'true',
-	trans [#False] -> 'false',
-	trans [#Number :n] -> String(n),
+	
+	trans [#Null]	->	'null',
+	trans [#True]	->	'true',
+	trans [#False]	->	'false',
+	trans [#NaN]	->	'NAN',
+	trans [#PosInf]	->	'+INF',
+	trans [#NegInf]	->	'-INF',
+	trans [#Number :n]	->	String(n),
+	
 	trans [#String :s] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
 	trans [#String :s :raw] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
+	
 	trans [#Quasi undefined [trans*:exprList]]	->	('(' + exprList.join(') . (') + ')'),
+	
 	trans [#List [trans*:list]] -> ('[' + list.join(', ') + ']'),
+	
 	trans ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	trans ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
 	trans ["." trans:x [#Symbol :y]]	->	(x + '->' + y),
+	
 	trans [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
 	trans [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
 	trans [#Call trans:x trans:y]	->	(x + '(' + y + ')'),
+	
 	trans [#Tuple [trans*:list]] -> ('(' + list.join(', ') + ')'),
 
 	trans [#Tuple [tupleItem*:list]] -> ('[' + list.join(', ') + ']'),
@@ -99,9 +109,9 @@ ometa PHP5Transpiler {
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
 	
-	instruction #let [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock
+	instruction #let [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock:param
 		-> 	[
-				'call_user_func(function(' + bind[1] + ') {',
+				'call_user_func(function(' + bind[1] + ') ' + importString(param) + '{',
 				b,
 				'}, ' + expr + ');'
 			],
