@@ -123,7 +123,7 @@ ometa PHP5Transpiler {
 
 	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
 	fragment :name :_ block:b -> ['//  #' + name, b],
-	macro :elementPattern paramPattern:parameter enterBlock(parameter) block:body exitBlock saveMacro(elementPattern, parameter, body)
+	macro :elementPattern paramPattern:parameter enterBlock(parameter) block:body exitBlock:free saveMacro(elementPattern, parameter, body, free)
 		-> ['// define ' + elementPattern],
 
 	paramPattern [#TuplePattern [([#Symbol :name] -> name)*:names]] -> names,
@@ -196,9 +196,9 @@ PHP5Transpiler.initialize = function() {
 		throw fail
 	}
 	 
-	this.saveMacro = function(elementPattern, parameter, body) {
+	this.saveMacro = function(elementPattern, parameter, body, free) {
 		if (this._stack[0].macros === undefined) this._stack[0].macros = []
-		this._stack[0].macros.push([elementPattern, parameter, body])
+		this._stack[0].macros.push([elementPattern, parameter, body, free])
 	}
 	this.elementOutput = function (tag, cls, id, bind, children, body, startT, endT, param) {
 		if (bind === undefined) return [startT, body, endT]
@@ -210,7 +210,11 @@ PHP5Transpiler.initialize = function() {
 		if (overrided) return closure(bind, [startT, body, endT], param)
 		else {
 			var m = this.findMacro(tag, cls, id, bind)
-			return closure(bind, [startT, m, endT], param) // || ['//call macro']
+			if (m) {
+				return closure(bind, [startT, m[2], endT], m[3]) // || ['//call macro']
+			} else {
+				return closure(bind, [startT, "echo '>', htmlspecialchars($context);", endT], param)
+			}
 		}
 	}
 	this.findMacro = function (tag, cls, id, param) {
@@ -221,11 +225,10 @@ PHP5Transpiler.initialize = function() {
 					var elemPattern = m[0]
 					if (elemPattern[0] === tag &&
 						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })) {
-						return m[2]
+						return m
 					}
 				}
 		}
-		return "echo '>', htmlspecialchars($context);"
 		/*return [
 			['closeStartTag'],
 			['text', [0, 0], undefined, [['Symbol', '*']]]
