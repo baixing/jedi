@@ -280,13 +280,13 @@ exports.Parser =
 					"{x}, {y}asjdfhakjsdhfsla{key}{value}
 			'''
 			
-			expext: [[ 'instruction',
+			expect: [[ 'instruction',
 				[ 1, 1 ],
 				'for',
 				[
 					[[ 'Symbol', 'x' ], [ 'Symbol', 'list1' ]],
 					[[ 'Symbol', 'y' ], [ 'Symbol', 'list2' ]],
-					[[ 'TuplePattern', [[ 'Symbol', 'key' ], [ 'Symbol', 'value' ]]], [ 'Symbol', 'x' ]]
+					[[ 'TuplePattern', [[ 'Symbol', 'key' ], [ 'Symbol', 'value' ]]], [ 'Symbol', 'list3' ]]
 				],
 				[[
 					'text',
@@ -303,16 +303,77 @@ exports.Parser =
 				]]
 			]]
 		
+		'let simple binding':
+			input: '''
+				:let x = 10
+					"12345{x}
+			'''
+			
+			expect: [[ 'instruction',
+				[ 1, 1 ],
+				'let',
+				[[[ 'Symbol', 'x' ], [ 'Number', 10 ]]],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[[ 'String', '12345', '12345' ],[ 'Symbol', 'x' ]]]
+				]]
+			]]
+			
 		'let binding':
 			input: '''
 				:let x = 1, y = 2
 					"{x}, {y}
 			'''
+			
+			expect: [[
+				'instruction',
+				[ 1, 1 ],
+				'let',
+				[
+					[[ 'Symbol', 'x' ], [ 'Number', 1 ]],
+					[[ 'Symbol', 'y' ], [ 'Number', 2 ]]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[
+						[ 'Symbol', 'x' ],
+						[ 'String', ', ', ', ' ],
+						[ 'Symbol', 'y' ]
+					]]
+				]]
+			]]
+            
 		'let binding with pattern match':
 			input: '''
-				:let (x, y) = (1, 2)
+				:let (x, y, z) = (1, 2, 3)
 					"{x}, {y}
 			'''
+			expect: [[
+				'instruction',
+				[ 1, 1 ],
+				'let',
+				[[
+					[
+						'TuplePattern',
+						[[ 'Symbol', 'x' ], [ 'Symbol', 'y' ], [ 'Symbol', 'z' ]]
+					],
+					[
+						'Tuple',
+						[[ 'Number', 1 ], [ 'Number', 2 ], [ 'Number', 3 ]]
+					]
+				]],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[[ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ]]]
+				]]
+			]]
+	
 		'let binding with named pattern match':
 			input: '''
 				:let (name:haxName, age) = (name:"hax", age:18)
