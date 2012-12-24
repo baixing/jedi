@@ -231,7 +231,7 @@ exports.PHP5Transpiler =
 		'iterate values':
 			input: [
 				['instruction', [1, 1], 'for',
-					[['Symbol', 'v'], ['Symbol', 'x']]
+					[[['Symbol', 'v'], ['Symbol', 'x']]]
 					[['text', [2, 2], undefined, [
 						[['Symbol', 'v']]
 					]]]
@@ -251,7 +251,7 @@ exports.PHP5Transpiler =
 				'instruction',
 				[1,1],
 				'for',
-				[
+				[[
 					[
 						'TuplePattern',
 						[
@@ -260,7 +260,7 @@ exports.PHP5Transpiler =
 						]
 					],
 					['Symbol', 'x']
-				],
+				]],
 				[
 					[
 						'text',
@@ -286,6 +286,133 @@ exports.PHP5Transpiler =
 				'}'
 			]]
 
+		'multiple for':
+			input: [[ 'instruction',
+				[ 1, 1 ],
+				'for',
+				[ 
+					[ [ 'Symbol', 'x' ], [ 'Symbol', 'list1' ] ],
+					[ [ 'Symbol', 'y' ], [ 'Symbol', 'list2' ] ]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ] 
+				]]
+			]]
+			
+			expect: [[
+				'foreach ($data->list1 as $x) {',
+				[
+					'foreach ($data->list2 as $y) {',
+					[[ 'echo htmlspecialchars($x), htmlspecialchars(\', \'), htmlspecialchars($y);' ]],
+					'}'
+				],
+				'}' 
+			]]
+			            
+		'multiple for with key value':
+			input: [[ 'instruction',
+				[ 1, 1 ],
+				'for',
+				[
+					[[ 'Symbol', 'x' ], [ 'Symbol', 'list1' ]],
+					[[ 'Symbol', 'y' ], [ 'Symbol', 'list2' ]],
+					[[ 'TuplePattern', [[ 'Symbol', 'key' ], [ 'Symbol', 'value' ]]], [ 'Symbol', 'x' ]]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[
+						[ 'Symbol', 'x' ],
+						[ 'String', ', ', ', ' ],
+						[ 'Symbol', 'y' ],
+						[ 'String', 'asjdfhakjsdhfsla', 'asjdfhakjsdhfsla' ],
+						[ 'Symbol', 'key' ],
+						[ 'Symbol', 'value' ]
+					]]
+				]]
+			]]
+			
+			expect: [[ 'foreach ($data->list1 as $x) {',
+				[ 'foreach ($data->list2 as $y) {',
+					[ 'foreach ($data->x as $key => $value) {',
+						[[ 'echo htmlspecialchars($x), htmlspecialchars(\', \'), htmlspecialchars($y), htmlspecialchars(\'asjdfhakjsdhfsla\'), htmlspecialchars($key), htmlspecialchars($value);' ]],
+					'}'],
+				'}'],
+			'}' ]]
+			
+		'let simple binding':
+			input: [[ 'instruction',
+				[ 1, 1 ],
+				'let',
+				[[[ 'Symbol', 'x' ], [ 'Number', 10 ]]],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[[ 'String', '12345', '12345' ],[ 'Symbol', 'x' ]]]
+				]]
+			]]
+			
+			expect: [[
+				'call_user_func(function($x) {',
+				[[ 'echo htmlspecialchars(\'12345\'), htmlspecialchars($x);' ]],
+				'}, 10);'
+			]]
+
+		'let binding':
+			input: [[
+				'instruction',
+				[ 1, 1 ],
+				'let',
+				[
+					[[ 'Symbol', 'x' ], [ 'Number', 1 ]],
+					[[ 'Symbol', 'y' ], [ 'Number', 2 ]]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[
+						[ 'Symbol', 'x' ],
+						[ 'String', ', ', ', ' ],
+						[ 'Symbol', 'y' ]
+					]]
+				]]
+			]]
+			
+			expect: [[
+				'call_user_func(function($x,$y) {',
+				[[ 'echo htmlspecialchars($x), htmlspecialchars(\', \'), htmlspecialchars($y);' ]],
+				'}, 1,2);'
+			]]
+            
+		'let binding with pattern match':
+			input: [[
+				'instruction',
+				[ 1, 1 ],
+				'let',
+				[[
+					[
+						'TuplePattern',
+						[[ 'Symbol', 'x' ], [ 'Symbol', 'y' ], [ 'Symbol', 'z' ]]
+					],
+					[
+						'Tuple',
+						[[ 'Number', 1 ], [ 'Number', 2 ], [ 'Number', 3 ]]
+					]
+				]],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[[ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ]]]
+				]]
+			]]
+	
 		'element':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, []]

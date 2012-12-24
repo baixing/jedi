@@ -209,7 +209,7 @@ exports.Parser =
 			'''
 			expect: [
 				['instruction', [1, Number], 'for',
-					[['Symbol', 'v'], ['Symbol', 'x']]
+					[[['Symbol', 'v'], ['Symbol', 'x']]]
 					[['text', [2, Number], undefined, [
 						[['Symbol', 'v']]
 					]]]
@@ -226,7 +226,7 @@ exports.Parser =
 					'instruction',
 					[1, Number],
 					'for',
-					[
+					[[
 						[
 							'TuplePattern',
 							[
@@ -235,7 +235,7 @@ exports.Parser =
 							]
 						],
 						['Symbol', 'x']
-					],
+					]],
 					[
 						[
 							'text', 
@@ -259,17 +259,121 @@ exports.Parser =
 				:for x in list1, y in list2
 					"{x}, {y}
 			'''
-
+			expect: [[ 'instruction',
+				[ 1, 1 ],
+				'for',
+				[ 
+					[ [ 'Symbol', 'x' ], [ 'Symbol', 'list1' ] ],
+					[ [ 'Symbol', 'y' ], [ 'Symbol', 'list2' ] ]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ] 
+				]]
+			]]
+			
+		'multiple for with key value':
+			input: '''
+				:for x in list1, y in list2, (key, value) in list3
+					"{x}, {y}asjdfhakjsdhfsla{key}{value}
+			'''
+			
+			expect: [[ 'instruction',
+				[ 1, 1 ],
+				'for',
+				[
+					[[ 'Symbol', 'x' ], [ 'Symbol', 'list1' ]],
+					[[ 'Symbol', 'y' ], [ 'Symbol', 'list2' ]],
+					[[ 'TuplePattern', [[ 'Symbol', 'key' ], [ 'Symbol', 'value' ]]], [ 'Symbol', 'list3' ]]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[
+						[ 'Symbol', 'x' ],
+						[ 'String', ', ', ', ' ],
+						[ 'Symbol', 'y' ],
+						[ 'String', 'asjdfhakjsdhfsla', 'asjdfhakjsdhfsla' ],
+						[ 'Symbol', 'key' ],
+						[ 'Symbol', 'value' ]
+					]]
+				]]
+			]]
+		
+		'let simple binding':
+			input: '''
+				:let x = 10
+					"12345{x}
+			'''
+			
+			expect: [[ 'instruction',
+				[ 1, 1 ],
+				'let',
+				[[[ 'Symbol', 'x' ], [ 'Number', 10 ]]],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[[ 'String', '12345', '12345' ],[ 'Symbol', 'x' ]]]
+				]]
+			]]
+			
 		'let binding':
 			input: '''
 				:let x = 1, y = 2
 					"{x}, {y}
 			'''
+			
+			expect: [[
+				'instruction',
+				[ 1, 1 ],
+				'let',
+				[
+					[[ 'Symbol', 'x' ], [ 'Number', 1 ]],
+					[[ 'Symbol', 'y' ], [ 'Number', 2 ]]
+				],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[
+						[ 'Symbol', 'x' ],
+						[ 'String', ', ', ', ' ],
+						[ 'Symbol', 'y' ]
+					]]
+				]]
+			]]
+            
 		'let binding with pattern match':
 			input: '''
-				:let (x, y) = (1, 2)
+				:let (x, y, z) = (1, 2, 3)
 					"{x}, {y}
 			'''
+			expect: [[
+				'instruction',
+				[ 1, 1 ],
+				'let',
+				[[
+					[
+						'TuplePattern',
+						[[ 'Symbol', 'x' ], [ 'Symbol', 'y' ], [ 'Symbol', 'z' ]]
+					],
+					[
+						'Tuple',
+						[[ 'Number', 1 ], [ 'Number', 2 ], [ 'Number', 3 ]]
+					]
+				]],
+				[[
+					'text',
+					[ 2, 5 ],
+					undefined,
+					[[[ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ]]]
+				]]
+			]]
+	
 		'let binding with named pattern match':
 			input: '''
 				:let (name:haxName, age) = (name:"hax", age:18)
@@ -327,10 +431,19 @@ exports.Parser =
 		'nested elements with binding':
 			input: '''
 				div.test1 > div.test2 = x
+					"Hello {user}!
 			'''
 			expect: [
 				['element', [1, Number], ['div', ['test1'], undefined], undefined, [
-					['element', [1, Number], ['div', ['test2'], undefined], ['Symbol', 'x'], []]
+					['element', [1, Number], ['div', ['test2'], undefined], ['Symbol', 'x'], [
+						['text', [Number, Number], undefined, [
+							[
+								['String', 'Hello ', 'Hello ']
+								['Symbol', 'user'],
+								['String', '!', '!']
+							]
+						]]
+					]]
 				]]
 			]
 			# should be [1, 13]
