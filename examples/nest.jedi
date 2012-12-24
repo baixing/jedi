@@ -1,6 +1,4 @@
-html
-	= 1
-		"{*}
-		= a
-			:let b = x mod 2
-				"{b}
+"Hello {user}!"
+'Hello world!'
+"	Hello {user}!
+	Hello world!

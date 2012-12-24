@@ -2,6 +2,7 @@
 "export PHP5Transpiler"
 
 ometa PHP5Transpiler {
+
 	document = [#document [string:filename number number] string:source undefined topBlock:xs] -> (
 		'<?php\n' +
 		//flattenString(x) +
@@ -26,48 +27,50 @@ ometa PHP5Transpiler {
 
 	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),
 	
-	trans [#Null]	->	'null',
-	trans [#True]	->	'true',
-	trans [#False]	->	'false',
-	trans [#NaN]	->	'NAN',
-	trans [#PosInf]	->	'+INF',
-	trans [#NegInf]	->	'-INF',
-	trans [#Number :n]	->	String(n),
 	
-	trans [#String :s] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
-	trans [#String :s :raw] -> ("'" + s.replace(/'/g, '\\\'') + "'"),
+	literal [#Null]	->	'null',
+	literal [#True]	->	'true',
+	literal [#False]	->	'false',
+	literal [#NaN]	->	'NAN',
+	literal [#PosInf]	->	'+INF',
+	literal [#NegInf]	->	'-INF',
+	literal [#Number :n]	->	String(n),
 	
-	trans [#Quasi undefined [trans*:exprList]]	->	('(' + exprList.join(') . (') + ')'),
+	stringLiteral [#String :s]	->	("'" + s.replace(/'/g, "\\'") + "'"),	
+	templateLiteral [#Quasi undefined [trans*:list]]	->	('(' + list.join(') . (') + ')'),
+	listLiteral [#List [expr*:list]]	->	('[' + list.join(', ') + ']'),
 	
-	trans [#List [trans*:list]] -> ('[' + list.join(', ') + ']'),
+	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
+	call ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
+	call ["." expr:x [#Symbol :y]]	->	(x + '->' + y),
 	
-	trans ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
-	trans ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
-	trans ["." trans:x [#Symbol :y]]	->	(x + '->' + y),
+	call [#Call [#Symbol :s externalSymbol(s):x] &[#Tuple :_] trans:y]	->	(x + y),
+	call [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
+	call [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
+	call [#Call trans:x &[#Tuple :_] trans:y]	->	(x + y),
+	call [#Call trans:x trans:y]	->	(x + '(' + y + ')'),
 	
-	trans [#Call [#Symbol :s externalSymbol(s):x] &[#Tuple :_] trans:y]	->	(x + y),
-	trans [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
-	trans [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
-	trans [#Call trans:x &[#Tuple :_] trans:y]	->	(x + y),
-	trans [#Call trans:x trans:y]	->	(x + '(' + y + ')'),
+	range ['...' trans:x trans:y]	->	('(range(' + x + ', ' + y + '))'),
+	range ['..<' trans:x trans:y]	->	('(range(' + x + ', ' + y + ' - 1))'),
+	bin [#BinaryOp 'mod' trans:x trans:y]	->	('(' + x + ' ' + '%' + ' ' + y + ')'),
+	bin [#BinaryOp 'div' trans:x trans:y]	->	('(' + x + ' ' + '/' + ' ' + y + ')'),
+	bin [#BinaryOp 'mul' trans:x trans:y]	->	('(' + x + ' ' + '*' + ' ' + y + ')'),
+	bin [#BinaryOp :op trans:x trans:y]	->	('(' + x + ' ' + op + ' ' + y + ')'),
 	
-	trans [#Tuple [trans*:list]] -> ('(' + list.join(', ') + ')'),
-
-	trans [#Tuple [tupleItem*:list]] -> ('[' + list.join(', ') + ']'),
-
-	trans ['...' trans:x trans:y]	->	('(range(' + x + ', ' + y + '))'),
-	trans ['..<' trans:x trans:y]	->	('(range(' + x + ', ' + y + ' - 1))'),
-	trans [#BinaryOp 'mod' trans:x trans:y]	->	('(' + x + ' ' + '%' + ' ' + y + ')'),
-	trans [#BinaryOp 'div' trans:x trans:y]	->	('(' + x + ' ' + '/' + ' ' + y + ')'),
-	trans [#BinaryOp 'mul' trans:x trans:y]	->	('(' + x + ' ' + '*' + ' ' + y + ')'),
-	trans [#BinaryOp :op trans:x trans:y]	->	('(' + x + ' ' + op + ' ' + y + ')'),
+	symbol [#Symbol '*']	->	'$context',
+	symbol [#Symbol :s externalSymbol(s):x]	->	x,
+	symbol [#Symbol :s resolve(s):x]	->	x,
 	
-	trans [#Symbol '*']	->	'$context',
-	trans [#Symbol :s externalSymbol(s):x]	->	x,
-	trans [#Symbol :s resolve(s):x]	->	x,
+	expr	=	literal | stringLiteral | templateLiteral | listLiteral | symbol | call | range | bin,
 	
-	trans :unknown -> ['/*', JSON.stringify(unknown), '*/'],
+	trans	=	expr,
+	
+	trans [#String :s :raw]	->	("'" + s.replace(/'/g, '\\\'') + "'"),
+	trans [#Tuple [trans*:list]]	->	('(' + list.join(', ') + ')'),
+	trans [#Tuple [tupleItem*:list]]	->	('[' + list.join(', ') + ']'),
+	trans :unknown	->	['/*', JSON.stringify(unknown), '*/'],
 	//trans [trans*:x] -> ( x ),
+	
 
 	comment [:line] -> ["echo '<!-- " + escapeComment(simpleString(line)) + " -->';"],
 	comment [echoComment*:xs] -> [].concat(
@@ -77,10 +80,10 @@ ometa PHP5Transpiler {
 		),
 	echoComment [char*:s] -> ("echo '" + escapeComment(simpleString(s)) + "', \"\\n\";"),
 
-	text #String string:s	->	("echo '" + escapeText(simpleString(s)) + "';"),
+	text stringLiteral:s	->	['echo ' + escapeText(s) + ';'],
+	text templateLiteral:s	->	['echo htmlspecialchars(' + s + ');'],
 	text undefined [textLine*:lines]	->	echoLines(lines),
-	text undefined [echoTemplateString*:lines] -> lines,
-	text undefined echoTemplateString:s	->	s,
+	text undefined [echoTemplateString*:lines]	->	lines,
 
 	textLine string:s	->	("'" + escapeText(simpleString(s)) + "', \"\\n\""),
 	echoTemplateString [trans*:exprList] -> ('echo htmlspecialchars((' + exprList.join(') . (') + '));'),

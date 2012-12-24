@@ -40,8 +40,8 @@ ometa PlainParser <: OffsideRule {
 	bindingFlag	=	'=',
 	bindingArg	=	expr | error,
 
-	text	=	[Expression.stringLiteral:s spaces] []	->	s,
-	text	=	[Expression.quasiLiteral:s spaces] []	->	s.slice(1),
+	text	=	[Expression.stringLiteral:s spaces] []	->	[s],
+	text	=	[Expression.quasiLiteral:s spaces] []	->	[s],
 	text	=	['\'' spaces char*:x] :xs	->	[undefined, [x].concat(xs).map(string)],
 	text	=	[symbol?:tag '"' spaces templateString:x] templateStrings:xs
 			-> [tag, [x].concat(xs)],
