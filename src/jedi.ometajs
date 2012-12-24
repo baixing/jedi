@@ -67,13 +67,13 @@ ometa PlainParser <: OffsideRule {
 	if_	=	"if" spaces expr:x spaces	->	[#if, x],
 	elseif_	=	"else if" spaces expr:x spaces	->	[#elseif, x],
 	else_	=	"else" spaces	->	[#else],
-	for_	=	"for" spaces Expression.bindingPattern:x	
-			spaces "in" spaces expr:y	->	[#for, [x, y]],
-	for_	=	"for" spaces expr:x	->	[#for, x],
+	for_	=	"for" for_content:x ("," for_content)*:y	->[#for, [x].concat(y)],
+	for_content	=	spaces Expression.bindingPattern:x spaces "in" spaces expr:y	->	[x, y],
+	for_content	=	spaces expr:x	->	x,
 	match_	=	"match" spaces expr:x	->	[#match, x],
 	case_	=	"case" spaces expr:x	->	[#case, x],
-	let_	=	"let" spaces Expression.bindingPattern:x	
-			spaces '=' spaces expr:y	->	[#let, [x, y]],
+	let_	=	"let" let_content:x ("," let_content)*:y	->[#let, [x].concat(y)],
+	let_content	=	spaces Expression.bindingPattern:x spaces '=' spaces expr:y	->	[x, y],
 	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
 	external_	=	"external" space+ sym:x (spaces ',' spaces sym)*:xs spaces	->	[#external, [x].concat(xs)],
 	

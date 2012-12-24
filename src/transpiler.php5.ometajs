@@ -114,15 +114,11 @@ ometa PHP5Transpiler {
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
 	
-	instruction #let [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock:param
-		-> 	[
-				'call_user_func(function(' + bind[1] + ')' + getImportString(param) + ' {',
-				b,
-				'}, ' + expr + ');'
-			],
+	instruction #let [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(this.getAttrs(binds)) block:b exitBlock:param
+		->	assignment(binds, b, param),
+	instruction #for [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(this.getAttrs(binds)) block:b exitBlock
+		->	translateMultiLoops(binds, b),
 
-	instruction #for [bindingPattern:bind trans:expr] enterBlock(bind[0]) block:b exitBlock
-		-> ["foreach (" + expr + " as " + bind[1] + ") {", b, "}"],
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
 
@@ -159,6 +155,14 @@ ometa PHP5Transpiler {
 
 PHP5Transpiler.initialize = function() {
 	this._stack = [['page']]
+	
+	this.getAttrs = function(binds) {
+		var result = []
+		for (var i=0; i < binds.length; i++) {
+			result = result.concat(binds[i][0][0])
+		}
+		return result
+	}
 	
 	this.enterBlock = function(bindings) {
 		this._stack.unshift(bindings)
@@ -259,10 +263,19 @@ function echo() {
 	})
 	return 'echo ' + args.join(', ') + ';'
 }
+
 function echoLines(lines) {
 	return lines.map(function(line) {
 		return echo(line, '\n')
 	})
+}
+
+function translateMultiLoops(binds, b) {
+	if (binds.length > 0) {
+		var bind = binds.shift();
+		return ["foreach (" + bind[1] + " as " + bind[0][1] + ") {", translateMultiLoops(binds,b), "}"]
+	}
+	return b;
 }
 
 function escapeComment(s) {
@@ -316,6 +329,23 @@ function closure(context, body, param) {
 		'call_user_func(function ($context)' + getImportString(param) + ' {',
 		body,
 		'}, ' + context + ');'
+	]
+}
+
+function assignment(binds, body, param) {
+	var key = '', value = ''
+	for (var i = 0; i < binds.length; i++) {
+		key += binds[i][0][1]
+		value += binds[i][1]
+		if (i < binds.length - 1) {
+			key += ','
+			value += ','
+		}
+	}
+	return [
+		'call_user_func(function(' + key + ')' + getImportString(param) + ' {',
+		body,
+		'}, ' + value + ');'
 	]
 }
 
