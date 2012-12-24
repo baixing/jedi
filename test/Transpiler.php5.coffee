@@ -96,9 +96,11 @@ exports.PHP5Transpiler =
 				]
 			]]
 
-			expect: 	[[ 'call_user_func(function ($context) use ($data) {',
-				[ [ 'echo htmlspecialchars(\'Hello \'), htmlspecialchars($data->user), htmlspecialchars(\'!\n\');' ] ],
-			'}, $data->x);' ] ],
+			expect: [[
+				'call_user_func(function ($context) use ($data) {',
+				[ [ "echo htmlspecialchars(('Hello ') . ($data->user) . ('!\n'));" ] ],
+				'}, $data->x);'
+			]],
 
 		'binding of a list':
 			input: [
@@ -181,7 +183,7 @@ exports.PHP5Transpiler =
 				]]
 			]
 
-			expect: [['echo htmlspecialchars(\'Hello world!\');']]
+			expect: [['echo htmlspecialchars((\'Hello world!\'));']]
 
 		'double quot text escape/interpolation':
 			input: [
@@ -194,7 +196,7 @@ exports.PHP5Transpiler =
 				]]
 			]
 
-			expect: [['echo htmlspecialchars(\'Hello \'), htmlspecialchars($data->user), htmlspecialchars(\'!\n\');']]
+			expect: [["echo htmlspecialchars(('Hello ') . ($data->user) . ('!\n'));"]]
 
 		'double quot multiple lines text with tag':
 			input: [
@@ -223,7 +225,7 @@ exports.PHP5Transpiler =
 			expect: [[
 				'if (($data->x > $data->y)) {',
 				[[
-					'echo htmlspecialchars($data->x), htmlspecialchars(\' > \'), htmlspecialchars($data->y);'
+					"echo htmlspecialchars(($data->x) . (' > ') . ($data->y));"
 				]],
 				'}'
 			]]
@@ -241,7 +243,7 @@ exports.PHP5Transpiler =
 			expect: [[
 				'foreach ($data->x as $v) {',
 				[[
-					'echo htmlspecialchars($v);'
+					'echo htmlspecialchars(($v));'
 				]],
 				'}'
 			]]
@@ -281,7 +283,7 @@ exports.PHP5Transpiler =
 			expect: [[
 				'foreach ($data->x as $key => $value) {',
 				[[
-					'echo htmlspecialchars($key), htmlspecialchars(\' = \'), htmlspecialchars($value), htmlspecialchars(\'"\');'
+					"""echo htmlspecialchars(($key) . (' = ') . ($value) . ('"'));"""
 				]],
 				'}'
 			]]
@@ -290,7 +292,7 @@ exports.PHP5Transpiler =
 			input: [[ 'instruction',
 				[ 1, 1 ],
 				'for',
-				[ 
+				[
 					[ [ 'Symbol', 'x' ], [ 'Symbol', 'list1' ] ],
 					[ [ 'Symbol', 'y' ], [ 'Symbol', 'list2' ] ]
 				],
@@ -298,20 +300,20 @@ exports.PHP5Transpiler =
 					'text',
 					[ 2, 5 ],
 					undefined,
-					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ] 
+					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ]
 				]]
 			]]
-			
+
 			expect: [[
 				'foreach ($data->list1 as $x) {',
 				[
 					'foreach ($data->list2 as $y) {',
-					[[ 'echo htmlspecialchars($x), htmlspecialchars(\', \'), htmlspecialchars($y);' ]],
+					[[ "echo htmlspecialchars(($x) . (', ') . ($y));" ]],
 					'}'
 				],
-				'}' 
+				'}'
 			]]
-			            
+
 		'multiple for with key value':
 			input: [[ 'instruction',
 				[ 1, 1 ],
@@ -329,21 +331,21 @@ exports.PHP5Transpiler =
 						[ 'Symbol', 'x' ],
 						[ 'String', ', ', ', ' ],
 						[ 'Symbol', 'y' ],
-						[ 'String', 'asjdfhakjsdhfsla', 'asjdfhakjsdhfsla' ],
+						[ 'String', ', ', ', ' ],
 						[ 'Symbol', 'key' ],
 						[ 'Symbol', 'value' ]
 					]]
 				]]
 			]]
-			
+
 			expect: [[ 'foreach ($data->list1 as $x) {',
 				[ 'foreach ($data->list2 as $y) {',
 					[ 'foreach ($data->x as $key => $value) {',
-						[[ 'echo htmlspecialchars($x), htmlspecialchars(\', \'), htmlspecialchars($y), htmlspecialchars(\'asjdfhakjsdhfsla\'), htmlspecialchars($key), htmlspecialchars($value);' ]],
+						[[ "echo htmlspecialchars(($x) . (', ') . ($y) . (', ') . ($key) . ($value));" ]],
 					'}'],
 				'}'],
 			'}' ]]
-			
+
 		'let simple binding':
 			input: [[ 'instruction',
 				[ 1, 1 ],
@@ -356,10 +358,10 @@ exports.PHP5Transpiler =
 					[[[ 'String', '12345', '12345' ],[ 'Symbol', 'x' ]]]
 				]]
 			]]
-			
+
 			expect: [[
 				'call_user_func(function($x) {',
-				[[ 'echo htmlspecialchars(\'12345\'), htmlspecialchars($x);' ]],
+				[[ "echo htmlspecialchars(('12345') . ($x));" ]],
 				'}, 10);'
 			]]
 
@@ -383,13 +385,13 @@ exports.PHP5Transpiler =
 					]]
 				]]
 			]]
-			
+
 			expect: [[
 				'call_user_func(function($x,$y) {',
-				[[ 'echo htmlspecialchars($x), htmlspecialchars(\', \'), htmlspecialchars($y);' ]],
+				[[ 'echo htmlspecialchars(($x) . (\', \') . ($y));' ]],
 				'}, 1,2);'
 			]]
-            
+
 		'let binding with pattern match':
 			input: [[
 				'instruction',
@@ -412,7 +414,7 @@ exports.PHP5Transpiler =
 					[[[ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ]]]
 				]]
 			]]
-	
+
 		'element':
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, []]
@@ -448,7 +450,7 @@ exports.PHP5Transpiler =
 			expect: [[ 'echo \'<div class="test1"\';',
 				[[ 'call_user_func(function ($context) use ($data) {',
 					[ 'echo \'<div class="test2"\';',
-						[ [ 'echo htmlspecialchars(\'Hello \'), htmlspecialchars($data->user), htmlspecialchars(\'!\n\');' ] ],
+						[ [ 'echo htmlspecialchars((\'Hello \') . ($data->user) . (\'!\n\'));' ] ],
 					'echo \'</div>\';' ],
 				'}, $data->x);' ] ],
 				'echo \'</div>\';'
@@ -492,7 +494,7 @@ exports.PHP5Transpiler =
 
 			expect: [
 				[ 'echo \'<meta\';',
-					[[ 'echo \' charset="\';', 'echo htmlspecialchars(\'utf-8\');', 'echo \'"\';' ] ],
+					[[ 'echo \' charset="\';', 'echo htmlspecialchars((\'utf-8\'));', 'echo \'"\';' ] ],
 				[]]
 			]
 
@@ -505,7 +507,7 @@ exports.PHP5Transpiler =
 
 			expect: [
 				[ 'echo \'<meta\';',
-					[[ 'echo \' charset="\';', 'echo htmlspecialchars(\'utf-8\'), htmlspecialchars($data->x);', 'echo \'"\';' ] ],
+					[[ 'echo \' charset="\';', 'echo htmlspecialchars((\'utf-8\') . ($data->x));', 'echo \'"\';' ] ],
 				[]]
 			]
 

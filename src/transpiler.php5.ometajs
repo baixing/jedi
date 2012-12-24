@@ -1,4 +1,4 @@
-"import string, concat, flattenLines, isCharArray, dir from './util'"
+"import string, concat, flattenLines, isCharArray, dir, flattenArray from './util'"
 "export PHP5Transpiler"
 
 ometa PHP5Transpiler {
@@ -77,11 +77,13 @@ ometa PHP5Transpiler {
 		),
 	echoComment [char*:s] -> ("echo '" + escapeComment(simpleString(s)) + "', \"\\n\";"),
 
-	text undefined [echoLine*:lines] -> lines,
+	text #String string:s	->	("echo '" + escapeText(simpleString(s)) + "';"),
+	text undefined [textLine*:lines]	->	echoLines(lines),
 	text undefined [echoTemplateString*:lines] -> lines,
+	text undefined echoTemplateString:s	->	s,
 
-	echoLine string:s -> ("echo '" + escapeText(simpleString(s)) + "', \"\\n\";"),
-	echoTemplateString [trans*:exprList] -> ('echo htmlspecialchars(' + exprList.join('), htmlspecialchars(') + ');'),
+	textLine string:s	->	("'" + escapeText(simpleString(s)) + "', \"\\n\""),
+	echoTemplateString [trans*:exprList] -> ('echo htmlspecialchars((' + exprList.join(') . (') + '));'),
 	//	-> dom.text(lines),
 
 	element [:tag :cls :id] undefined
@@ -114,9 +116,9 @@ ometa PHP5Transpiler {
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
 	
-	instruction #let [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(this.getAttrs(binds)) block:b exitBlock:param
+	instruction #let [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(collectSymbols(binds)) block:b exitBlock:param
 		->	assignment(binds, b, param),
-	instruction #for [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(this.getAttrs(binds)) block:b exitBlock
+	instruction #for [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(collectSymbols(binds)) block:b exitBlock
 		->	translateMultiLoops(binds, b),
 
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
@@ -155,14 +157,6 @@ ometa PHP5Transpiler {
 
 PHP5Transpiler.initialize = function() {
 	this._stack = [['page']]
-	
-	this.getAttrs = function(binds) {
-		var result = []
-		for (var i=0; i < binds.length; i++) {
-			result = result.concat(binds[i][0][0])
-		}
-		return result
-	}
 	
 	this.enterBlock = function(bindings) {
 		this._stack.unshift(bindings)
@@ -265,8 +259,9 @@ function echo() {
 }
 
 function echoLines(lines) {
-	return lines.map(function(line) {
-		return echo(line, '\n')
+	var n = lines.length
+	return lines.map(function(l, i) {
+		return (i > 0 ? '     ' : 'echo ') + l + (i < n ? ',' : ';')
 	})
 }
 
@@ -332,6 +327,12 @@ function closure(context, body, param) {
 	]
 }
 
+function collectSymbols(binds) {
+	return flattenArray(binds.map(function(b){
+		return b[0][0]
+	}))
+}
+	
 function assignment(binds, body, param) {
 	var key = '', value = ''
 	for (var i = 0; i < binds.length; i++) {

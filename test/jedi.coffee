@@ -219,7 +219,7 @@ exports.Parser =
 		'iterate key, value pairs':
 			input: '''
 				:for (key, value) in x
-					"{key} = {value}"
+					"{key} = {value}
 			'''
 			expect: [
 				[
@@ -246,7 +246,6 @@ exports.Parser =
 									['Symbol', 'key'],
 									['String', ' = ', ' = '],
 									['Symbol', 'value'],
-									['String', '"', '"']
 								]
 							]
 						]
@@ -277,7 +276,7 @@ exports.Parser =
 		'multiple for with key value':
 			input: '''
 				:for x in list1, y in list2, (key, value) in list3
-					"{x}, {y}asjdfhakjsdhfsla{key}{value}
+					"{x}, {y}, {key}{value}
 			'''
 			
 			expect: [[ 'instruction',
@@ -296,7 +295,7 @@ exports.Parser =
 						[ 'Symbol', 'x' ],
 						[ 'String', ', ', ', ' ],
 						[ 'Symbol', 'y' ],
-						[ 'String', 'asjdfhakjsdhfsla', 'asjdfhakjsdhfsla' ],
+						[ 'String', ', ', ', ' ],
 						[ 'Symbol', 'key' ],
 						[ 'Symbol', 'value' ]
 					]]
