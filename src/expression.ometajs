@@ -3,7 +3,7 @@
 
 ometa Expression {
 
-	keyword	=	"mod" | "div" | "mul",
+	keyword	=	("mod" | "div" | "mul" | "&&" | "-") ~nameChar,
 	primary	=	literal | listLiteral | tupleLiteral | path | symbol,
 		
 	symbol	=	('*' | ~keyword nameChar+):s -> [#Symbol, string(s)],

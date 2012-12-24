@@ -17,7 +17,7 @@ exports.Expression = {
 		'/test/3/2/1',
 		'//test/../test/./ok',
 	],
-	literal: [
+	'[literal]': [
 		'null',
 		'true',
 		'false',
@@ -33,9 +33,9 @@ exports.Expression = {
 		'0.314e+1',
 		'31400e-4',
 		'NaN',
-		'Infinity',
-		'+Infinity',
-		'-Infinity',
+		'INF',
+		'+INF',
+		'-INF',
 		'+0',
 		'-0',
 		'\'\'',
@@ -85,12 +85,14 @@ exports.Expression = {
 		'(a, b, c)',
 		'(a > b)',
 	],
-	expression: [
+	'[expression]': [
 		'a',
 		'a > b',
 		'(a > b)',
 		'a > b > c',
 		'(a > b) > c',
 		'a > (b > c)',
+		'x-y - z',
+		'm&n && true',
 	]
 }
