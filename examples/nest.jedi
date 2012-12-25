@@ -1,2 +1,2 @@
 div
-	@test
+	p = if 1 then 'hello' else 'ok'

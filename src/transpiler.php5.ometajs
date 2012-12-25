@@ -61,7 +61,10 @@ ometa PHP5Transpiler {
 	symbol [#Symbol :s externalSymbol(s):x]	->	x,
 	symbol [#Symbol :s resolve(s):x]	->	x,
 	
-	expr	=	literal | stringLiteral | templateLiteral | listLiteral | symbol | call | range | bin,
+	ternary [#Ternary expr:x expr:y undefined]	->	('(' + x + ') ? (' + y + ') : null'),
+	ternary [#Ternary expr:x expr:y expr:z]	->	('(' + x + ') ? (' + y + ') : (' + z + ')'),
+	
+	expr	=	literal | stringLiteral | templateLiteral | listLiteral | symbol | call | range | bin | ternary,
 	
 	trans	=	expr,
 	

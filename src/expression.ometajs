@@ -3,7 +3,7 @@
 
 ometa Expression {
 
-	keyword	=	("mod" | "div" | "mul" | "&&" | "-") ~nameChar,
+	keyword	=	("not" | "if" | "then" | "else" | "mod" | "div" | "mul" | "&&" | "-") ~nameChar,
 	primary	=	literal | listLiteral | tupleLiteral | path | symbol,
 		
 	symbol	=	('*' | ~keyword nameChar+):s -> [#Symbol, string(s)],
@@ -110,7 +110,9 @@ ometa Expression {
 
 	concatExp = concatExp:x "++" exp1 -> [#Concat, x, y], // x ++ y
 
-	expression = exp1,
+	expression = conditionExpr,
+	conditionExpr = "if" spaces exp1:x spaces "then" spaces exp1:y spaces ("else" spaces conditionExpr:z)?
+		->	[#Ternary, x, y, z] | exp1,
 	exp1 = exp1:x op1:op exp2:y -> [#BinaryOp, op, x, y] | exp2,
 	exp2 = exp2:x op2:op exp3:y -> [#BinaryOp, op, x, y] | exp3,
 	exp3 = exp3:x op3:op exp4:y -> [#BinaryOp, op, x, y] | exp4,
@@ -128,7 +130,7 @@ ometa Expression {
 	op5 = spaces ("?:"):x spaces -> x,
 	op6 = spaces ("+" | "-"):x spaces -> x,
 	op7 = spaces ("×" | "÷" | "mul" | "div" | "mod"):x spaces -> x,
-	op9 = spaces ('!'):x spaces -> x,
+	op9 = spaces ('!' | "not"):x spaces -> x,
 
 	END
 }
