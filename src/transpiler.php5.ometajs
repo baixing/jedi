@@ -86,7 +86,8 @@ ometa PHP5Transpiler {
 	text undefined [echoTemplateString*:lines]	->	lines,
 
 	textLine string:s	->	("'" + escapeText(simpleString(s)) + "', \"\\n\""),
-	echoTemplateString [trans*:exprList] -> ('echo htmlspecialchars((' + exprList.join(') . (') + '));'),
+	echoTemplateString [] -> '',
+	echoTemplateString [trans+:exprList] -> ('echo htmlspecialchars((' + exprList.join(') . (') + '));'),
 	//	-> dom.text(lines),
 
 	element [:tag :cls :id] undefined
