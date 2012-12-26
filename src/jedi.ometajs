@@ -87,7 +87,7 @@ ometa PlainParser <: OffsideRule {
 		|	end_
 		|	external_,
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
-	instructionName	=	symbol,
+	instructionName	=	<symbol>:x -> string(x),
 	instructionParam	=	expr,
 	
 	postInstruction	=	if_ | for_ | let_ | else_,

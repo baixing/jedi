@@ -128,6 +128,8 @@ ometa PHP5Transpiler {
 		->	assignment(binds, b, param),
 	instruction #for [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(collectSymbols(binds)) block:b exitBlock
 		->	translateMultiLoops(binds, b),
+		
+	instruction #unsafe trans:x :b -> ('echo ' + x + ';'),
 
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],

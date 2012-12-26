@@ -1,2 +1,2 @@
 div
-	p = if 1 then 'hello' else 'ok'
+	:unsafe "<script>alert({1+1})</script>"
