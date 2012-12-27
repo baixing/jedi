@@ -33,6 +33,9 @@ exports.Expression = {
 		'0.314e+1',
 		'31400e-4',
 		'NaN',
+		'INF',
+		'+INF',
+		'-INF',
 		'+0',
 		'-0',
 		'\'\'',
@@ -90,5 +93,7 @@ exports.Expression = {
 		'(a > b) > c',
 		'a > (b > c)',
 		'!a',
+		'x-y - z',
+		'm&n && true',
 	]
 }

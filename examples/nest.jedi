@@ -1,6 +1,2 @@
-html
-	= 1
-		"{*}
-		= a
-			:let b = x mod 2
-				"{b}
+div
+	:unsafe "<script>alert({1+1})</script>"

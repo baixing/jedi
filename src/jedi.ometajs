@@ -8,7 +8,8 @@
 ometa PlainParser <: OffsideRule {
 
 	expr	=	Expression.expression,
-	sym	=	Expression.symbol,
+	symbol	=	Expression.symbol,
+	comma	=	Expression.comma,
 	
 	load string:filename readFile(filename):content source(content):nodes
 		->	[#document, [filename, 1, 1], content, undefined, nodes],
@@ -38,9 +39,11 @@ ometa PlainParser <: OffsideRule {
 	bindingPattern	=	bindingFlag spaces bindingArg:expr spaces	->	expr,
 	bindingFlag	=	'=',
 	bindingArg	=	expr | error,
-		
+
+	text	=	[Expression.stringLiteral:s spaces] []	->	[s],
+	text	=	[Expression.quasiLiteral:s spaces] []	->	[s],
 	text	=	['\'' spaces char*:x] :xs	->	[undefined, [x].concat(xs).map(string)],
-	text	=	[sym?:tag '"' spaces templateString:x] templateStrings:xs
+	text	=	[symbol?:tag '"' spaces templateString:x] templateStrings:xs
 			-> [tag, [x].concat(xs)],
 	text	=	['\u2018' spaces char*:x] :xs
 			-> [#Unicode, [x].concat(xs)],
@@ -67,15 +70,14 @@ ometa PlainParser <: OffsideRule {
 	if_	=	"if" spaces expr:x spaces	->	[#if, x],
 	elseif_	=	"else if" spaces expr:x spaces	->	[#elseif, x],
 	else_	=	"else" spaces	->	[#else],
-	for_	=	"for" for_content:x ("," for_content)*:y	->[#for, [x].concat(y)],
-	for_content	=	spaces Expression.bindingPattern:x spaces "in" spaces expr:y	->	[x, y],
-	for_content	=	spaces expr:x	->	x,
+	for_	=	"for" spaces for_content:x (comma for_content)*:y	->[#for, [x].concat(y)],
+	for_content	=	Expression.bindingPattern:x spaces "in" spaces expr:y	->	[x, y],
 	match_	=	"match" spaces expr:x	->	[#match, x],
 	case_	=	"case" spaces expr:x	->	[#case, x],
-	let_	=	"let" let_content:x ("," let_content)*:y	->[#let, [x].concat(y)],
-	let_content	=	spaces Expression.bindingPattern:x spaces '=' spaces expr:y	->	[x, y],
+	let_	=	"let" spaces let_binding:x (comma let_binding)*:y	->[#let, [x].concat(y)],
+	let_binding	=	Expression.bindingPattern:x spaces '=' spaces expr:y	->	[x, y],
 	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
-	external_	=	"external" space+ sym:x (spaces ',' spaces sym)*:xs spaces	->	[#external, [x].concat(xs)],
+	external_	=	"external" space+ symbol:x (spaces ',' spaces symbol)*:xs spaces	->	[#external, [x].concat(xs)],
 	
 	instructionPattern	=	import_
 		|	if_ | elseif_ | else_
@@ -85,13 +87,16 @@ ometa PlainParser <: OffsideRule {
 		|	end_
 		|	external_,
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
-	instructionName	=	sym,
+	instructionName	=	<symbol>:x -> string(x),
 	instructionParam	=	expr,
 	
 	postInstruction	=	if_ | for_ | let_ | else_,
 		
 	END
 }
+
+//PlainParser.initialize = function() {
+//}
 
 ometa Parser <: PlainParser {
 
