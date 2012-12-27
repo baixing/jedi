@@ -4,7 +4,7 @@ ometa SimpleText {
 	lines newline:nl	=	string:s	->	s.split(nl),
 	newline	->	/\r?\n/,
 	whitespace	=	' ' | '\t' | '\n',
-	nameChar	=	letterOrDigit | '_' | '-' | '&',
+	nameChar	=	letterOrDigit | '_' | '-' | '&' | char:c ?unicodeLetter.test(c) -> c,
 	END
 }
 
@@ -26,6 +26,8 @@ ometa CompatibleText <: UnicodeText {
 
 var whitespace	=	/[\t\n \u00A0\u3000\u2000-\u200A\u202F\u205F\u2028\u2029\u1680\u180E\uFEFF]/
 var discouraged	=	/[\u0000-\u0008\u000B-\u001F\u007F-\u009F\uFDD0-\uFDEF\uFFFE\uFFFF]/g
+var unicodeLetter = /[\u100-\uFFFD]/i
+
 
 function checkDiscouraged(line, n, lines) {
 	var c = line.search(discouraged)
