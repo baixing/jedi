@@ -2,6 +2,7 @@ node_modules/
 sandbox/
 *.ometa.js
 *.php
+*.log
 
 #################
 ## Eclipse
