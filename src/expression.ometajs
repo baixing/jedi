@@ -104,6 +104,7 @@ ometa Expression {
 	refExp = refExp:x spaces (tupleLiteral | listLiteral):y -> [#Call, x, y],
 	refExp = refExp:x space+ primary:y -> [#Call, x, y], // x y
 	refExp = primary,
+	refExp = exp9,
 
 	rangeExp = refExp:x spaces (``...'' | ``..<''):op spaces refExp:y -> [op, x, y],
 	rangeExp = refExp,

@@ -4,6 +4,16 @@ exports.PHP5Transpiler =
 
 	block:
 
+		'external':
+			input: [[
+				'instruction',
+				[ 1, 1 ],
+				'external',
+				[[ 'Symbol', 'graph' ], [ 'Symbol', 'Category' ], [ 'Symbol', 'Seo' ], [ 'Symbol', 'array_slice' ]],
+				[]
+			]]
+
+
 		'comment single line':
 			input: [
 				['comment', [1, 1], ['comment line']]

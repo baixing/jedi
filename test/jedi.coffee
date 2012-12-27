@@ -4,6 +4,16 @@ exports.Parser =
 
 	source:
 
+		'external':
+			input: ':external graph, Category, Seo, array_slice'
+			expect: [[
+				'instruction',
+				[ 1, 1 ],
+				'external',
+				[[ 'Symbol', 'graph' ], [ 'Symbol', 'Category' ], [ 'Symbol', 'Seo' ], [ 'Symbol', 'array_slice' ]],
+				[]
+			]]
+
 		'comment single line':
 			input: '! comment line'
 			expect: [
