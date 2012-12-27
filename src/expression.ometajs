@@ -58,12 +58,12 @@ ometa Expression {
 	escapedChar '\\' 'f' -> '\u000c',
 	escapedChar '\\' 'r' -> '\u000d',
 	escapedChar '\\' <hex hex? hex? hex? hex? hex?>:u space?
-		-> toUTF16(parseInt(u, 16)),
+		-> toUTF16(parseInt(string(u), 16)),
 	escapedChar '\\' 'u' <hex hex hex hex>:u
-		-> String.fromCharCode(parseInt(u, 16)),
+		-> String.fromCharCode(parseInt(string(u), 16)),
 	escapedChar '\\' 'u' '{' <hex+>:u '}'
-		-> toUTF16(parseInt(u, 16)),
-	escapedChar '\\' <char>,
+		-> toUTF16(parseInt(string(u), 16)),
+	escapedChar '\\' char:c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 
 	listLiteral =
