@@ -92,6 +92,7 @@ exports.Expression = {
 		'a > b > c',
 		'(a > b) > c',
 		'a > (b > c)',
+		'!a',
 		'x-y - z',
 		'm&n && true',
 	]
