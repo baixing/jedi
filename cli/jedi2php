@@ -10,9 +10,18 @@ program.
 	option('--php', '编译为PHP').
 	//option('-e, --error-handler [type]', '指定错误处理器', 'html').
 	option('-w, --watch', '当指定文件的内容变化时自动重新编译').
+	option('-s, --service', '启动编译服务').
+	option('-p, --port <n>', '编译服务端口', parseInt).
 	parse(process.argv)
 
-if (program.args.length > 0) {
+if (program.service) {
+
+	transpiler.service({
+		base: program.args[0] || process.cwd(),
+		port: program.port || 1337
+	})
+
+} else if (program.args.length > 0) {
 
 	var srcPath = program.args[0]
 	if (!fs.existsSync(srcPath)) {
