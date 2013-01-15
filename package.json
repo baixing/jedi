@@ -6,6 +6,7 @@
 	"keywords": ["view", "template", "dsl"],
 	"dependencies": {
 		"my": "",
+		"mmclass": "",
 		"commander": ""
 	},
 	"repository": {

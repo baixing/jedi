@@ -2,32 +2,51 @@
 
 var fs = require('fs')
 var pkg = require('../package.json')
-var ometa = require('../lib/ometa-js')
-var parser = require('../src/jedi')
+var jedi = require('../src')
 var util = require('../src/util')
 
 var program = require('commander')
 
 program.
+	usage('[options] <source> <dest>').
 	version(pkg.version).
-	option('-p, --parse', '解析指定文件').
+	option('-w, --watch', '当源文件的内容变化时自动重新编译').
+	option('-1, --tree1', '查看抽象语法树（阶段1）').
+	option('-2, --tree2', '查看抽象语法树（阶段2）').
+	option('-3, --tree3', '查看抽象语法树（阶段3）').
+	option('-4, --tree4', '查看抽象语法树（阶段4）').
 	parse(process.argv)
 
-if (program.args.length > 0) {
-
-	var srcPath = program.args[0]
-	if (!fs.existsSync(srcPath)) {
-		srcPath += '.jedi'
-		if (!fs.existsSync(srcPath)) {
-			console.error('文件' + srcPath + '不存在')
-			throw new Error('Cannot find file: ' + srcPath)
-		}
-	}
-
-	var tree = parser.Parser.match(srcPath, 'load')
-	//util.dir(tree)
-
-} else {
+if (program.args.length < 1) {
 	program.help()
+	return
 }
 
+var src = program.args[0]
+if (!fs.existsSync(src)) {
+	src += '.jedi'
+	if (!fs.existsSync(src)) {
+		console.error('文件' + src + '不存在')
+		process.exit(1)
+	}
+}
+
+var dest = program.args[1]
+switch (dest) {
+	case 'php': case 'php5':
+	case 'js': case 'es5':
+		lang = dest
+		dest = src.replace(/(\.jedi)?$/, '.' + dest)
+		break
+	default:
+		var m = /\.(php|php5|js|es5)$/.exec(dest)
+		lang = m ? m[1] : null
+}
+
+if (program.watch) {
+	jedi.watch(src, dest, lang,
+		[program.tree1, program.tree2, program.tree3, program.tree4])
+} else {
+	jedi.transpile(src, dest, lang,
+		[program.tree1, program.tree2, program.tree3, program.tree4])
+}
