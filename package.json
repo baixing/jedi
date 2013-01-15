@@ -16,6 +16,7 @@
 	"bugs": "http://github.com/hax/jedi/issues",
 	"main": "src/transpiler.js",
 	"bin": {
+		"jedi": "./cli/jedi",
 		"jedi2php": "./cli/jedi2php"
 	}
 }
