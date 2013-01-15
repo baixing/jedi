@@ -1,6 +1,6 @@
 "module path at 'path'"
 "module fs at 'fs'"
-"import Parser from './jedi'"
+"import Parser from './parser'"
 "import flattenArray from './util'"
 "export Transformer, InstructionsProcessor, Sorter, TemplateMatcher"
 

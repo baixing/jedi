@@ -68,9 +68,10 @@ ometa PlainParser <: OffsideRule {
 		
 	import_	=	"import" space+ char*:path	->	[#import, string(path)],
 	if_	=	"if" spaces expr:x spaces	->	[#if, x],
+	unless_	=	"unless" spaces expr:x spaces	->	[#unless, x],
 	elseif_	=	"else if" spaces expr:x spaces	->	[#elseif, x],
 	else_	=	"else" spaces	->	[#else],
-	for_	=	"for" spaces for_content:x (comma for_content)*:y	->[#for, [x].concat(y)],
+	for_	=	"for" spaces for_content:x (comma for_content)*:y	->	[#for, [x].concat(y)],
 	for_content	=	Expression.bindingPattern:x spaces "in" spaces expr:y	->	[x, y],
 	match_	=	"match" spaces expr:x	->	[#match, x],
 	case_	=	"case" spaces expr:x	->	[#case, x],
@@ -166,7 +167,7 @@ Parser.initialize = function() {
 			filename += '.jedi'
 		}
 		this.filename = filename
-		console.log('read ', filename)
+		//console.log('read ', filename)
 		return fs.readFileSync(filename).toString()
 	}
 }
