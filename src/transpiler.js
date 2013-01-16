@@ -6,7 +6,7 @@ var http = require('http'), url = require('url')
 var ometajs = require('../lib/ometa-js')
 var util = require('./util')
 
-var parser = require('./jedi')
+var parser = require('./parser')
 var transformer = require('./transformer')
 var transpiler = require('./transpiler.php5')
 
@@ -17,15 +17,10 @@ function transpile(source, target) {
 
 function jedi2php(path) {
 	//var source = fs.readFileSync(path).toString()
-	console.log(Date.now())
 	var tree1 = parser.Parser.match(path, 'load')
-	console.log(Date.now())
 	var tree2 = transformer.InstructionsProcessor.match(tree1, 'document')
-	console.log(Date.now())
 	var tree3 = transformer.TemplateMatcher.match(tree2, 'document')
-	console.log(Date.now())
 	var tree4 = transformer.Sorter.match(tree3, 'document')
-	console.log(Date.now())
 	//util.dir(util.diff(tree1, tree3))
 	//util.dir(tree4)
 

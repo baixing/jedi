@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 
-var fs = require('fs')
-var transpiler = require('../src/transpiler')
+var fs = require('fs'), path = require('path')
+var pkg = require('../package.json')
+var jedi = require('../src')
 
 var program = require('commander')
 
 program.
-	version('0.9').
+	version(pkg.version).
 	option('--php', '编译为PHP').
 	//option('-e, --error-handler [type]', '指定错误处理器', 'html').
 	option('-w, --watch', '当指定文件的内容变化时自动重新编译').
@@ -16,14 +17,14 @@ program.
 
 if (program.service) {
 
-	transpiler.service({
+	jedi.service({
 		base: program.args[0] || process.cwd(),
 		port: program.port || 1337
 	})
 
 } else if (program.args.length > 0) {
 
-	var srcPath = program.args[0]
+	var srcPath = path.resolve(program.args[0])
 	if (!fs.existsSync(srcPath)) {
 		srcPath += '.jedi'
 		if (!fs.existsSync(srcPath)) {
@@ -33,8 +34,8 @@ if (program.service) {
 	}
 	var destPath = program.args[1] || srcPath.replace(/(\.jedi)?$/, '.php')
 
-	if (program.watch) transpiler.watch(srcPath, destPath)
-	else transpiler.compile(srcPath, destPath)
+	if (program.watch) jedi.watch(srcPath, destPath)
+	else jedi.transpile(srcPath, destPath)
 
 } else {
 	program.help()
