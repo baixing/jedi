@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+var fs = require('fs'), path = require('path')
+var pkg = require('../package.json')
+var jedi = require('../src')
+
+var program = require('commander')
+
+program.
+	version(pkg.version).
+	usage('[options] <basedir>')
+	option('--php', '编译为PHP').
+	option('--js', '编译为JavaScript').
+	option('-w, --watch', '当指定文件的内容变化时自动重新编译').
+	option('-p, --port <n>', '编译服务端口', parseInt).
+	parse(process.argv)
+
+var lang = []
+if (program.php) lang.push('php')
+if (program.js) lang.push('js')
+
+jedi.service({
+	lang: lang,
+	base: program.args[0] || process.cwd(),
+	port: program.port || 1337
+})
