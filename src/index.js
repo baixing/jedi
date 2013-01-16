@@ -12,6 +12,8 @@ var transpiler = {
 }
 
 var fs = require('fs'), path = require('path')
+var http = require('http'), url = require('url')
+
 var util = require('./util')
 
 var Class = require('mmclass').Class
@@ -30,6 +32,7 @@ function parseFile(filename) {
 }
 
 function transform(tree, debug) {
+	if (debug === undefined) debug = []
 	var tree1 = tree
 	if (debug[0]) util.dir(tree1)
 	var tree2 = transformer.InstructionsProcessor.match(tree1, 'document')
@@ -86,9 +89,13 @@ function service(options) {
 						res.writeHead(404)
 						res.end('file not exist\n')
 					} else {
-						transpile(f, f.replace(/(.jedi)$/, '.php'))
+						var t0 = Date.now()
+						options.lang.forEach(function(lang){
+							transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
+						})
+						var t1 = Date.now()
 						res.writeHead(200)
-						res.end('compiled ok\n')
+						res.end('transpiled in ' + (t1 - t0) + 'ms\n')
 					}
 				})
 
@@ -102,7 +109,7 @@ function service(options) {
 
 }
 
-//exports.parseFile = parseFile
+exports.parseFile = parseFile
 //exports.transform = transform
 //exports.compile = compile
 exports.transpile = transpile
