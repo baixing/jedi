@@ -1,0 +1,140 @@
+<!doctype html>
+
+<html lang="zh-cmn-Hans-CN-x-hax">
+
+<head>
+<meta charset="utf-8">
+<title>Jedi Language White Paper</title>
+<style>
+body {
+	font-family: 'Microsoft Yahei', serif;
+	line-height: 1.75;
+	text-shadow: 1px 1px 2px #ccc;
+	margin-left: 11.8%;
+	margin-right: 11.8%;
+}
+#JediCode {
+	font-family: Papyrus, Palatino Linotype, serif;
+	float: right;
+}
+#JediCode figcaption {
+	text-align: right;
+}
+ol {
+	list-style-type: upper-roman;
+}
+ol ol {
+	list-style-type: decimal;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+	<hgroup>
+		<h1>Jedi Language White Paper</h1>
+		<h2>Version 1.0.0 (2013/1/18)</h2>
+	</hgroup>
+	<figure id="JediCode">
+		<blockquote>
+			Emotion, yet peace.<br>
+			Ignorance, yet knowledge.<br>
+			Passion, yet serenity.<br>
+			Chaos, yet harmony.<br>
+			Death, yet the Force.<br>
+		</blockquote>
+		<figcaption>— <cite>Jedi Code</cite></figcaption>
+	</figure>
+	<nav>
+		<h1>目录</h1>
+		<ol id="toc">
+			<li>原理
+				<ol>
+					<li>何谓表现层（Presentational Layer）
+					<li>MVC架构与视图（View）
+					<li>什么是模板（Template）
+					<li>为什么要设计 Jedi
+					<li>Jedi 的未来
+				</ol>
+			<li>源文本
+				<ol>
+					<li>字符（Character）和编码（Encoding）
+					<li>行（Newline）、空白（Whitespace）和缩进（Indent）
+					<li>越位规则（Offside-rule）
+					<li>层级结构（Hierarchies）
+				</ol>
+			<li>HTML/XML 构造
+				<ol>
+					<li>元素（Element）
+					<li>属性（Attribute）
+					<li>文本（Text）
+					<li>注释（Comment）
+					<li>特殊节点
+						<ol>
+							<li>Document
+							<li>DocType
+							<li>PI
+							<li>CDATA
+							<li>PCDATA
+							<li>Entity
+							<li>IE条件注释
+						</ol>
+					<li>紧凑语法
+						<ol>
+							<li>E > E
+							<li>E @attr1 @attr2
+							<li>E ! CDATA
+						</ol>
+				</ol>
+			<li>逻辑代码
+				<ol>
+					<li>代码抑制（Suppress）和注入（Inject）
+					<li>指令（Instruction）
+					<li>变量（Variable）和作用域（Scope）
+					<li>外部函数和类（External）
+					<li>数据绑定（Data Binding）
+					<li>条件指令（Conditionals）
+					<li>迭代指令（Iteration）
+					<li>匹配（Match）
+				</ol>
+			<li>抽象和复用机制
+				<ol>
+					<li>元素模板（Element Template）
+					<li>内置元素模板（Built-in Templates）
+						<ol>
+							<li>ol、ul 和 dl
+							<li>a
+							<li>script
+						</ol>
+					<li>文档段（Fragment）和模板继承
+				</ol>
+			<li>表达式
+				<ol>
+					<li>值和类型
+						<ol>
+							<li>文字（String）
+							<li>数字（Number）
+							<li>逻辑值（Boolean）
+							<li>时间（Date）
+							<li>序列（Sequence）
+							<li>元组（Tuple）
+							<li>记录（Record）
+						</ol>
+					<li>运算符（Operator）
+					<li>函数和方法调用
+					<li>属性访问
+					<li>数组访问
+					<li>解构和匹配
+				</ol>
+		</ol>
+	</nav>
+</header>
+
+<footer>
+
+</footer>
+
+</body>
+
+</html>
