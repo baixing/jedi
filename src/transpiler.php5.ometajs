@@ -1,5 +1,13 @@
 "import string, concat, flattenLines, isCharArray, dir, flattenArray from './util'"
-"export PHP5Transpiler"
+"export PHP5Transpiler, Beautify"
+
+ometa Beautify {
+	document = lines:x -> deleteRedundantEcho(x),
+	lines newline:nl	=	string:s	->	s.split(nl),
+	newline	->	/\r?\n/,
+	
+	END
+}
 
 ometa PHP5Transpiler {
 
@@ -56,7 +64,7 @@ ometa PHP5Transpiler {
 	bin [#BinaryOp 'div' trans:x trans:y]	->	('(' + x + ' ' + '/' + ' ' + y + ')'),
 	bin [#BinaryOp 'mul' trans:x trans:y]	->	('(' + x + ' ' + '*' + ' ' + y + ')'),
 	bin [#BinaryOp :op trans:x trans:y]	->	('(' + x + ' ' + op + ' ' + y + ')'),
-	
+	bin [#UnaryOp :op trans:x]	->	('!' + x),
 	symbol [#Symbol '*']	->	'$context',
 	symbol [#Symbol :s externalSymbol(s):x]	->	x,
 	symbol [#Symbol :s resolve(s):x]	->	x,
@@ -266,6 +274,20 @@ function echo() {
 		return JSON.stringify(o)
 	})
 	return 'echo ' + args.join(', ') + ';'
+}
+
+function deleteRedundantEcho(lines) {
+	for (var i = 1; i < lines.length; i++) {
+		if (lines[i].match(/^\s*echo/) && (lines[i - 1].match(/^\s*echo/) || lines[i - 1].match(/^\s*,/))) {
+			lines[i - 1] = lines[i - 1].substring(0, lines[i - 1].length - 1)
+			lines[i] = lines[i].replace('echo', ',')
+		}
+	}
+	var ans = ''
+	for (var i = 0; i < lines.length; i++) {
+		ans += lines[i] + '\n'
+	}
+	return ans
 }
 
 function echoLines(lines) {

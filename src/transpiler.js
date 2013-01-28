@@ -22,7 +22,8 @@ function jedi2php(path) {
 	util.dir(util.diff(tree1, tree3))
 	util.dir(tree4)
 
-	var code = transpiler.PHP5Transpiler.match(tree4, 'document')
+	var originalCode = transpiler.PHP5Transpiler.match(tree4, 'document')
+	var code = transpiler.Beautify.match(originalCode, 'document')
 	return code
 }
 

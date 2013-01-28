@@ -31,7 +31,7 @@ ometa PlainParser <: OffsideRule {
 
 	suppress	=	[suppressFlag spaces char*:x] :xs	->	[[x].concat(xs).map(string)],
 	suppressFlag	=	'-' '-',	
-				
+
 	inject	=	[injectFlag spaces char*:x] block:b	->	[string(x), null, b],
 	injectFlag	=	'-',	
 					
