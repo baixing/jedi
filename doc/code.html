@@ -1,0 +1,216 @@
+<!doctype html>
+
+<html lang="zh-cmn-Hans-CN-x-hax">
+
+<head>
+<meta charset="utf-8">
+<title>Jedi Language White Paper</title>
+<style>
+body {
+	font-family: 'Microsoft Yahei', serif;
+	line-height: 1.75;
+	text-shadow: 1px 1px 2px #ccc;
+	margin-left: 11.8%;
+	margin-right: 11.8%;
+}
+header, section {
+	margin-bottom: 1em;
+}
+footer {
+	margin-top: 4em;
+	margin-bottom: 4em;
+	border-top: 1px solid ;
+}
+footer #bye {
+}
+#JediCode, #bye {
+	font-family: Papyrus, Palatino Linotype, serif;
+	float: right;
+}
+#JediCode figcaption {
+	text-align: right;
+}
+ol {
+	list-style-type: upper-roman;
+}
+ol ol {
+	list-style-type: decimal;
+}
+#bye span {
+	content: 'us';
+}
+</style>
+<style>
+ins.bx, del.bx {
+	text-decoration: none;
+}
+del.bx {
+	display: none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+	<hgroup>
+		<h1>Jedi Language White Paper</h1>
+		<h2>Version 1.0.0 (2013/1/18)</h2>
+	</hgroup>
+	<figure id="JediCode">
+		<blockquote>
+			Emotion, yet peace.<br>
+			Ignorance, yet knowledge.<br>
+			Passion, yet serenity.<br>
+			Chaos, yet harmony.<br>
+			Death, yet the Force.<br>
+		</blockquote>
+		<figcaption>— <cite>Jedi Code</cite></figcaption>
+	</figure>
+	<nav>
+		<h1>目录</h1>
+		<ol id="toc">
+			<li><a href="#rational">原理</a>
+				<ol>
+					<li><a href="#presentational-layer">何谓表现层（Presentational Layer）</a>
+					<li><a href="#mvc">MVC架构与视图（View）</a>
+					<li><a href="#what-is-template">什么是模板（Template）</a>
+					<li><a href="#why-jedi">为什么要设计 Jedi</a>
+					<li><a href="#roadmap-of-jedi">Jedi 的未来</a>
+				</ol>
+			<li><a href="#source">源文本</a>
+				<ol>
+					<li>字符（Character）和编码（Encoding）
+					<li>行（Newline）、空白（Whitespace）和缩进（Indent）
+					<li>越位规则（Offside-rule）
+					<li>层级结构（Hierarchies）
+				</ol>
+			<li>HTML/XML 构造
+				<ol>
+					<li>元素（Element）
+					<li>属性（Attribute）
+					<li>文本（Text）
+					<li>注释（Comment）
+					<li>特殊节点
+						<ol>
+							<li>Document
+							<li>DocType
+							<li>PI
+							<li>CDATA
+							<li>PCDATA
+							<li>Entity
+							<li>IE条件注释
+						</ol>
+					<li>紧凑语法
+						<ol>
+							<li>E > E
+							<li>E @attr1 @attr2
+							<li>E ! CDATA
+						</ol>
+				</ol>
+			<li>逻辑代码
+				<ol>
+					<li>代码抑制（Suppress）和注入（Inject）
+					<li>指令（Instruction）
+					<li>变量（Variable）和作用域（Scope）
+					<li>外部函数和类（External）
+					<li>数据绑定（Data Binding）
+					<li>条件指令（Conditionals）
+					<li>迭代指令（Iteration）
+					<li>匹配（Match）
+				</ol>
+			<li>抽象和复用机制
+				<ol>
+					<li>元素模板（Element Template）
+					<li>内置元素模板（Built-in Templates）
+						<ol>
+							<li>ol、ul 和 dl
+							<li>a
+							<li>script
+						</ol>
+					<li>文档段（Fragment）和模板继承
+				</ol>
+			<li>表达式
+				<ol>
+					<li>值和类型
+						<ol>
+							<li>文字（String）
+							<li>数字（Number）
+							<li>逻辑值（Boolean）
+							<li>时间（Date）
+							<li>序列（Sequence）
+							<li>元组（Tuple）
+							<li>记录（Record）
+						</ol>
+					<li>运算符（Operator）
+					<li>函数和方法调用
+					<li>属性访问
+					<li>数组访问
+					<li>解构和匹配
+				</ol>
+		</ol>
+	</nav>
+</header>
+
+<div class="main">
+	<section id="rational">
+		<h1>原理</h1>
+		<section id="presentational-layer">
+			<h1>何谓表现层（Presentational Layer）</h1>
+			<p>一个稍微复杂的互联网产品或服务，在架构上通常都是多层结构。以典型的三层结构来说，最核心的是业务模型层，中间是应用层，与最终用户对接的，则是最外面的表现层。表现层的职责是将产品或服务映射到最终用户的心智模型，让用户能理解和使用产品和服务，确保正确高效的传递（deliver）信息和体验。
+		</section>
+		<section id="view-of-mvc">
+			<h1>MVC 架构与视图（View）</h1>
+			<p>MVC 架构即 Model-View-Controller，通常表现层会采用这一架构模式。
+			<ins class="bx"><p>镐京也采用这一架构，其中 Model 层由 graph API 以及部分辅助的静态方法构成。
+			</ins>
+		</section>
+		<section id="what-is-template">
+			<h1>什么是模板（Template）</h1>
+			<p>要之，模板的目的是展现数据。对于 Web 网页而言，展现由 HTML、CSS、JavaScript 几个层次共同完成。而 HTML 的方式是将内容嵌入到预先给定的信息结构，或是通过明确数据的语义来展现数据。
+		</section>
+	</section>
+	<section id="source">
+		<h1>源文本</h1>
+		<section id="charset-encoding">
+			<h1>字符和编码</h1>
+			<p>Jedi 源代码由 Unicode 字符组成。
+			<p>考虑到输入的便利性和编程习惯，Jedi 的核心语法、运算符和内建特性均可由 ASCII 字符表达。
+			<p>Jedi 表达式中的标识符遵循 UAX 8 。
+			<p>在没有其他外部字符编码指示的下，支持 UTF-16 和 UTF-8
+			<p class="note">Jedi 的 JavaScript 实现基于 UTF-16，
+			<p class="note">目标语言 PHP
+		</section>
+	</section>
+	<section id="dom">
+		<h1>DOM 构造</h1>
+		<section>
+			<h1>元素</h1>
+		</section>
+		<section>
+			<h1>属性</h1>
+		</section>
+		<section>
+			<h1>文本</h1>
+		</section>
+		<section>
+			<h1>注释</h1>
+		</section>
+		<section>
+		</section>
+
+	</section>
+</div>
+
+<footer>
+	<div id="bye">
+		<p>May the force be with <del class="bx">you</del> <ins class="bx">us</ins>.</p>
+	</div>
+	<small class="copyright">
+		&copy; 2013 HE Shi-Jun
+	</small>
+</footer>
+
+</body>
+
+</html>

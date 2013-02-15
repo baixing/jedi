@@ -1,6 +1,7 @@
 "module path at 'path'"
 "module fs at 'fs'"
-"import Parser from './jedi'"
+"import parseFile from './index'"
+"import Parser from './parser'"
 "import flattenArray from './util'"
 "export Transformer, InstructionsProcessor, Sorter, TemplateMatcher"
 
@@ -48,10 +49,7 @@ InstructionsProcessor.initialize = function () {
 		if (!fs.existsSync(filename)) {
 			filename += '.jedi'
 		}
-		//console.log(filename)
-		var tree = Parser.match(filename, 'load')
-		//console.log('tree', tree)
-		return tree
+		return parseFile(filename)
 	}
 	this.findFragment = function (nodes, name, base) {
 		var fragments = nodes.filter(function(node){

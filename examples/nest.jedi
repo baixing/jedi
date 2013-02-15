@@ -1,3 +1,4 @@
+html
 div
 	@onclick = "\{1}"
 	:unsafe "<script>alert({测试+1})</script>"

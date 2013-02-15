@@ -29,20 +29,13 @@ testOMeta(expression.Expression, exprTests.Expression, [
 	'expression',
 ])
 
-var jedi = require('../src/jedi')
-var jediTests = require('./jedi')
-testOMeta(jedi.Parser, jediTests.Parser, [
+var parser = require('../src/parser')
+var parserTests = require('./jedi')
+testOMeta(parser.Parser, parserTests.Parser, [
 	'source'
 	//'text',
 	//'blocks',
 	//element,
-])
-
-var transpilerPhp = require('../src/transpiler.php5')
-var transpilerPhpTests = require('./transpiler.php5')
-testOMeta(transpilerPhp.PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
-	'block',
-	'document'
 ])
 
 var transformer = require('../src/transformer')
@@ -53,4 +46,12 @@ testOMeta(transformer.InstructionsProcessor, transformerTests.InstructionsProces
 
 testOMeta(transformer.Sorter, transformerTests.Sorter, [
 	'document',
+])
+
+
+var transpilerPhp = require('../src/transpiler.php5')
+var transpilerPhpTests = require('./transpiler.php5')
+testOMeta(transpilerPhp.PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
+	'block',
+	'document'
 ])

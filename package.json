@@ -1,11 +1,12 @@
 {
 	"name": "jedi",
-	"version": "0.9.10-beta4",
+	"version": "0.9.13-beta1",
 	"author": "Hax <johnhax@gmail.com>",
 	"description": "jedi -- a language for Web",
 	"keywords": ["view", "template", "dsl"],
 	"dependencies": {
 		"my": "",
+		"mmclass": "",
 		"commander": ""
 	},
 	"repository": {
@@ -16,6 +17,7 @@
 	"bugs": "http://github.com/hax/jedi/issues",
 	"main": "src/transpiler.js",
 	"bin": {
-		"jedi2php": "./cli/jedi2php"
+		"jedi": "./cli/jedi",
+		"jedi-transpiler-service": "./cli/jedi-transpiler-service"
 	}
 }
