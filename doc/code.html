@@ -36,6 +36,17 @@ ol {
 ol ol {
 	list-style-type: decimal;
 }
+#bye span {
+	content: 'us';
+}
+</style>
+<style>
+ins.bx, del.bx {
+	text-decoration: none;
+}
+del.bx {
+	display: none;
+}
 </style>
 </head>
 
@@ -59,15 +70,15 @@ ol ol {
 	<nav>
 		<h1>目录</h1>
 		<ol id="toc">
-			<li>原理
+			<li><a href="#rational">原理</a>
 				<ol>
-					<li>何谓表现层（Presentational Layer）
-					<li>MVC架构与视图（View）
-					<li>什么是模板（Template）
-					<li>为什么要设计 Jedi
-					<li>Jedi 的未来
+					<li><a href="#presentational-layer">何谓表现层（Presentational Layer）</a>
+					<li><a href="#mvc">MVC架构与视图（View）</a>
+					<li><a href="#what-is-template">什么是模板（Template）</a>
+					<li><a href="#why-jedi">为什么要设计 Jedi</a>
+					<li><a href="#roadmap-of-jedi">Jedi 的未来</a>
 				</ol>
-			<li>源文本
+			<li><a href="#source">源文本</a>
 				<ol>
 					<li>字符（Character）和编码（Encoding）
 					<li>行（Newline）、空白（Whitespace）和缩进（Indent）
@@ -141,8 +152,60 @@ ol ol {
 	</nav>
 </header>
 
+<div class="main">
+	<section id="rational">
+		<h1>原理</h1>
+		<section id="presentational-layer">
+			<h1>何谓表现层（Presentational Layer）</h1>
+			<p>一个稍微复杂的互联网产品或服务，在架构上通常都是多层结构。以典型的三层结构来说，最核心的是业务模型层，中间是应用层，与最终用户对接的，则是最外面的表现层。表现层的职责是将产品或服务映射到最终用户的心智模型，让用户能理解和使用产品和服务，确保正确高效的传递（deliver）信息和体验。
+		</section>
+		<section id="view-of-mvc">
+			<h1>MVC 架构与视图（View）</h1>
+			<p>MVC 架构即 Model-View-Controller，通常表现层会采用这一架构模式。
+			<ins class="bx"><p>镐京也采用这一架构，其中 Model 层由 graph API 以及部分辅助的静态方法构成。
+			</ins>
+		</section>
+		<section id="what-is-template">
+			<h1>什么是模板（Template）</h1>
+			<p>要之，模板的目的是展现数据。对于 Web 网页而言，展现由 HTML、CSS、JavaScript 几个层次共同完成。而 HTML 的方式是将内容嵌入到预先给定的信息结构，或是通过明确数据的语义来展现数据。
+		</section>
+	</section>
+	<section id="source">
+		<h1>源文本</h1>
+		<section id="charset-encoding">
+			<h1>字符和编码</h1>
+			<p>Jedi 源代码由 Unicode 字符组成。
+			<p>考虑到输入的便利性和编程习惯，Jedi 的核心语法、运算符和内建特性均可由 ASCII 字符表达。
+			<p>Jedi 表达式中的标识符遵循 UAX 8 。
+			<p>在没有其他外部字符编码指示的下，支持 UTF-16 和 UTF-8
+			<p class="note">Jedi 的 JavaScript 实现基于 UTF-16，
+			<p class="note">目标语言 PHP
+		</section>
+	</section>
+	<section id="dom">
+		<h1>DOM 构造</h1>
+		<section>
+			<h1>元素</h1>
+		</section>
+		<section>
+			<h1>属性</h1>
+		</section>
+		<section>
+			<h1>文本</h1>
+		</section>
+		<section>
+			<h1>注释</h1>
+		</section>
+		<section>
+		</section>
+
+	</section>
+</div>
+
 <footer>
-	<p id="bye">May the force be with us.</p>
+	<div id="bye">
+		<p>May the force be with <del class="bx">you</del> <ins class="bx">us</ins>.</p>
+	</div>
 	<small class="copyright">
 		&copy; 2013 HE Shi-Jun
 	</small>
