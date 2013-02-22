@@ -1,4 +1,5 @@
 "import string, concat, flattenLines, isCharArray, dir, flattenArray from './util'"
+"import OutputHTML, OutputXHTML from './output'"
 "export PHP5Transpiler, Beautify"
 
 ometa Beautify {
@@ -23,15 +24,16 @@ ometa PHP5Transpiler {
 	ignore	=	[char*:s]	->	string(s), // empty or ignore
 
 	node ignore,
-	node [#closeStartTag] -> "echo '>';",
+	node [#closeStartTag] -> this.output.closeStartTag(),
 	node [string:nodeType [number number] apply(nodeType):x] -> x,
 	node :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 
 	Section :head :body -> ['/* Unknown section: ', JSON.stringify(string(head)), ' ... */'],
 
-	doctype = [#comment [number number] [output:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
-	output = [outputMethod:x] -> x,
-	outputMethod spaces ("html" spaces? "5"?) spaces -> ["echo '<!doctype html>', \"\\n\";"],
+	doctype = [#comment [number number] [outputMethod:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
+	outputMethod [spaces ("html" spaces? "5"?) spaces] -> ["echo '<!doctype html>', \"\\n\";"],
+	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mobile") spaces] -> ["echo '<!doctype html>', \"\\n\";"],
+	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "basic") spaces] -> ["echo '<!doctype html>', \"\\n\";"],
 
 	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),
 	
@@ -83,41 +85,41 @@ ometa PHP5Transpiler {
 	//trans [trans*:x] -> ( x ),
 	
 
-	comment [:line] -> ["echo '<!-- " + escapeComment(simpleString(line)) + " -->';"],
+	comment [:line] -> ["echo '<!-- " + this.output.escapeComment(simpleString(line)) + " -->';"],
 	comment [echoComment*:xs] -> [].concat(
 			"echo '<!--', \"\\n\";",
 			xs,
 			"echo '-->';"
 		),
-	echoComment [char*:s] -> ("echo '" + escapeComment(simpleString(s)) + "', \"\\n\";"),
+	echoComment [char*:s] -> ("echo '" + this.output.escapeComment(simpleString(s)) + "', \"\\n\";"),
 
-	text stringLiteral:s	->	['echo ' + escapeText(s) + ';'],
+	text stringLiteral:s	->	['echo ' + this.output.escapeText(s) + ';'],
 	text templateLiteral:s	->	['echo htmlspecialchars(' + s + ');'],
 	text undefined [textLine*:lines]	->	echoLines(lines),
 	text undefined [echoTemplateString*:lines]	->	lines,
 
-	textLine string:s	->	("'" + escapeText(simpleString(s)) + "', \"\\n\""),
+	textLine string:s	->	("'" + this.output.escapeText(simpleString(s)) + "', \"\\n\""),
 	echoTemplateString [] -> '',
 	echoTemplateString [trans+:exprList] -> ('echo htmlspecialchars((' + exprList.join(') . (') + '));'),
 	//	-> dom.text(lines),
 
 	element [:tag :cls :id] undefined
-		{startTag(tag, cls, id)}:startT
+		{this.output.startTag(tag, cls, id)}:startT
 		enterBlock([]) &anything:children block:body exitBlock:param
-		{endTag(tag)}:endT
+		{this.output.endTag(tag)}:endT
 		-> this.elementOutput(tag, cls, id, undefined, children, body, startT, endT, param),
 
 	element [:tag :cls :id] trans:bind
-		{startTag(tag, cls, id)}:startT
+		{this.output.startTag(tag, cls, id)}:startT
 		enterBlock([]) &anything:children block:body exitBlock:param
-		{endTag(tag)}:endT
+		{this.output.endTag(tag)}:endT
 		-> this.elementOutput(tag, cls, id, bind, children, body, startT, endT, param),
 
 
 	attribute :name undefined undefined	->	["echo ' " + name + "';"],
 	attribute :name undefined	->	["echo ' " + name + "';"],
 	attribute :name :op undefined	->	["echo ' " + name + "';"],
-	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + attrValue(simpleString(s)) + "\"';"],
+	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + this.output.attrValue(simpleString(s)) + "\"';"],
 	attribute :name :op [#Quasi undefined echoTemplateString:line] -> ["echo ' " + name + '="' + "';",  line, "echo '\"';"],
 	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', htmlspecialchars(" + exp + "), '\"';"],
 	
@@ -254,26 +256,27 @@ PHP5Transpiler.initialize = function() {
 			['closeStartTag'],
 			['text', [0, 0], undefined, [['Symbol', '*']]]
 		]*/
+		
+	}
+	this.output = OutputHTML
+	
+	this.setOutputMethod = function (method) {
+		console.log(method)
+		switch (method) {
+			case 'html':
+				this.output = OutputHTML
+				break
+			case 'xhtml':
+				this.output = OutputXHTML
+				break
+			case 'xml':
+				this.output = OutputXML
+				break
+			default:
+				throw Error('Unknown output method: ' + method)
+		}
 	}
 	
-}
-
-function echo() {
-	var args = [].slice.call(arguments).reduce(function(a, b){
-		if (isCharArray(b)) b = b.join('')
-		if (typeof b === 'string' && typeof a[a.length - 1] === 'string') {
-			a[a.length - 1] += b
-		} else {
-			a.push(b)
-		}
-		return a
-	}, []).map(function(o){
-		if (typeof o === 'string') {
-			return "'" + o.replace(/'/g, "\\'") + "'"
-		}
-		return JSON.stringify(o)
-	})
-	return 'echo ' + args.join(', ') + ';'
 }
 
 function deleteRedundantEcho(lines) {
@@ -305,32 +308,8 @@ function translateMultiLoops(binds, b) {
 	return b;
 }
 
-function escapeComment(s) {
-	// http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#comments
-	// Comment must not contain two consecutive U+002D HYPHEN-MINUS characters (--)
-	return s.replace(/--/g, '- -')
-}
-function escapeText(s) {
-	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
-}
 function simpleString(s) {
 	return string(s).replace(/'/g, "\\'")
-}
-function attrValue(s) {
-	return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-}
-
-function startTag(tag, cls, id) {
-	var r = echo(
-		"<", tag,
-		cls.length > 0 ? ' class="' + cls.join(' ') + '"': '',
-		id ? ' id="' + id + '"' : '')
-	return r
-}
-var voidElements = 'area,base,br,col,command,embed,hr,img,input,keygen,link,meta,param,source,track,wbr'.split(',')
-function endTag(tag) {
-	if (voidElements.indexOf(tag) >= 0) return []
-	return echo('</', tag, '>')
 }
 
 function unique(param) {
@@ -381,9 +360,4 @@ function assignment(binds, body, param) {
 		'}, ' + value + ');'
 	]
 }
-
-function htmlComment(lines) {
-	return '<!--'
-}
-
 

@@ -1,0 +1,18 @@
+!xhtml mobile
+
+html
+	head
+		style
+			!
+				body { margin: 0 }
+	body
+		'a > b
+		'b < a
+		'"Hello!"
+		:let text = '<>"'
+			= text
+		header
+			img @src='test'
+
+		section.note#sec1
+
