@@ -32,7 +32,7 @@ ometa PHP5Transpiler {
 
 	doctype = [#comment [number number] [outputMethod:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	outputMethod [spaces ("html" spaces? "5"?) spaces] -> ["echo '<!doctype html>', \"\\n\";"],
-	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mobile") spaces] -> ["echo '<!doctype html>', \"\\n\";"],
+	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mobile") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.2//EN\" \"http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd\">', \"\\n\";"],
 	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "basic") spaces] -> ["echo '<!doctype html>', \"\\n\";"],
 
 	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),
