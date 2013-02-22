@@ -1,6 +1,6 @@
 {
 	"name": "jedi",
-	"version": "0.9.13-beta1",
+	"version": "0.9.13-beta2",
 	"author": "Hax <johnhax@gmail.com>",
 	"description": "jedi -- a language for Web",
 	"keywords": ["view", "template", "dsl"],
