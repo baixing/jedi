@@ -112,6 +112,19 @@ exports.PHP5Transpiler =
 				'}, $data->x);'
 			]],
 
+		'inject may access model':
+			input: [[
+				'binding', [1, 1], null, ['Symbol', 'x'], [
+					['inject', [1, 1], 'echo $data->x', null, []]
+				]
+			]]
+
+			expect: [[
+				'call_user_func(function ($context) use ($data) {',
+				[ [ "echo $data->x;" ] ],
+				'}, $data->x);'
+			]],
+
 		'binding of a list':
 			input: [
 				['binding', [1, 1], null,

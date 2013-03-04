@@ -153,8 +153,8 @@ ometa PHP5Transpiler {
 
 	endElement -> '',
 
-	inject :x :y [string*:lines] -> [x + ';'].concat(lines.map(function(l){ return '//' + l })),
-	inject :x :y block:body -> [x, '{', body, '}'],
+	inject :x :y [string*:lines] resolve(#data) -> [x + ';'].concat(lines.map(function(l){ return '//' + l })),
+	inject :x :y block:body resolve(#data) -> [x, '{', body, '}'],
 	/*filter [#Symbol [``if'']] [spaces Expression.expression:exp node(exp):x] block:body
 		-> ['if (' + x + ') {', body, '}'],
 	filter [#Symbol [``else'']] :x block:body
