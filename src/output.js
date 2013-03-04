@@ -87,7 +87,7 @@ var OutputXML = Object.create(Output)
 var OutputXHTML = Object.create(OutputXML)
 OutputXHTML.startTag = function (tag, cls, id) {
 	if (xhtmlBasicElements.indexOf(tag) === -1) {
-		cls.unshift(tag)
+		if (cls.indexOf(tag) === -1) cls.unshift(tag)
 		tag = blockElements.indexOf(tag) === -1 ? 'span' : 'div'
 	}
 	lastTag = tag
