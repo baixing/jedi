@@ -33,6 +33,9 @@ ometa PHP5Transpiler {
 	doctype = [#comment [number number] [outputMethod:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	outputMethod [spaces ("html" spaces? "5"?) spaces] -> ["echo '<!doctype html>', \"\\n\";"],
 	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mobile") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.2//EN\" \"http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd\">', \"\\n\";"],
+	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mp 1.0") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.0//EN\" \"http://www.wapforum.org/DTD/xhtml-mobile10.dtd\">', \"\\n\";"],
+	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mp 1.1") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.1//EN\" \"http://www.openmobilealliance.org/tech/DTD/xhtml-mobile11.dtd\">', \"\\n\";"],
+	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mp 1.2") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.2//EN\" \"http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd\">', \"\\n\";"],
 	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "basic") spaces] -> ["echo '<!doctype html>', \"\\n\";"],
 
 	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),

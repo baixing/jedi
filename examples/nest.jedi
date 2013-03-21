@@ -1,3 +1,4 @@
+!xhtml mp 1.0
 html
 div
 	@onclick = "\{1}"
