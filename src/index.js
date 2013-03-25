@@ -13,22 +13,34 @@ var transpiler = {
 
 var fs = require('fs'), path = require('path')
 var http = require('http'), url = require('url')
+var crypto = require('crypto')
 
 var util = require('./util')
 
 var Class = require('mmclass').Class
-var FileCache = require('./Cache').FileCache
+var Cache = require('./Cache').Cache
+//var FileCache = require('./Cache').FileCache
 
+/*
 var ParserCache = Class.extend(FileCache)({
 	content: function (file) {
 		return Parser.match(file, 'load')
 	}
-})
+})*/
 
-var cache = new ParserCache()
+var cache = new Cache()
 
 function parseFile(filename) {
-	return cache.get(path.resolve(filename))
+	var t0 = Date.now()
+	var shasum = crypto.createHash('sha1')
+	shasum.update(fs.readFileSync(filename))
+	var d = shasum.digest('base64')
+	var t1 = Date.now()
+	console.log(d, t1 - t0)
+	if (cache.has(d)) return cache.get(d)
+	var t = Parser.match(filename, 'load')
+	cache.set(d, t)
+	return t
 }
 
 function transform(tree, debug) {
@@ -79,23 +91,32 @@ function service(options) {
 	//var watched = []
 
 	http.createServer(function (req, res) {
+		var start = Date.now()
 		switch (req.method) {
 			case 'GET':
-				var f = path.join(options.base, url.parse(req.url).path)
+				//console.log(req.url)
+				var p = url.parse(req.url).path
+				//console.log(options.base, p)
+				var f = path.join(options.base, p)
+				f = f.replace(/^\\\\([A-Z])\|/, '$1:')
 				//if (watched.indexOf(path) >= 0)
 
 				fs.exists(f, function(exists){
 					if (!exists) {
+						var msg = 'file not exist: ' + f + '\n'
 						res.writeHead(404)
-						res.end('file not exist\n')
+						res.end(msg)
+						console.error(msg)
 					} else {
 						var t0 = Date.now()
 						options.lang.forEach(function(lang){
 							transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
 						})
 						var t1 = Date.now()
+						var msg = 'transpiled in ' + (t1 - t0) + 'ms: ' + f + '\n'
 						res.writeHead(200)
-						res.end('transpiled in ' + (t1 - t0) + 'ms\n')
+						res.end(msg)
+						console.info(msg, Date.now() - start, start)
 					}
 				})
 
