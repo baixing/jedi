@@ -60,8 +60,8 @@ function transform(tree, debug) {
 function compile(ast, target) {
 	switch (target) {
 		case 'php5': case 'php':
-			var php_str = transpiler.php5.match(ast, 'document')
-			return transpiler.beautify.match(php_str, 'document')
+			var code = transpiler.php5.match(ast, 'document')
+			return transpiler.Beautify.match(code, 'document')
 		case 'es5': case 'ecmascript':
 		case 'js': case 'javascript':
 			return transpiler.es5.match(ast, 'document')
