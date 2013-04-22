@@ -8,6 +8,7 @@ var Parser = require('./parser').Parser
 var transformer = require('./transformer')
 var transpiler = {
 	php5: require('./transpiler.php5').PHP5Transpiler,
+	beautify: require('./transpiler.php5').Beautify,
 	es5: require('./transpiler.es5').ES5Transpiler
 }
 
@@ -59,7 +60,8 @@ function transform(tree, debug) {
 function compile(ast, target) {
 	switch (target) {
 		case 'php5': case 'php':
-			return transpiler.php5.match(ast, 'document')
+			var php_str = transpiler.php5.match(ast, 'document')
+			return transpiler.beautify.match(php_str, 'document')
 		case 'es5': case 'ecmascript':
 		case 'js': case 'javascript':
 			return transpiler.es5.match(ast, 'document')
