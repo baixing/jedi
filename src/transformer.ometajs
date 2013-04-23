@@ -3,7 +3,7 @@
 "import parseFile from './index'"
 "import Parser from './parser'"
 "import flattenArray from './util'"
-"export Transformer, InstructionsProcessor, Sorter, TemplateMatcher"
+"export Transformer, InstructionsProcessor, Sorter, ScriptIIFEWrapper, TemplateMatcher"
 
 ometa Transformer {
 	
@@ -75,7 +75,6 @@ ometa Sorter <: Transformer {
 	
 	END
 }
-
 function sortNodes(nodes) {
 	var attributes = [], macros = [], normalNodes = []
 	nodes.forEach(function(node){
@@ -97,6 +96,16 @@ function sortNodes(nodes) {
 		}
 	})
 	return [].concat(attributes, [['closeStartTag']], macros, normalNodes)
+}
+
+ometa ScriptIIFEWrapper <: Transformer {
+	node	=	[#element position:pos [#script anything anything]:x [anything*]:y !console.log(2) scriptBlocks:children]	->	[#element, pos, x, y, children],
+	node	=	^node,
+	scriptBlocks	=	[([#comment :pos :lines] -> [#text, pos, undefined, lines] | node:x !console.log(x))*:blocks] -> blocks,
+	END
+}
+function IIFEWrap(code) {
+	console.log('hello', code)
 }
 
 ometa TemplateMatcher <: Transformer {
