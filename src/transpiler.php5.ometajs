@@ -228,7 +228,13 @@ PHP5Transpiler.initialize = function() {
 	}
 	this.elementOutput = function (tag, cls, id, bind, children, body, startT, endT, param) {
 		if (bind === undefined) return [startT, body, endT]
-		dir(children)
+		//dir(children)
+		//dirty implementation for script = data
+		if (tag === 'script' && bind) {
+			body.splice(1, 0, "echo 'void function(data){';")
+			body.push("echo '}(', json_encode($context), ')';")
+			return closure(bind, [startT, body, endT], param)
+		}
 		var overrided = children.some(function(node){
 			//console.log(node)
 			return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
