@@ -236,7 +236,7 @@ PHP5Transpiler.initialize = function() {
 		//dirty implementation for script = data
 		if (tag === 'script' && bind) {
 			body.splice(1, 0, "echo 'void function(data){';")
-			body.push("echo '}(', json_encode($context), ')';")
+			body.push("echo '}(', json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ')';")
 			return closure(bind, [startT, body, endT], param)
 		}
 		var overrided = children.some(function(node){
