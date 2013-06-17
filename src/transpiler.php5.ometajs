@@ -54,8 +54,9 @@ ometa PHP5Transpiler {
 	listLiteral [#List [expr*:list]]	->	('[' + list.join(', ') + ']'),
 	
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
-	call ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
-	call ["." expr:x [#Symbol :y]]	->	(x + '->' + y),
+	call ['.' [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
+	call ['.' expr:x [#Symbol :y]]	->	(x + '->' + y),
+	call ['?.' expr:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
 	
 	call [#Call [#Symbol :s externalSymbol(s):x] &[#Tuple :_] trans:y]	->	(x + y),
 	call [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),

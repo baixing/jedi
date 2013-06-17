@@ -2,3 +2,6 @@ script = [1, 2, 3]
 	'console.log('Hello world!')
 	!
 		console.log(data)
+
+div = a.b
+div = a?.b
