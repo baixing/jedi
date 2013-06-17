@@ -1,7 +1,7 @@
 script = [1, 2, 3]
-	'console.log('Hello world!')
 	!
-		console.log(data)
+		console.log('&', data, '</script>')
 
 div = a.b
+	div
 div = a?.b

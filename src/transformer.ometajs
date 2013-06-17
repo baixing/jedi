@@ -13,7 +13,7 @@ ometa Transformer {
 	node	=	[#closeStartTag],
 	node	=	Parser.skip,
 	
-	nodeType	=	#document | #element | #attribute | #text | #comment
+	nodeType	=	#document | #element | #attribute | #text | #comment | #scriptsource
 		|	#suppress | #inject | #binding | #instruction | #macro | #fragment
 		|	#Section | #Offside | #MixedWhitespace,
 	position	=	[number number] | [string number number],
@@ -101,7 +101,7 @@ function sortNodes(nodes) {
 ometa ScriptIIFEWrapper <: Transformer {
 	node	=	[#element position:pos [#script anything anything]:x [anything*]:y !console.log(2) scriptBlocks:children]	->	[#element, pos, x, y, children],
 	node	=	^node,
-	scriptBlocks	=	[([#comment :pos :lines] -> [#text, pos, undefined, lines] | node:x !console.log(x))*:blocks] -> blocks,
+	scriptBlocks	=	[([#comment :pos :lines] -> [#scriptsource, pos, lines] | node:x !console.log(x))*:blocks] -> blocks,
 	END
 }
 function IIFEWrap(code) {

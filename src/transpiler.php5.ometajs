@@ -97,6 +97,9 @@ ometa PHP5Transpiler {
 		),
 	echoComment [char*:s] -> ("echo '" + this.output.escapeComment(simpleString(s)) + "', \"\\n\";"),
 
+	scriptsource [scriptsourceLine*:lines]	->	echoLines(lines),
+	scriptsourceLine string:s	->	("'" + this.output.escapeScriptSource(simpleString(s)) + "', \"\\n\""),
+
 	text stringLiteral:s	->	['echo ' + this.output.escapeText(s) + ';'],
 	text templateLiteral:s	->	['echo htmlspecialchars(' + s + ');'],
 	text undefined [textLine*:lines]	->	echoLines(lines),
