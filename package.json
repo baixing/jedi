@@ -1,13 +1,17 @@
 {
 	"name": "jedi",
-	"version": "0.9.14-beta1",
+	"version": "0.9.15-beta1",
 	"author": "Hax <johnhax@gmail.com>",
 	"description": "jedi -- a language for Web",
 	"keywords": ["view", "template", "dsl"],
 	"dependencies": {
-		"my": "",
-		"mmclass": "",
-		"commander": ""
+		"my": "*",
+		"mmclass": "*",
+		"commander": "*"
+	},
+	"devDependencies": {
+		"coffee-script": "*",
+		"js-yaml": "*"
 	},
 	"repository": {
 		"type": "git",

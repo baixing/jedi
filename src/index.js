@@ -124,7 +124,7 @@ function service(options) {
 
 					function send(status, message){
 						res.writeHead(status)
-						res.end(message)
+						res.end(message + ': ' + f  + '\n')
 						if (status >= 400) {
 							console.error(message + ': ' + f)
 						} else {
