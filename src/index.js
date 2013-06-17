@@ -79,6 +79,7 @@ function service(options) {
 	//var watched = []
 
 	http.createServer(function (req, res) {
+
 		switch (req.method) {
 			case 'GET':
 				var f = path.join(options.base, url.parse(req.url).path)
@@ -86,16 +87,20 @@ function service(options) {
 
 				fs.exists(f, function(exists){
 					if (!exists) {
-						res.writeHead(404)
-						res.end('file not exist\n')
+						send(404, 'file ' + f + ' not exist\n')
 					} else {
-						var t0 = Date.now()
-						options.lang.forEach(function(lang){
-							transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
+						fs.stat(f, function(err, stats){
+							if (stats.isFile()) {
+								var t0 = Date.now()
+								options.lang.forEach(function(lang){
+									transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
+								})
+								var t1 = Date.now()
+								send(200, 'transpiled in ' + (t1 - t0) + 'ms\n')
+							} else {
+								send(404, 'path ' + f + ' is not a file\n')
+							}
 						})
-						var t1 = Date.now()
-						res.writeHead(200)
-						res.end('transpiled in ' + (t1 - t0) + 'ms\n')
 					}
 				})
 
@@ -105,6 +110,17 @@ function service(options) {
 				res.writeHead(405)
 				res.end()
 		}
+
+		function send(status, message){
+			res.writeHead(status)
+			res.end(message)
+			if (status >= 400) {
+				console.error(message)
+			} else {
+				console.info(message)
+			}
+		}
+
 	}).listen(options.port)
 
 }
