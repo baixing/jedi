@@ -1,27 +1,31 @@
 {
-	"name": "jedi",
-	"version": "0.9.15-beta4",
-	"author": "Hax <johnhax@gmail.com>",
-	"description": "jedi -- a language for Web",
-	"keywords": ["view", "template", "dsl"],
-	"dependencies": {
-		"my": "*",
-		"mmclass": "*",
-		"commander": "*"
-	},
-	"devDependencies": {
-		"coffee-script": "*",
-		"js-yaml": "*"
-	},
-	"repository": {
-		"type": "git",
-		"url": "http://github.com/hax/jedi.git"
-	},
-	"homepage": "http://github.com/hax/jedi",
-	"bugs": "http://github.com/hax/jedi/issues",
-	"main": "src/transpiler.js",
-	"bin": {
-		"jedi": "./cli/jedi",
-		"jedi-transpiler-service": "./cli/jedi-transpiler-service"
-	}
+  "name": "jedi",
+  "version": "0.9.16",
+  "author": "Hax <johnhax@gmail.com>",
+  "description": "jedi -- a language for Web",
+  "keywords": [
+    "view",
+    "template",
+    "dsl"
+  ],
+  "dependencies": {
+    "my": "*",
+    "mmclass": "*",
+    "commander": "*"
+  },
+  "devDependencies": {
+    "coffee-script": "*",
+    "js-yaml": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/hax/jedi.git"
+  },
+  "homepage": "http://github.com/hax/jedi",
+  "bugs": "http://github.com/hax/jedi/issues",
+  "main": "src/transpiler.js",
+  "bin": {
+    "jedi": "./cli/jedi",
+    "jedi-transpiler-service": "./cli/jedi-transpiler-service"
+  }
 }
