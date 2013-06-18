@@ -121,7 +121,7 @@ ometa Expression {
 	exp5 = exp5:x op5:op exp6:y -> [#BinaryOp, op, x, y] | exp6,
 	exp6 = exp6:x op6:op exp7:y -> [#BinaryOp, op, x, y] | exp7,
 	exp7 = exp7:x op7:op exp8:y -> [#BinaryOp, op, x, y] | exp8,
-	exp8 = rangeExp,
+	exp8 = rangeExp | exp9,
 	exp9 = op9:op refExp:x -> [#UnaryOp, op, x] | refExp,
 
 	op1 = spaces ("->" | "<-"):x spaces -> x,
