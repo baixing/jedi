@@ -142,6 +142,11 @@ function service(options) {
 
 	}).listen(options.port)
 
+	process.on('uncaughtException', function(err){
+		console.error(new Date().toISOString(), 'uncaught exception:', err)
+		console.trace(err)
+	})
+
 }
 
 exports.parseFile = parseFile
