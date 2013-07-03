@@ -15,6 +15,7 @@ program.
 	option('-2, --tree2', '查看抽象语法树（阶段2）').
 	option('-3, --tree3', '查看抽象语法树（阶段3）').
 	option('-4, --tree4', '查看抽象语法树（阶段4）').
+	option('-a, --adaptive', '生成多个适配版本').
 	parse(process.argv)
 
 if (program.args.length < 1) {
@@ -44,9 +45,9 @@ switch (dest) {
 }
 
 if (program.watch) {
-	jedi.watch(src, dest, lang,
+	jedi.watch(src, dest, lang, program.adaptive,
 		[program.tree1, program.tree2, program.tree3, program.tree4])
 } else {
-	jedi.transpile(src, dest, lang,
+	jedi.transpile(src, dest, lang, program.adaptive,
 		[program.tree1, program.tree2, program.tree3, program.tree4])
 }

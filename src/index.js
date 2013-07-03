@@ -71,10 +71,19 @@ function compile(ast, target) {
 	}
 }
 
-function transpile(source, dest, lang, debug) {
+function transpile(source, dest, lang, adaptive, debug) {
 	try {
 		var tree = transform(parseFile(source), debug)
-		fs.writeFileSync(dest, compile(tree, lang))
+		if (adaptive) {
+			tree[4].unshift(['comment', [0, 0], ['html']])
+			fs.writeFileSync(dest, compile(tree, lang))
+
+			tree[4][0] = ['comment', [0, 0], ['xhtml mp 1.0']]
+			var wapDest = dest.replace(/(?=\.[^.]+$)/, '.wap')
+			fs.writeFileSync(wapDest, compile(tree, lang))
+		} else {
+			fs.writeFileSync(dest, compile(tree, lang))
+		}
 	} catch(e) {
 		var info = e.stack || e.message || e
 		console.error('Error: ', String(info))
@@ -82,11 +91,11 @@ function transpile(source, dest, lang, debug) {
 	}
 }
 
-function watch(source, dest, lang, debug) {
+function watch(source, dest, lang, adaptive, debug) {
 	//TODO: watch dependencies
-	transpile(source, dest, lang, debug)
+	transpile(source, dest, lang, adaptive, debug)
 	fs.watch(source, function(evt, filename) {
-		transpile(source, dest, lang, debug)
+		transpile(source, dest, lang, adaptive, debug)
 	})
 }
 
