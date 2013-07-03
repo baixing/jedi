@@ -1,4 +1,6 @@
-script = [1, 2, 3]
-	'console.log('Hello world!')
-	!
-		console.log(data)
+section
+	h1 = '1.1'
+	p 'Hello world!'
+section
+	h1 = '1.2'
+	p 'Hello world again!'

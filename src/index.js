@@ -71,10 +71,19 @@ function compile(ast, target) {
 	}
 }
 
-function transpile(source, dest, lang, debug) {
+function transpile(source, dest, lang, adaptive, debug) {
 	try {
 		var tree = transform(parseFile(source), debug)
-		fs.writeFileSync(dest, compile(tree, lang))
+		if (adaptive) {
+			tree[4].unshift(['comment', [0, 0], ['html']])
+			fs.writeFileSync(dest, compile(tree, lang))
+
+			tree[4][0] = ['comment', [0, 0], ['xhtml mp 1.0']]
+			var wapDest = dest.replace(/(?=\.[^.]+$)/, '.wap')
+			fs.writeFileSync(wapDest, compile(tree, lang))
+		} else {
+			fs.writeFileSync(dest, compile(tree, lang))
+		}
 	} catch(e) {
 		var info = e.stack || e.message || e
 		console.error('Error: ', String(info))
@@ -82,11 +91,11 @@ function transpile(source, dest, lang, debug) {
 	}
 }
 
-function watch(source, dest, lang, debug) {
+function watch(source, dest, lang, adaptive, debug) {
 	//TODO: watch dependencies
-	transpile(source, dest, lang, debug)
+	transpile(source, dest, lang, adaptive, debug)
 	fs.watch(source, function(evt, filename) {
-		transpile(source, dest, lang, debug)
+		transpile(source, dest, lang, adaptive, debug)
 	})
 }
 
@@ -94,7 +103,7 @@ function service(options) {
 	//var watched = []
 
 	http.createServer(function (req, res) {
-		var start = Date.now()
+
 		switch (req.method) {
 			case 'GET':
 				//console.log(req.url)
@@ -106,20 +115,30 @@ function service(options) {
 
 				fs.exists(f, function(exists){
 					if (!exists) {
-						var msg = 'file not exist: ' + f + '\n'
-						res.writeHead(404)
-						res.end(msg)
-						console.error(msg)
+						send(404, 'file not exist')
 					} else {
-						var t0 = Date.now()
-						options.lang.forEach(function(lang){
-							transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
+						fs.stat(f, function(err, stats){
+							if (stats.isFile()) {
+								var t0 = Date.now()
+								options.lang.forEach(function(lang){
+									transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
+								})
+								var t1 = Date.now()
+								send(200, 'transpiled in ' + (t1 - t0) + 'ms')
+							} else {
+								send(404, 'path is not a file')
+							}
 						})
-						var t1 = Date.now()
-						var msg = 'transpiled in ' + (t1 - t0) + 'ms: ' + f + '\n'
-						res.writeHead(200)
-						res.end(msg)
-						console.info(msg, Date.now() - start, start)
+					}
+
+					function send(status, message){
+						res.writeHead(status)
+						res.end(message + ': ' + f  + '\n')
+						if (status >= 400) {
+							console.error(message + ': ' + f)
+						} else {
+							console.info(message + ': ' + f)
+						}
 					}
 				})
 
@@ -129,7 +148,13 @@ function service(options) {
 				res.writeHead(405)
 				res.end()
 		}
+
 	}).listen(options.port)
+
+	process.on('uncaughtException', function(err){
+		console.error(new Date().toISOString(), 'uncaught exception:', err)
+		console.trace(err)
+	})
 
 }
 

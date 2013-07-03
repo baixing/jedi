@@ -50,6 +50,9 @@ var Output = {
 		// Comment must not contain two consecutive U+002D HYPHEN-MINUS characters (--)
 		return s.replace(/--/g, '- -')
 	},
+	escapeScriptSource: function escapeScriptSource(s) {
+		return s.replace(/<\/script>/g, '<\\/script>')
+	},
 	escapeText: function escapeText(s) {
 		return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 	},

@@ -54,8 +54,9 @@ ometa PHP5Transpiler {
 	listLiteral [#List [expr*:list]]	->	('[' + list.join(', ') + ']'),
 	
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
-	call ["." [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
-	call ["." expr:x [#Symbol :y]]	->	(x + '->' + y),
+	call ['.' [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
+	call ['.' expr:x [#Symbol :y]]	->	(x + '->' + y),
+	call ['?.' expr:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
 	
 	call [#Call [#Symbol :s externalSymbol(s):x] &[#Tuple :_] trans:y]	->	(x + y),
 	call [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
@@ -95,6 +96,9 @@ ometa PHP5Transpiler {
 			"echo '-->';"
 		),
 	echoComment [char*:s] -> ("echo '" + this.output.escapeComment(simpleString(s)) + "', \"\\n\";"),
+
+	scriptsource [scriptsourceLine*:lines]	->	echoLines(lines),
+	scriptsourceLine string:s	->	("'" + this.output.escapeScriptSource(simpleString(s)) + "', \"\\n\""),
 
 	text stringLiteral:s	->	['echo ' + this.output.escapeText(s) + ';'],
 	text templateLiteral:s	->	['echo htmlspecialchars(' + s + ');'],
@@ -232,7 +236,7 @@ PHP5Transpiler.initialize = function() {
 		//dirty implementation for script = data
 		if (tag === 'script' && bind) {
 			body.splice(1, 0, "echo 'void function(data){';")
-			body.push("echo '}(', json_encode($context), ')';")
+			body.push("echo '}(', json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ')';")
 			return closure(bind, [startT, body, endT], param)
 		}
 		var overrided = children.some(function(node){
