@@ -10,12 +10,12 @@ var program = require('commander')
 program.
 	usage('[options] <source> <dest>').
 	version(pkg.version).
+	option('-a, --adaptive', '生成多个适配版本').
 	option('-w, --watch', '当源文件的内容变化时自动重新编译').
 	option('-1, --tree1', '查看抽象语法树（阶段1）').
 	option('-2, --tree2', '查看抽象语法树（阶段2）').
 	option('-3, --tree3', '查看抽象语法树（阶段3）').
 	option('-4, --tree4', '查看抽象语法树（阶段4）').
-	option('-a, --adaptive', '生成多个适配版本').
 	parse(process.argv)
 
 if (program.args.length < 1) {

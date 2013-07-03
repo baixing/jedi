@@ -74,6 +74,7 @@ function compile(ast, target) {
 function transpile(source, dest, lang, adaptive, debug) {
 	try {
 		var tree = transform(parseFile(source), debug)
+		if (adaptive === undefined) adaptive = /\.a\./.test(source)
 		if (adaptive) {
 			tree[4].unshift(['comment', [0, 0], ['html']])
 			fs.writeFileSync(dest, compile(tree, lang))
