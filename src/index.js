@@ -73,9 +73,17 @@ function compile(ast, target) {
 
 function transpile(source, dest, lang, adaptive, debug) {
 	try {
+		var configFile = path.join(source, '../jedi.json'), config = {}
+		if (fs.existsSync(configFile)) {
+			try {
+				config = JSON.parse(fs.readFileSync(configFile))
+			} catch(e) {
+				console.error('Bad JSON format: ' + configFile);
+			}
+		}
+
 		var tree = transform(parseFile(source), debug)
-		if (adaptive === undefined) adaptive = /\.a\./.test(source)
-		if (adaptive) {
+		if (adaptive || config.adaptive) {
 			tree[4].unshift(['comment', [0, 0], ['html']])
 			fs.writeFileSync(dest, compile(tree, lang))
 
