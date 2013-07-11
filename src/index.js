@@ -73,7 +73,7 @@ function compile(ast, target) {
 
 function transpile(source, dest, lang, adaptive, debug) {
 	try {
-		var configFile = path.join(source, '../jedi.json'), config = {}
+		var configFile = path.dirname(source) + path.sep + 'jedi.json', config = {}
 		if (fs.existsSync(configFile)) {
 			try {
 				config = JSON.parse(fs.readFileSync(configFile))
