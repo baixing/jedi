@@ -1,5 +1,5 @@
 "import string, concat, flattenLines, isCharArray, dir, flattenArray from './util'"
-"import OutputHTML, OutputXHTML from './output'"
+"import OutputHTML, OutputXML, OutputXHTML from './output'"
 "export PHP5Transpiler, Beautify"
 
 ometa Beautify {
@@ -37,6 +37,7 @@ ometa PHP5Transpiler {
 	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mp 1.1") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.1//EN\" \"http://www.openmobilealliance.org/tech/DTD/xhtml-mobile11.dtd\">', \"\\n\";"],
 	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mp 1.2") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.2//EN\" \"http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd\">', \"\\n\";"],
 	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "basic") spaces] -> ["echo '<!doctype html>', \"\\n\";"],
+	outputMethod [spaces ("xml" !this.setOutputMethod('xml')) spaces] -> ["echo '<?xml version=\"1.0\" encoding=\"utf-8\"?>', \"\\n\";"],
 
 	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),
 	
