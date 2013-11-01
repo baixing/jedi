@@ -23,3 +23,6 @@ Dust
 Sinatra
 Cocoon
 Symphony http://getsymphony.com/
+
+Operators
+http://rosettacode.org/wiki/Operator_precedence

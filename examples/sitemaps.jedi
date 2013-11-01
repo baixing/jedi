@@ -1,0 +1,21 @@
+sitemaps
+	
+	match @baseurl=http://m.baixing.com/
+		forward = Entry { $wap = true }
+
+	baseurl = http://www.baixing.com/
+		
+		prefix = /m
+			:let wap = true
+		
+		match /
+			do Entry
+		end match
+
+		match /login
+		alias /denglu
+			do Auth.login
+		/logout
+	baseurl http://{city}.baixing.com/
+
+/sitemaps
