@@ -1,0 +1,10 @@
+!html
+
+html
+	head
+	body
+		div 'start'
+		:import component1
+		div 'sep'
+		:import component2
+		div 'end'

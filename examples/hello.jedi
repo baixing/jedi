@@ -10,62 +10,70 @@ html
 
 		section#comment
 
-			h1 '注释
+			h1 'Comment
 
-			!	这里是HTML注释
+			!	Here is HTML comments
 
-			!	注释可以有
-				很多
-				很多
-				行……
+			!	Comments can be
+				multiple
+				lines…
 
-			!	注释中的 -- 会被自动 escape，确保浏览器不会解析出错
+			!	“--” in the comments will be escaped automatically
 
 		section#suppress
 
-			h1 '代码抑制
+			h1 'Suppress
 
-			-- 这是代码抑制，与HTML注释不同，其内容不会被输出
+			-- This is code suppress, no ouptput at all
 
 			--p
-				'代码抑制可以很方便的
-				'禁用一整块的代码
+				'It's easy to use suppress to disable
+				'the whole block of code
 
 		section#text
 
-			h1 '文本
+			h1 'Text
 
 			p
-				'	普通文本，可以包含任何字符，包括 ' 和 "，
-					HTML特殊字符如 < > & 会被自动 escape，
-					也可以折行。
+				'	Normal text, can contains any character include ' and ",
+					the special HTML characters like < > & will be escaped,
+					also support link break.
 
-			p "插值文本，可以插入表达式，如 1 + 1 = {1 + 1}
+			p
+				"	Interpolation text, in which expressions can be interplated:
+					1 + 1 = {1 + 1}
 
-			--p
-				'注意，所有的空白符包括换行符在HTML中通常会被压缩成单个空格，'
-				'对于中文来说就会出现多余的空格。一个简单的方法是通过行尾引号'
-				'来精确控制空白。'
+			p
+				'Note: all whitespaces include newline character will be
+				'collapsed to a single space. So multiple lines of text
+				'will produce redundunt spaces for East-Asian languages. 
+
+				'But it can be controlled by adding quatation mark a'
+				't the end of the line'
 
 		section#element
 
-			h1 '元素
-
-			p '元素直接写tag就可以了，Jedi会自动处理闭合等问题。
-
-			p.note '可以带有class
-
-			p.help.note '多class也行
-
-			p#element-with-id '可带有ID
-
-			p.help.note#element-with-classlist-and-id
-				'也可混合多个class和ID，但注意顺序必须是Tag之后先class后ID。
-				'另外也不能不写tag光写class或ID（如.naked-class），
-				'因为这鼓励了不动脑子全退化到div的错误做法。
+			h1 'Element
 
 			p
-				'子元素可写在一行内，比如：
+				'Just write element name, Jedi will deal with rest problems
+				'like when and how to add close tag
+
+			p.note 'element with class
+
+			p.help.note 'multiple classes
+
+			p#element-with-id 'with ID
+
+			p.help.note#element-with-classlist-and-id
+				'You can mix classes and ID, but should write as the order
+				'tagname.class1.class2#id
+				'tagname should not be omitted, (eg. .naked-class),
+				'because it tend to divitius
+
+			p
+				'Only-one child element can be collapsed to the
+				'line of parent element:
 				nav > ul#standard-bodies
 						li > a @href='http://www.w3.org/'
 							'W3C
@@ -75,12 +83,12 @@ html
 							'ECMA TC39
 
 			p
-				'元素上当然可以有属性
-				@title='属性会自动前置'
+				'attributes
+				@title='You can write attributes after some contents if you like'
 
 		section#instruction
 
-			h1 '指令
+			h1 'Instruction
 
 			:if user.age < 18
 				p 'NO ENTER!
@@ -91,7 +99,9 @@ html
 				:for x in [1, 2, 3]
 					li "x = {x}
 
-			p '可以通过指令后置来保持HTML结构
+			p
+				'Some instructions can be write after element name
+				'to keep the nest structure of HTML
 
 			p if user.age < 18
 				'NO ENTER!
@@ -99,17 +109,17 @@ html
 				'Welcome to the lost paradise.
 
 			ul
-				li for x in 1...10
+				li for x in 1 ... 10
 					"x = {x}
 
 		section#inject
 
-			h1 '注入
+			h1 'Inject
 
-			- echo '这里是代码注入，也就是开了个后门'
+			- echo 'Here we inject some codes of host language'
 
-			- $test = 'test'
-			- if ($test)
+			- $user = 'hax'
+			- if ($user)
 				p
-					'测试
-					- echo $test
+					'Hello
+					- echo $user

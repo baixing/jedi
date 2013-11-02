@@ -1,6 +1,0 @@
-section
-	h1 = '1.1'
-	p 'Hello world!'
-section
-	h1 = '1.2'
-	p 'Hello world again!'

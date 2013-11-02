@@ -4,7 +4,7 @@ Jedi is a new template language (maybe do more such as url routing in the future
 inspired by Jade / Coffeekup and many others. It's still in alpha phase and very
 unstable.
 
-Jedi 0.9.8 is available now.
+Jedi 0.9.22 is available now.
 
 ### Install ###
 
@@ -12,9 +12,9 @@ Jedi 0.9.8 is available now.
 
 ### Usage ###
 
-```jedi2php example.jedi```
+```jedi example.jedi php```
 
-```jedi2php -w example.jedi```
+```jedi -w example.jedi php```
 
 ### Template Syntax ###
 
@@ -24,11 +24,10 @@ See examples/
 
 1. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not implemented yet
 
-2. @title = "Hello {username}" is not implemented yet
+2. only very basic support of import instruction
 
-3. string concat and some other expression operators is not implemented
+2. string concat and some other expression operators are not implemented
 
-4. only one attribute is allowed in the same line of element
 
 ### IDE/editor support ###
 
@@ -40,7 +39,7 @@ Planned:
 
 ### Copyright & License ###
 
-   Copyright 2012 HE Shi-Jun
+   Copyright 2012, 2013 HE Shi-Jun
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

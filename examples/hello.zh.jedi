@@ -1,0 +1,115 @@
+!html5
+
+html
+	head
+		meta @charset='utf-8'
+		title "{page.title} - Jedi
+		link @rel='stylesheet' @href={url.static 'common.css'}
+
+	body
+
+		section#comment
+
+			h1 '注释
+
+			!	这里是HTML注释
+
+			!	注释可以有
+				很多
+				很多
+				行……
+
+			!	注释中的 -- 会被自动 escape，确保浏览器不会解析出错
+
+		section#suppress
+
+			h1 '代码抑制
+
+			-- 这是代码抑制，与HTML注释不同，其内容不会被输出
+
+			--p
+				'代码抑制可以很方便的
+				'禁用一整块的代码
+
+		section#text
+
+			h1 '文本
+
+			p
+				'	普通文本，可以包含任何字符，包括 ' 和 "，
+					HTML特殊字符如 < > & 会被自动 escape，
+					也可以折行。
+
+			p "插值文本，可以插入表达式，如 1 + 1 = {1 + 1}
+
+			--p
+				'注意，所有的空白符包括换行符在HTML中通常会被压缩成单个空格，'
+				'对于中文来说就会出现多余的空格。一个简单的方法是通过行尾引号'
+				'来精确控制空白。'
+
+		section#element
+
+			h1 '元素
+
+			p '元素直接写tag就可以了，Jedi会自动处理闭合等问题。
+
+			p.note '可以带有class
+
+			p.help.note '多class也行
+
+			p#element-with-id '可带有ID
+
+			p.help.note#element-with-classlist-and-id
+				'也可混合多个class和ID，但注意顺序必须是Tag之后先class后ID。
+				'另外也不能不写tag光写class或ID（如.naked-class），
+				'因为这鼓励了不动脑子全退化到div的错误做法。
+
+			p
+				'子元素可写在一行内，比如：
+				nav > ul#standard-bodies
+						li > a @href='http://www.w3.org/'
+							'W3C
+						li > a @href='http://www.whatwg.org/'
+							'WHATWG
+						li > a @href='http://www.ecmascript.org/'
+							'ECMA TC39
+
+			p
+				'元素上当然可以有属性
+				@title='属性会自动前置'
+
+		section#instruction
+
+			h1 '指令
+
+			:if user.age < 18
+				p 'NO ENTER!
+			:else
+				p 'Welcome to the lost paradise.
+
+			ul
+				:for x in [1, 2, 3]
+					li "x = {x}
+
+			p '可以通过指令后置来保持HTML结构
+
+			p if user.age < 18
+				'NO ENTER!
+			p else
+				'Welcome to the lost paradise.
+
+			ul
+				li for x in 1...10
+					"x = {x}
+
+		section#inject
+
+			h1 '注入
+
+			- echo '这里是代码注入，也就是开了个后门'
+
+			- $test = 'test'
+			- if ($test)
+				p
+					'测试
+					- echo $test

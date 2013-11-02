@@ -1,1 +1,1 @@
-:external User, base64body	section = User.get(userId)		p			'Welcome			span.name "{*.name}			'!		p			img @src="data:image/png;base64,{base64(*.avatar)}"
+:external User, base64section = User.get(userId)	p "Welcome {*.name}!	p > img @src="data:image/png;base64,{base64(*.avatar)}"

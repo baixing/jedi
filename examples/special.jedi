@@ -3,10 +3,12 @@
 html
 	head
 		style
-			body {
-				font-size: 14px;
-			}
+			!
+				body {
+					font-size: 14px;
+				}
 		script
-			console.log('ok')
+			!
+				console.log('ok')
 	body
 		textarea
