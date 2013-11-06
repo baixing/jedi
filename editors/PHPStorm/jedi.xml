@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<filetype binary="false" default_extension="" description="Jedi files" name="Jedi">
+  <highlighting>
+    <options>
+      <option name="LINE_COMMENT" value="//" />
+      <option name="COMMENT_START" value="--" />
+      <option name="COMMENT_END" value="" />
+      <option name="HEX_PREFIX" value="" />
+      <option name="NUM_POSTFIXES" value="" />
+      <option name="HAS_BRACES" value="true" />
+      <option name="HAS_BRACKETS" value="true" />
+      <option name="HAS_PARENS" value="true" />
+      <option name="HAS_STRING_ESCAPES" value="true" />
+    </options>
+    <keywords keywords="a;abbr;address;area;article;aside;audio;b;base;bdi;bdo;blockquote;body;br;button;canvas;caption;cite;code;col;colgroup;data;datalist;dd;del;details;dfn;dialog;div;dl;dt;em;embed;fieldset;figcaption;figure;footer;form;h1;h2;h3;h4;h5;h6;head;header;hgroup;hr;html;i;iframe;img;input;ins;kbd;keygen;label;legend;li;link;main;map;mark;menu;menuitem;meta;meter;nav;noscript;object;ol;optgroup;option;output;p;param;pre;progress;q;rp;rt;ruby;s;samp;script;section;select;small;source;span;strong;style;sub;summary;sup;table;tbody;td;textarea;tfoot;th;thead;time;title;tr;track;u;ul;var;video;wbr" ignore_case="false" />
+    <keywords2 keywords="@abbr;@accept;@accept-charset;@accesskey;@action;@allowfullscreen;@alt;@async;@autocomplete;@autofocus;@autoplay;@challenge;@charset;@checked;@cite;@class;@cols;@colspan;@command;@content;@contenteditable;@contextmenu;@controls;@coords;@crossorigin;@data;@datetime;@default;@defer;@dir;@dirname;@disabled;@download;@draggable;@dropzone;@enctype;@for;@form;@formaction;@formenctype;@formmethod;@formnovalidate;@formtarget;@headers;@height;@hidden;@high;@href;@hreflang;@http-equiv;@icon;@id;@inert;@inputmode;@ismap;@itemid;@itemprop;@itemref;@itemscope;@itemtype;@keytype;@kind;@label;@lang;@list;@loop;@low;@manifest;@max;@maxlength;@media;@mediagroup;@menu;@method;@min;@multiple;@muted;@name;@novalidate;@onabort;@onafterprint;@onbeforeprint;@onbeforeunload;@onblur;@oncancel;@oncanplay;@oncanplaythrough;@onchange;@onclick;@onclose;@oncontextmenu;@oncuechange;@ondblclick;@ondrag;@ondragend;@ondragenter;@ondragexit;@ondragleave;@ondragover;@ondragstart;@ondrop;@ondurationchange;@onemptied;@onended;@onerror;@onfocus;@onhashchange;@oninput;@oninvalid;@onkeydown;@onkeypress;@onkeyup;@onload;@onloadeddata;@onloadedmetadata;@onloadstart;@onmessage;@onmousedown;@onmouseenter;@onmouseleave;@onmousemove;@onmouseout;@onmouseover;@onmouseup;@onmousewheel;@onoffline;@ononline;@onpagehide;@onpageshow;@onpause;@onplay;@onplaying;@onpopstate;@onprogress;@onratechange;@onreset;@onresize;@onscroll;@onseeked;@onseeking;@onselect;@onshow;@onsort;@onstalled;@onstorage;@onsubmit;@onsuspend;@ontimeupdate;@onunload;@onvolumechange;@onwaiting;@open;@optimum;@pattern;@ping;@placeholder;@poster;@preload;@radiogroup;@readonly;@rel;@required;@reversed;@rows;@rowspan;@sandbox;@scope;@scoped;@seamless;@selected;@shape;@size;@sizes;@span;@spellcheck;@src;@srcdoc;@srclang;@srcset;@start;@step;@style;@tabindex;@target;@title;@translate;@type;@typemustmatch;@usemap;@value;@width;@wrap" />
+    <keywords3 keywords="else;end;external;for;if;import;in;let;not;unless;unsafe;where;×;÷;＋;－" />
+  </highlighting>
+  <extensionMap>
+    <mapping ext="jedi" />
+  </extensionMap>
+</filetype>
+
