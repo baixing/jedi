@@ -31,10 +31,19 @@ See examples/
 
 ### IDE/editor support ###
 
-Planned:
+#### WebStorm/PHPStorm ####
 
+NOTE: Only support simple keywords highlighting
+
+Copy [./editors/PHPStorm/jedi.xml|jedi.xml] to 
+```~/Library/Preferences/WebIde70/filetypes``` if you use MacOS
+or ```X:\Users\{your name}\.WebIde70\config\filetypes``` if you use Windows
+
+#### Others ####
+
+Planned but not
 1. Code Browser, jEdit
-2. PHPStorm, NetBeans
+2. NetBeans
 3. CodeMirror, ACE
 
 ### Copyright & License ###
