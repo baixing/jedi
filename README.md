@@ -35,13 +35,14 @@ See examples/
 
 NOTE: Only support simple keywords highlighting
 
-Copy [./editors/PHPStorm/jedi.xml|jedi.xml] to 
-```~/Library/Preferences/WebIde70/filetypes``` if you use MacOS
-or ```X:\Users\{your name}\.WebIde70\config\filetypes``` if you use Windows
+Copy [jedi.xml](./editors/PHPStorm/jedi.xml) to 
+```~/Library/Preferences/WebIde70/filetypes``` for MacOS
+or ```%USERPROFILE%\.WebIde70\config\filetypes``` for Windows, restart WebStorm/PHPStorm
 
 #### Others ####
 
-Planned but not
+Planned:
+
 1. Code Browser, jEdit
 2. NetBeans
 3. CodeMirror, ACE
@@ -53,8 +54,7 @@ Planned but not
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
+   [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
