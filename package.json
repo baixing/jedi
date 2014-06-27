@@ -9,9 +9,9 @@
     "dsl"
   ],
   "dependencies": {
-    "my": "*",
+    "commander": "*",
     "mmclass": "*",
-    "commander": "*"
+    "my": "*"
   },
   "devDependencies": {
     "coffee-script": "*",

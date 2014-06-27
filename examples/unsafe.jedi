@@ -1,0 +1,5 @@
+div
+	:unsafe "&copy; 2014"
+
+div
+	@data-value = "\&copy; 2014 \&nbsp"
