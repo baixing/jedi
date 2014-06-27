@@ -19,10 +19,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/hax/jedi.git"
+    "url": "http://github.com/baixing/jedi.git"
   },
-  "homepage": "http://github.com/hax/jedi",
-  "bugs": "http://github.com/hax/jedi/issues",
+  "homepage": "http://github.com/baixing/jedi",
+  "bugs": "http://github.com/baixing/jedi/issues",
   "main": "src/transpiler.js",
   "bin": {
     "jedi": "./cli/jedi",
