@@ -1,4 +1,4 @@
-"import string, toUTF16 from './util'"
+"import string, toUTF16, namedCharRef from './util'"
 "import UnicodeText from './text'"
 "export Expression"
 
@@ -64,6 +64,8 @@ ometa Expression {
 		-> String.fromCharCode(parseInt(string(u), 16)),
 	escapedChar '\\' 'u' '{' <hex+>:u '}'
 		-> toUTF16(parseInt(string(u), 16)),
+	escapedChar '\\' <'&' (~';' char)+ ';'>:entity
+		-> namedCharRef(string(entity)),
 	escapedChar '\\' char:c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 

@@ -1,5 +1,9 @@
 'use strict'
+
 var util = require('util')
+
+//module from http://www.w3.org/TR/html5/entities.json
+var entities = require('./entities')
 
 module.exports = util = Object.create(util)
 
@@ -64,4 +68,9 @@ util.diff = function diff(a, b) {
 		return
 	}
 	return [a, b]
+}
+
+util.namedCharRef = function (entity) {
+	if (entity in entities) return entities[entity].characters
+	else throw fail
 }
