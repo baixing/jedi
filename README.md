@@ -23,7 +23,7 @@ See examples/
 
 ### Known major bugs and limitations for 1.0 milestone
 
-1. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not implemented yet
+1. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not fully implemented
 
 2. only very basic support of import instruction
 
