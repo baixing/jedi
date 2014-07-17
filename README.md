@@ -19,7 +19,7 @@ unstable.
 
 ### Template Syntax ###
 
-See examples/
+See [https://github.com/baixing/jedi/tree/master/examples](examples/)
 
 ### Known major bugs and limitations for 1.0 milestone
 
