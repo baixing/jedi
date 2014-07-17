@@ -1,8 +1,8 @@
 ## Jedi ##
 
 Jedi is a new template language (maybe do more such as url routing in the future)
-inspired by Jade / Coffeekup and many others. It's still in alpha phase and very
-unstable.
+inspired by [Jade](https://github.com/visionmedia/jade) / [Coffeekup](https://github.com/mauricemach/coffeekup) and many others. It's still in beta phase but we already
+use it in production (http://m.baixing.com/) for several years.
 
 [![NPM version](https://badge.fury.io/js/jedi.png)](http://badge.fury.io/js/jedi)
 [![Dep status](https://david-dm.org/baixing/jedi.png)](https://david-dm.org/baixing/jedi)
