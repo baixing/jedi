@@ -25,10 +25,14 @@ See examples/
 
 1. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not fully implemented
 
-2. only very basic support of import instruction
+1. only very basic support of import instruction
 
-2. string concat and some other expression operators are not implemented
+1. string concat and some other expression operators are not implemented
 
+
+### Build system
+
+* Gulp: https://github.com/HerringtonDarkholme/gulp-jedi
 
 ### IDE/editor support ###
 
