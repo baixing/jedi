@@ -32,7 +32,7 @@ See examples/
 
 ### Build system
 
-* Gulp: https://github.com/HerringtonDarkholme/gulp-jedi
+* Gulp plugin: https://github.com/HerringtonDarkholme/gulp-jedi
 
 ### IDE/editor support ###
 
