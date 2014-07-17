@@ -19,7 +19,7 @@ use it in production (http://m.baixing.com/) for several years.
 
 ### Template Syntax ###
 
-See [https://github.com/baixing/jedi/tree/master/examples](examples/)
+See [examples](https://github.com/baixing/jedi/tree/master/examples)
 
 ### Known major bugs and limitations for 1.0 milestone
 
