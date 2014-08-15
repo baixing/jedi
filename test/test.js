@@ -11,7 +11,7 @@ function heading(s, level) {
 }
 
 function testRule(grm, rule, testsuite, matchAll) {
-	var total, ok = 0
+	var total, ok = 0, skip = 0
 	try {
 		if (Array.isArray(testsuite)) {
 			total = testsuite.length
@@ -24,7 +24,9 @@ function testRule(grm, rule, testsuite, matchAll) {
 			})
 		}
 	} finally {
-		console.log(ok + '/' + total + ' tests passed.')
+		var summary = ok + '/' + total + ' tests passed'
+		if (skip) summary += ', ' + skip + ' tests skipped'
+		console.log(summary)
 	}
 	function doTest(testcase){
 		var input, expect
@@ -62,8 +64,10 @@ function testRule(grm, rule, testsuite, matchAll) {
 		} else {
 			if (util.diff(actual, input)) {
 				console.log('input:', input)
+				console.log('output:')
 				util.dir(actual)
 				console.log()
+				skip++
 			} else ok++
 		}
 	}
