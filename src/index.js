@@ -37,8 +37,14 @@ function parseFile(filename) {
 	shasum.update(fs.readFileSync(filename))
 	var d = shasum.digest('base64')
 	var t1 = Date.now()
-	console.log(d, t1 - t0)
-	if (cache.has(d)) return cache.get(d)
+	//console.log(d, t1 - t0)
+	if (cache.has(d)) {
+		var t = cache.get(d)
+		// hack: replace filename in the cache
+		//       note it's not thread-safe
+		t[1][0] = filename
+		return t
+	}
 	var t = Parser.match(filename, 'load')
 	cache.set(d, t)
 	return t
