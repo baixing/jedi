@@ -1,0 +1,25 @@
+::div.note.x ()
+	'Note:'
+	#content
+
+!html5
+
+html
+	head
+		! start head
+		
+		#headBlock
+			meta @charset='utf-8'
+		
+		! end head
+			
+	body
+		! start body
+		
+		#bodyBlock
+			'Hello world!
+			div.note = 'ok'
+				#content
+					p 'This is a note.'
+		
+		! end body

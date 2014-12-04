@@ -1,0 +1,15 @@
+:: article:comment
+template (user, time)
+   header
+      ^address:email
+   ^
+   footer
+      ^time
+
+article:comment
+   address:email = 'johnhax@gmail.com'
+   time = '2014-11-21T16:00Z+0800'
+   p
+      'This is first paragraph.'
+   p
+      'This is second paragraph.'
