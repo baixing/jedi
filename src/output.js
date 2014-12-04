@@ -56,8 +56,14 @@ var Output = {
 	escapeText: function escapeText(s) {
 		return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 	},
+	phpEscapeText: function phpEscapeText(s) {
+		return 'htmlspecialchars(' + s + ', ENT_SUBSTITUTE | ENT_DISALLOWED)'
+	},
 	attrValue: function attrValue(s) {
 		return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+	},
+	phpAttrValue: function phpAttrValue(s) {
+		return 'htmlspecialchars(' + s + ', ENT_COMPAT | ENT_SUBSTITUTE | ENT_DISALLOWED)'
 	},
 	startTag: function startTag(tag, cls, id) {
 		lastTag = tag

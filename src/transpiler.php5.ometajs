@@ -102,13 +102,13 @@ ometa PHP5Transpiler {
 	scriptsourceLine string:s	->	("'" + this.output.escapeScriptSource(simpleString(s)) + "', \"\\n\""),
 
 	text stringLiteral:s	->	['echo ' + this.output.escapeText(s) + ';'],
-	text templateLiteral:s	->	['echo htmlspecialchars(' + s + ');'],
+	text templateLiteral:s	->	['echo ' + this.output.phpEscapeText(s) + ';'],
 	text undefined [textLine*:lines]	->	echoLines(lines),
 	text undefined [echoTemplateString*:lines]	->	lines,
 
 	textLine string:s	->	("'" + this.output.escapeText(simpleString(s)) + "', \"\\n\""),
-	echoTemplateString [] -> '',
-	echoTemplateString [trans+:exprList] -> ('echo htmlspecialchars((' + exprList.join(') . (') + '));'),
+	echoTemplateString []	->	'',
+	echoTemplateString [trans+:exprList]	->	('echo ' + this.output.phpEscapeText('(' + exprList.join(') . (') + ')') + ';'),
 	//	-> dom.text(lines),
 
 	element [:tag :cls :id] undefined
@@ -129,7 +129,7 @@ ometa PHP5Transpiler {
 	attribute :name :op undefined	->	["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + this.output.attrValue(simpleString(s)) + "\"';"],
 	attribute :name :op [#Quasi undefined echoTemplateString:line] -> ["echo ' " + name + '="' + "';",  line, "echo '\"';"],
-	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', htmlspecialchars(" + exp + "), '\"';"],
+	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', " + this.output.phpAttrValue(exp) + ", '\"';"],
 	
 	binding :_ trans:expr [] -> ['echo htmlspecialchars(' + expr + ');'],
 	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlspecialchars($__temp); else print_r($__temp);"],
@@ -237,7 +237,7 @@ PHP5Transpiler.initialize = function() {
 		//dirty implementation for script = data
 		if (tag === 'script' && bind) {
 			body.splice(1, 0, "echo 'void function(data){';")
-			body.push("echo '}(', json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), ')';")
+			body.push("echo '}(', json_encode($context, 0x100), ')';")
 			return closure(bind, [startT, body, endT], param)
 		}
 		var overrided = children.some(function(node){
