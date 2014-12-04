@@ -131,7 +131,7 @@ ometa PHP5Transpiler {
 	attribute :name :op [#Quasi undefined echoTemplateString:line] -> ["echo ' " + name + '="' + "';",  line, "echo '\"';"],
 	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', " + this.output.phpAttrValue(exp) + ", '\"';"],
 	
-	binding :_ trans:expr [] -> ['echo htmlspecialchars(' + expr + ');'],
+	binding :_ trans:expr [] -> ['echo ' + this.output.phpEscapeText(expr) + ';'],
 	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlspecialchars($__temp); else print_r($__temp);"],
 	binding :_ trans:expr enterBlock([]) block:body exitBlock:param
 		-> closure(expr, body, param),
@@ -250,7 +250,7 @@ PHP5Transpiler.initialize = function() {
 			if (m) {
 				return closure(bind, [startT, m[2], endT], m[3]) // || ['//call macro']
 			} else {
-				return closure(bind, [startT, "echo '>', htmlspecialchars($context);", endT], param)
+				return closure(bind, [startT, "echo '>', " + this.output.phpEscapeText('$context') + ';', endT], param)
 			}
 		}
 	}
