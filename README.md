@@ -44,6 +44,8 @@ Copy [jedi.xml](./editors/PHPStorm/jedi.xml) to
 ```~/Library/Preferences/WebIde70/filetypes``` for MacOS
 or ```%USERPROFILE%\.WebIde70\config\filetypes``` for Windows, restart WebStorm/PHPStorm
 
+There is also a variant edition [cssmagic/jedi.xml](https://github.com/cssmagic/jedi.xml) which adjust some details and add [CMUI](https://github.com/CMUI/CMUI) keywords.
+
 #### Others ####
 
 Planned:
