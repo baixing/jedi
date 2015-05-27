@@ -3,6 +3,8 @@
 'use strict'
 
 require('../lib/ometa-js')
+//require('ometajs')
+//require('ometa-js')
 
 var Parser = require('./parser').Parser
 var transformer = require('./transformer')
@@ -32,12 +34,11 @@ var ParserCache = Class.extend(FileCache)({
 var cache = new Cache()
 
 function parseFile(filename) {
-	var t0 = Date.now()
+	console.time('digest')
 	var shasum = crypto.createHash('sha1')
 	shasum.update(fs.readFileSync(filename))
 	var d = shasum.digest('base64')
-	var t1 = Date.now()
-	//console.log(d, t1 - t0)
+	console.timeEnd('digest')
 	if (cache.has(d)) {
 		var t = cache.get(d)
 		// hack: replace filename in the cache
@@ -45,7 +46,9 @@ function parseFile(filename) {
 		t[1][0] = filename
 		return t
 	}
+	console.time('parse')
 	var t = Parser.match(filename, 'load')
+	console.timeEnd('parse')
 	cache.set(d, t)
 	return t
 }
@@ -54,12 +57,18 @@ function transform(tree, debug) {
 	if (debug === undefined) debug = []
 	var tree1 = tree
 	if (debug[0]) util.dir(tree1)
+	console.time('tr1')
 	var tree2 = transformer.InstructionsProcessor.match(tree1, 'document')
+	console.timeEnd('tr1')
 	if (debug[1]) util.dir(tree2)
+	console.time('tr2')
 	var tree3 = transformer.TemplateMatcher.match(tree2, 'document')
 	var tree3 = transformer.ScriptIIFEWrapper.match(tree3, 'document')
+	console.timeEnd('tr2')
 	if (debug[2]) util.dir(tree3)
+	console.time('tr3')
 	var tree4 = transformer.Sorter.match(tree3, 'document')
+	console.timeEnd('tr3')
 	if (debug[3]) util.dir(tree4)
 	return tree4
 }
@@ -67,8 +76,10 @@ function transform(tree, debug) {
 function compile(ast, target) {
 	switch (target) {
 		case 'php5': case 'php':
+			console.time('compile php')
 			var code = transpiler.php5.match(ast, 'document')
 			return transpiler.php5b.match(code, 'document')
+			console.timeEnd('compile php')
 		case 'es5': case 'ecmascript':
 		case 'js': case 'javascript':
 			return transpiler.es5.match(ast, 'document')
