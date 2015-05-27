@@ -1,0 +1,75 @@
+:let hax = [family-name = 'HE', given-name = 'Shi-Jun', sex = 'Male']
+:log hax.family-name == 'HE'
+:log hax['family-name'] == 'HE'
+:let tuple = [a, b, c]
+:log tuple#1 == a
+:log tuple#-1 == c
+:log tuple#(2,3)
+:log tuple[0] == a
+:log tuple.a == a
+
+?div = user
+	'Hello {*.name}!'
+^p
+	'Please login'
+
+*div = users
+	'Hello {*.name}!'
+^p
+	'No user.'
+
+* = users
+	div 'Hello {*.name}!'
+^
+	p 'No user.'
+
+
+?a if item#link
+^input:checkbox if item.check
+^span
+
+:if a
+	...
+:else if b
+	...
+:else
+
+
+
+ul
+	+li '{user.name}' for user in users
+	^ 'No user.'
+
+table.contacts
+	thead > tr
+
+	tbody > +tr for c in contacts
+
+$ div.test
+	content @select=p.first
+
+dl.name = hax
+	#dt
+		'姓名'
+dl.sex = hax
+dl.name.sex = hax
+
+	p.a = a3
+	p:a = a4
+
+
+$dl.name of {familyName as f, givenName as g}
+
+
+	$dl.name = {familyName, givenName}
+		dt
+			#dt
+				'name
+		dd '{familyName}{giveName}
+		#a
+			'default'
+		#b
+
+	$dl.sex = {sex}
+		dt 'sex
+		dd '{sex}
