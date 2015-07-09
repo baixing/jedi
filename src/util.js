@@ -1,6 +1,7 @@
 'use strict'
 
 var util = require('util')
+var ometa = require('../lib/ometa-js')
 
 //module from http://www.w3.org/TR/html5/entities.json
 var entities = require('./entities')
@@ -72,5 +73,5 @@ util.diff = function diff(a, b) {
 
 util.namedCharRef = function (entity) {
 	if (entity in entities) return entities[entity].characters
-	else throw fail
+	else throw ometa.fail
 }
