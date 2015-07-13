@@ -2,45 +2,40 @@
 "module fs at 'fs'"
 "import parseFile from './index'"
 "import Parser from './parser'"
-"import flattenArray from './util'"
-"export Transformer, InstructionsProcessor, Sorter, ScriptIIFEWrapper, TemplateMatcher"
+"import dir, flattenArray from './util'"
+"export Transformer, InstructionsProcessor, DocumentStripper, Sorter, ScriptIIFEWrapper, TemplateMatcher"
 
 ometa Transformer {
-	
+
 	document = node,
 	node	=	[nodeType:type position:pos :x :y nodeList(type):children]	->	[type, pos, x, y, children],
 	node	=	[nodeType:type position:pos anything*],
 	node	=	[#closeStartTag],
 	node	=	Parser.skip,
-	
+
 	nodeType	=	#document | #element | #attribute | #text | #comment | #scriptsource
 		|	#suppress | #inject | #binding | #instruction | #macro | #fragment
 		|	#Section | #Offside | #MixedWhitespace,
 	position	=	[number number] | [string number number],
-	
+
 	nodeList nodeType	=	[(node+ | [node*])*:x]	->	flattenArray(x),
-	
-	
+
+
 	END
 }
 
 ometa InstructionsProcessor <: Transformer {
 
 	node	=	&[#document [src number number] anything*] ^node,
-	node	=	[#instruction :pos #import string:path anything:sub] load(path):base override(sub, base),
+	node	=	[#instruction :pos #import string:path anything:sub] load(path):imported document(imported):base override(sub, base),
 	node	=	^node,
-	
-	nodeList	=	^nodeList:s importDocs(s),
-	importDocs	=	[(importNodes | anything+)*:x]	->	flattenArray(x),
-	
-	importNodes	=	[#document :pos :x :y :children] -> children,
-	
+
 	src	=	string:f !(this.filename = f),
-	
+
 	override :sub [#fragment :pos string:name undefined :children]:base findFragment(sub, name, base),
 	override :sub [nodeType:type :pos :x :y [override(sub)*:children]]	->	[type, pos, x, y, children],
-	override :sub :x	->	x,
-	
+	override :sub :x	-> x,
+
 	END
 }
 InstructionsProcessor.initialize = function () {
@@ -49,7 +44,11 @@ InstructionsProcessor.initialize = function () {
 		if (!fs.existsSync(filename)) {
 			filename += '.jedi'
 		}
-		return parseFile(filename)
+		var tree = parseFile(filename)
+		//console.log('parse:', inspect(tree, {depth: Infinity}))
+		//tree = this.match(tree, 'document')
+		//console.log('import:', inspect(tree, {depth: Infinity}))
+		return tree
 	}
 	this.findFragment = function (nodes, name, base) {
 		var fragments = nodes.filter(function(node){
@@ -68,11 +67,21 @@ InstructionsProcessor.initialize = function () {
 	}
 }
 
+ometa DocumentStripper <: Transformer {
+
+	nodeList (#document | #fragment)	=	[(importNodes | node+ | [node*])*:x] !dir(x)	->	flattenArray(x),
+	nodeList	= ^nodeList,
+
+	importNodes	=	[#document :pos :x :y nodeList(#document):children] !dir(children) -> children,
+
+	END
+}
+
 ometa Sorter <: Transformer {
 
 	nodeList (#element | #macro)	=	[node*:x]	->	sortNodes(x),
 	nodeList	=	^nodeList,
-	
+
 	END
 }
 function sortNodes(nodes) {
@@ -99,25 +108,22 @@ function sortNodes(nodes) {
 }
 
 ometa ScriptIIFEWrapper <: Transformer {
-	node	=	[#element position:pos [#script anything anything]:x [anything*]:y !console.log(2) scriptBlocks:children]	->	[#element, pos, x, y, children],
+	node	=	[#element position:pos [#script anything anything]:x [anything*]:y scriptBlocks:children]	->	[#element, pos, x, y, children],
 	node	=	^node,
-	scriptBlocks	=	[([#comment :pos :lines] -> [#scriptsource, pos, lines] | node:x !console.log(x))*:blocks] -> blocks,
+	scriptBlocks	=	[([#comment :pos :lines] -> [#scriptsource, pos, lines] | node:x)*:blocks] -> blocks,
 	END
-}
-function IIFEWrap(code) {
-	console.log('hello', code)
 }
 
 ometa TemplateMatcher <: Transformer {
 
-/*	
+/*
 	nodeList #element	=
 	nodeList #macro	=
 	nodeList #instruction	=
 	nodeList	=	^nodeList,
-	
+
 	node	=	[#element :pos :x :y enterScope nodeList(#element):children exitScope]	->	[#element, pos, x, y, block],
-	node	=	[#macro :pos :x :y nodeList(#macro):children]	->	
+	node	=	[#macro :pos :x :y nodeList(#macro):children]	->
 	node	=	^node,*/
 	END
 }
