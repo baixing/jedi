@@ -1,6 +1,6 @@
 {
   "name": "jedi",
-  "version": "0.9.26",
+  "version": "0.10.0",
   "author": "Hax <johnhax@gmail.com>",
   "description": "jedi -- a language for Web",
   "keywords": [
@@ -10,8 +10,10 @@
   ],
   "dependencies": {
     "commander": "*",
+    "debug": "^2.2.0",
     "mmclass": "*",
-    "my": "*"
+    "my": "*",
+    "tabish": "*"
   },
   "devDependencies": {
     "coffee-script": "*",
