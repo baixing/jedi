@@ -1,0 +1,5 @@
+!html
+body
+	#main
+		:import ./component1
+		div.greeting = 'hax'

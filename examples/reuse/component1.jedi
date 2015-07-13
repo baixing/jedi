@@ -1,0 +1,4 @@
+:import ./component2
+::div.greeting ()
+	'Hello '
+	span.uppercase.name = *

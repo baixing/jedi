@@ -1,0 +1,18 @@
+!html
+head
+	title > #title
+		“Demo"
+	#stylesheets
+		link @rel="stylesheet" @href="common.css"
+	#async-scripts
+		script @async @src="base.js"
+body
+	header > #header
+		'header'
+	script#fold-point
+	#scripts
+	#templates
+	div.content > #content
+	footer > #footer
+		'footer'
+	#defer-scripts
