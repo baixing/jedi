@@ -118,10 +118,10 @@ ometa Parser <: PlainParser {
 
 	element	=	[elementPattern:e bindingPattern?:b] block:children	->	[e, b, children],
 	element	=	[elementPattern:e childCombinator offsetCol char+:rest]
-			parse('element', rest):child
+			(parse('element', rest) | parse('fragment', rest)):child
 			-> [e, undefined, [child]],
 	element	=	[elementPattern:e offsetCol char+:rest]
-			parse('text', rest):child
+			(parse('text', rest) | parse('comment', rest)):child
 			-> [e, undefined, [child]],
 	element	=	[elementPattern:e offsetCol attributes:attrs] block:children
 			-> [e, undefined, attrs.concat(children)],
