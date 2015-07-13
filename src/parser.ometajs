@@ -132,9 +132,10 @@ ometa Parser <: PlainParser {
 			-> string(x),
 	tagName	=	simpleName,
 	aclass	=	'.' simpleName,
-	classList	=	aclass*,
+	classList	=	(aclass | pseudoClass)*,
 	idName	=	'#' simpleName,
-		
+	pseudoClass	=	':' simpleName:s -> ':' + s,
+
 	childCombinator	=	'>' spaces,
 	attributes	=	(
 				position:pos
