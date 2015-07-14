@@ -79,7 +79,8 @@ function compile(ast, target) {
 		case 'php5': case 'php':
 			console.time('compile php')
 			var code = transpiler.php5.match(ast, 'document')
-			return transpiler.php5b.match(code, 'document')
+			//code = transpiler.php5b.match(code, 'document')
+			return alignEchos(code)
 			console.timeEnd('compile php')
 		case 'es5': case 'ecmascript':
 		case 'js': case 'javascript':
@@ -87,6 +88,12 @@ function compile(ast, target) {
 		default:
 			throw Error('Unknown target language: ' + target)
 	}
+}
+
+function alignEchos(code) {
+	return code
+		.replace(/^(\s*)echo\s/gm, 'echo$1  ')
+		.replace(/((?:^|\n)echo\s+'<.*?)';\necho\s+'>';(?=\n|$)/g, "$1>';")
 }
 
 function transpile(source, dest, lang, adaptive, debug) {
