@@ -6,7 +6,7 @@ ometa Beautify {
 	document = lines:x -> deleteRedundantEcho(x),
 	lines newline:nl	=	string:s	->	s.split(nl),
 	newline	->	/\r?\n/,
-	
+
 	END
 }
 
@@ -21,16 +21,20 @@ ometa PHP5Transpiler {
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
 	block = [node*:x] -> x,
 
+	position = [string:filename number:line number]	-> [filename, line],
+	position = [string:filename number:line]	-> [filename, line],
+	position = [number:line number]	-> ['?', line],
+
 	ignore	=	[char*:s]	->	string(s), // empty or ignore
 
 	node ignore,
 	node [#closeStartTag] -> this.output.closeStartTag(),
-	node [string:nodeType [number number] apply(nodeType):x] -> x,
+	node [string:nodeType position:pos apply(nodeType):x] -> (['// line ' + pos[1] + ' @ ' + pos[0]].concat(x)),
 	node :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 
 	Section :head :body -> ['/* Unknown section: ', JSON.stringify(string(head)), ' ... */'],
 
-	doctype = [#comment [number number] [outputMethod:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
+	doctype = [#comment position [outputMethod:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	outputMethod [spaces ("html" spaces? "5"?) spaces] -> ["echo '<!doctype html>', \"\\n\";"],
 	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mobile") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.2//EN\" \"http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd\">', \"\\n\";"],
 	outputMethod [spaces ("xhtml" !this.setOutputMethod('xhtml') spaces "mp 1.0") spaces] -> ["echo '<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.0//EN\" \"http://www.wapforum.org/DTD/xhtml-mobile10.dtd\">', \"\\n\";"],
@@ -40,8 +44,8 @@ ometa PHP5Transpiler {
 	outputMethod [spaces ("xml" !this.setOutputMethod('xml')) spaces] -> ["echo '<?xml version=\"1.0\" encoding=\"utf-8\"?>', \"\\n\";"],
 
 	tupleItem [#Mapping [#Symbol :key] trans:expr] -> ("'" + key + "' => " + expr),
-	
-	
+
+
 	literal [#Null]	->	'null',
 	literal [#True]	->	'true',
 	literal [#False]	->	'false',
@@ -49,22 +53,22 @@ ometa PHP5Transpiler {
 	literal [#PosInf]	->	'+INF',
 	literal [#NegInf]	->	'-INF',
 	literal [#Number :n]	->	String(n),
-	
-	stringLiteral [#String :s]	->	("'" + s.replace(/'/g, "\\'") + "'"),	
+
+	stringLiteral [#String :s]	->	("'" + s.replace(/'/g, "\\'") + "'"),
 	templateLiteral [#Quasi undefined [trans*:list]]	->	('(' + list.join(') . (') + ')'),
 	listLiteral [#List [expr*:list]]	->	('[' + list.join(', ') + ']'),
-	
+
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	call ['.' [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
 	call ['.' expr:x [#Symbol :y]]	->	(x + '->' + y),
 	call ['?.' expr:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
-	
+
 	call [#Call [#Symbol :s externalSymbol(s):x] &[#Tuple :_] trans:y]	->	(x + y),
 	call [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
 	call [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
 	call [#Call trans:x &[#Tuple :_] trans:y]	->	(x + y),
 	call [#Call trans:x trans:y]	->	(x + '(' + y + ')'),
-	
+
 	range ['...' trans:x trans:y]	->	('(range(' + x + ', ' + y + '))'),
 	range ['..<' trans:x trans:y]	->	('(range(' + x + ', ' + y + ' - 1))'),
 	bin [#BinaryOp 'mod' trans:x trans:y]	->	('(' + x + ' ' + '%' + ' ' + y + ')'),
@@ -75,20 +79,20 @@ ometa PHP5Transpiler {
 	symbol [#Symbol '*']	->	'$context',
 	symbol [#Symbol :s externalSymbol(s):x]	->	x,
 	symbol [#Symbol :s resolve(s):x]	->	x,
-	
+
 	ternary [#Ternary expr:x expr:y undefined]	->	('(' + x + ') ? (' + y + ') : null'),
 	ternary [#Ternary expr:x expr:y expr:z]	->	('(' + x + ') ? (' + y + ') : (' + z + ')'),
-	
+
 	expr	=	literal | stringLiteral | templateLiteral | listLiteral | symbol | call | range | bin | ternary,
-	
+
 	trans	=	expr,
-	
+
 	trans [#String :s :raw]	->	("'" + s.replace(/'/g, '\\\'') + "'"),
 	trans [#Tuple [trans*:list]]	->	('(' + list.join(', ') + ')'),
 	trans [#Tuple [tupleItem*:list]]	->	('[' + list.join(', ') + ']'),
 	trans :unknown	->	['/*', JSON.stringify(unknown), '*/'],
 	//trans [trans*:x] -> ( x ),
-	
+
 
 	comment [:line] -> ["echo '<!-- " + this.output.escapeComment(simpleString(line)) + " -->';"],
 	comment [echoComment*:xs] -> [].concat(
@@ -130,23 +134,23 @@ ometa PHP5Transpiler {
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + this.output.attrValue(simpleString(s)) + "\"';"],
 	attribute :name :op [#Quasi undefined echoTemplateString:line] -> ["echo ' " + name + '="' + "';",  line, "echo '\"';"],
 	attribute :name :op trans:exp -> ["echo ' " + name + '="' + "', " + this.output.phpAttrValue(exp) + ", '\"';"],
-	
+
 	binding :_ trans:expr [] -> ['echo ' + this.output.phpEscapeText(expr) + ';'],
 	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlspecialchars($__temp); else print_r($__temp);"],
 	binding :_ trans:expr enterBlock([]) block:body exitBlock:param
 		-> closure(expr, body, param),
 
 	instruction #external [[#Symbol :x saveExternalSymbol(x)]+] :_	->	'// external\n',
-	
+
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
-	
+
 	instruction #let [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(collectSymbols(binds)) block:b exitBlock:param
 		->	assignment(binds, b, param),
 	instruction #for [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(collectSymbols(binds)) block:b exitBlock
 		->	translateMultiLoops(binds, b),
-		
+
 	instruction #unsafe trans:x :b -> ('echo ' + x + ';'),
 
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
@@ -185,7 +189,7 @@ ometa PHP5Transpiler {
 
 PHP5Transpiler.initialize = function() {
 	this._stack = [['page']]
-	
+
 	this.enterBlock = function(bindings) {
 		this._stack.unshift(bindings)
 	}
@@ -226,7 +230,7 @@ PHP5Transpiler.initialize = function() {
 		}
 		throw fail
 	}
-	 
+
 	this.saveMacro = function(elementPattern, parameter, body, free) {
 		if (this._stack[0].macros === undefined) this._stack[0].macros = []
 		this._stack[0].macros.push([elementPattern, parameter, body, free])
@@ -270,10 +274,14 @@ PHP5Transpiler.initialize = function() {
 			['closeStartTag'],
 			['text', [0, 0], undefined, [['Symbol', '*']]]
 		]*/
-		
+
 	}
+	this.savePosition = function (filename, line, column) {
+		this._currentPosition = [filename, line, column]
+	}
+
 	this.output = OutputHTML
-	
+
 	this.setOutputMethod = function (method) {
 		console.log(method)
 		switch (method) {
@@ -290,7 +298,7 @@ PHP5Transpiler.initialize = function() {
 				throw Error('Unknown output method: ' + method)
 		}
 	}
-	
+
 }
 
 function deleteRedundantEcho(lines) {
@@ -357,7 +365,7 @@ function collectSymbols(binds) {
 		return b[0][0]
 	}))
 }
-	
+
 function assignment(binds, body, param) {
 	var key = '', value = ''
 	for (var i = 0; i < binds.length; i++) {
@@ -374,4 +382,3 @@ function assignment(binds, body, param) {
 		'}, ' + value + ');'
 	]
 }
-

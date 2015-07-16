@@ -5,44 +5,40 @@ ometa OffsideRule {
 
 	source	=	UnicodeText.lines:x block(x),
 	whitespace	=	UnicodeText.whitespace,
-		
+
 	block	=	[beginBlock (skip | section | offside)*:x endBlock]	->	x,
-		
+
 	skip	=	[whitespace* (ignore char*)?],
 	ignore	=	'#',
-		
+
 	section	=	headLine:head bodyLines:body processSection(head, body),
 	headLine	=	posLn [indent:n ~whitespace posIndent(n) char+:x]	-> x,
 	bodyLine	=	[indent shift char+:x]	-> x,
 	bodyLines	=	skip*:x bodyLine+:y bodyLines:rest	-> [].concat(x, y, rest)
 		|	empty	-> [],
-				
+
 	processSection		(position:pos) :head block:body	->	[#Section, pos, head, body],
-		
+
 	offside	=	posLn [shift*:indent posIndent(indent.length) whitespace?:w char+]
 			position:pos -> [w ? #MixedWhitespace : #Offside, pos],
-		
+
 	indent	=	getIndent:n undefined(n) shift*:s setIndent(s.length)
 		|	repeat(#shift, n) -> n,
-		
+
 	indentChar	->	#auto,	// #auto | #tab | #space | #mixed
 	tabSize	->	4,
 	shiftWidth	->	4,
-		
+
 	shift	=	getShift():s undefined(s) (&' ' setShift(#space) shift | &'\t' setShift(#tab) shift | '\t')
 		|	exactly(s),
 
 	repeat :rule number:n	=	?(n < 1) -> []
 		|	apply(rule):x repeat(rule, n - 1):xs -> [x].concat(xs),
-		
+
 	posLn	= 	pos:ln setLine(ln),
 	posCol	=	getIndent:n posIndent(n) offsetCol,
 	posIndent number:indent	=	shiftWidth:t setColumn((t || 1) * indent),
-	offsetLn number:x	=	getLine:ln setLine(ln + x),
-	offsetLn pos:x	=	offsetLn(x),
-	offsetCol number:x	=	getColumn:ln setColumn(ln + x),
-	offsetCol pos:x	=	offsetCol(x),
-	offset number:ln number:col	=	offsetLn(ln) offsetCol(col),
+	offsetCol pos:x	=	setColumn(x),
 
 	END
 }
@@ -113,4 +109,3 @@ function expandTabs(tabsize, line) {
 function repeat(s, n) {
 	return new Array(n + 1).join(s)
 }
-

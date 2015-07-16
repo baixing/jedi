@@ -55,8 +55,8 @@ ometa PlainParser <: OffsideRule {
 			-> [#String, string(cooked), string(raw)],
 	templateStrings	=	[(skip | [templateString:x] -> x)*:y] -> y,
 
-	fragment	=	[idName:id pseudoElement?:pe spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
-			-> [id, pe, x ? [[#binding, pos, null, x, b]] : b],
+	fragment	=	[idName:id pseudoElement?:pe spaces position:p pos:col bindingPattern?:x] block:b
+			-> [id, pe, x ? [[#binding, [p[0], p[1] + col], null, x, b]] : b],
 	pseudoElement	=	':' ':' simpleName,
 
 	instruction	=	[instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
@@ -144,6 +144,7 @@ ometa Parser <: PlainParser {
 					(Expression.expression | Expression.interpolation):expr
 					-> [op, expr])?:assign
 				spaces
+				offsetCol
 				-> [#attribute, pos, attr].concat(assign)
 			)*,
 
