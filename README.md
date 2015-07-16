@@ -1,8 +1,11 @@
 ## Jedi ##
 
 Jedi is a new template language (maybe do more such as url routing in the future)
-inspired by [Jade](https://github.com/visionmedia/jade) / [Coffeekup](https://github.com/mauricemach/coffeekup) and many others. It's still in beta phase but we already
-use it in production (http://m.baixing.com/) for several years.
+inspired by
+[Jade](https://github.com/visionmedia/jade) /
+[Coffeekup](https://github.com/mauricemach/coffeekup)
+and many others. It's still in beta phase but we already use it in
+production (http://m.baixing.com/) for several years.
 
 [![NPM version](https://badge.fury.io/js/jedi.png)](http://badge.fury.io/js/jedi)
 [![Dep status](https://david-dm.org/baixing/jedi.png)](https://david-dm.org/baixing/jedi)
@@ -13,8 +16,10 @@ use it in production (http://m.baixing.com/) for several years.
 
 ### Usage ###
 
+Compile to php:
 ```jedi example.jedi php```
 
+Watch changes and auto compiling:
 ```jedi -w example.jedi php```
 
 ### Template Syntax ###
@@ -23,11 +28,11 @@ See [examples](https://github.com/baixing/jedi/tree/master/examples)
 
 ### Known major bugs and limitations for 1.0 milestone
 
-1. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not fully implemented
+0. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not fully implemented
 
-1. only very basic support of import instruction
+0. only very basic support of import instruction
 
-1. string concat and some other expression operators are not implemented
+0. string concat and some other expression operators are not implemented
 
 
 ### Build system
@@ -40,11 +45,12 @@ See [examples](https://github.com/baixing/jedi/tree/master/examples)
 
 NOTE: Only support simple keywords highlighting
 
-Copy [jedi.xml](./editors/PHPStorm/jedi.xml) to 
+Copy [jedi.xml](./editors/PHPStorm/jedi.xml) to
 ```~/Library/Preferences/WebIde70/filetypes``` for MacOS
 or ```%USERPROFILE%\.WebIde70\config\filetypes``` for Windows, restart WebStorm/PHPStorm
 
-There is also a variant edition [cssmagic/jedi.xml](https://github.com/cssmagic/jedi.xml) which adjust some details and add [CMUI](https://github.com/CMUI/CMUI) keywords.
+There is also a variant edition [cssmagic/jedi.xml](https://github.com/cssmagic/jedi.xml)
+which adjust some details and add [CMUI](https://github.com/CMUI/CMUI) keywords.
 
 #### Others ####
 
