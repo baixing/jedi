@@ -8,13 +8,21 @@
     "template",
     "dsl"
   ],
+  "scripts": {
+    "prepublish": "gulp --require babel/register",
+    "dev": "gulp --require babel/register dev"
+  },
   "dependencies": {
+    "babel-runtime": "^5.6.20",
     "commander": "*",
     "mmclass": "*",
     "my": "*"
   },
   "devDependencies": {
+    "babel": "^5.6.14",
     "coffee-script": "*",
+    "gulp": "gulpjs/gulp#4.0",
+    "gulp-babel": "^5.1.0",
     "js-yaml": "*"
   },
   "repository": {
