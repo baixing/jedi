@@ -21,15 +21,14 @@ ometa PHP5Transpiler {
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
 	block = [node*:x] -> x,
 
-	position = [string:filename number:line number]	-> [filename, line],
-	position = [string:filename number:line]	-> [filename, line],
-	position = [number:line number]	-> ['?', line],
+	position = [string:filename number:line number:col]	-> [filename, line, col],
+	position = [number:line number:col]	-> ['?', line, col],
 
 	ignore	=	[char*:s]	->	string(s), // empty or ignore
 
 	node ignore,
 	node [#closeStartTag] -> this.output.closeStartTag(),
-	node [string:nodeType position:pos apply(nodeType):x] -> (['// line ' + pos[1] + ' @ ' + pos[0]].concat(x)),
+	node [string:nodeType position:pos apply(nodeType):x] -> (['// ' + pos[1] + ', ' + pos[2] + ' @ ' + pos[0]].concat(x)),
 	node :unknown -> ['/*', JSON.stringify(unknown), '*/'],
 
 	Section :head :body -> ['/* Unknown section: ', JSON.stringify(string(head)), ' ... */'],

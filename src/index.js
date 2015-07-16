@@ -80,7 +80,7 @@ function compile(ast, target) {
 			console.time('compile php')
 			var code = transpiler.php5.match(ast, 'document')
 			//code = transpiler.php5b.match(code, 'document')
-			return alignEchos(code)
+			return alignEchosAndComments(code)
 			console.timeEnd('compile php')
 		case 'es5': case 'ecmascript':
 		case 'js': case 'javascript':
@@ -90,10 +90,18 @@ function compile(ast, target) {
 	}
 }
 
-function alignEchos(code) {
-	return code
+function alignEchosAndComments(code) {
+	code = code
 		.replace(/^(\s*)echo\s/gm, 'echo$1  ')
 		.replace(/((?:^|\n)echo\s+'<.*?)';\necho\s+'>';(?=\n|$)/g, "$1>';")
+
+	code = code
+		.replace(/(.*)\n *(\/\/ \d+, \d+ @ .*\n)/g, function (m, $1, $2) {
+			var fill = new Array(Math.max(81 - $1.length, 0)).join(' ')
+			return $1 + fill + $2
+		})
+
+	return code
 }
 
 function transpile(source, dest, lang, adaptive, debug) {
