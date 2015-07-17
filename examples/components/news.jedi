@@ -1,6 +1,0 @@
-:import channel
-	#title
-		"News"
-	#main
-		section.breaking-news
-			ul
