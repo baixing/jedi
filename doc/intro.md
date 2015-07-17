@@ -1,12 +1,12 @@
-Jedi吸取了以下模板或相关技术
+## Jedi吸取了以下模板或相关技术
 
 可扩展性的机制主要来源于Ruby和Groovy中的Markup Builder
 语法主要沿袭Jade，所做的修改参考了各方面因素
 核心抽象机制来自于CSS Selector、XSLT和强类型编程语言
-表达式考虑了各种语言，其中参考最多的是ES6和PHP
+表达式考虑了各种语言，其中参考最多的是ES6+和PHP
 
 
-View的抽象和复用
+## View的抽象和复用
 
 有如下方式：
 
@@ -18,101 +18,18 @@ Jedi支持：
 :include view params
 
 
+## 和其他模板技术的对比
+
+见 php-jade-jedi-comparison
 
 
-PHP
-
-	<? if (isset($info)): ?>
-		<div class="alert"><?= $info ?></div>
-	<? endif ?>
-
-	<? if (isset($steps)): ?>
-		<ol class="process">
-			<? foreach ($steps as $step): ?>
-				<li><?= $step ?>
-			<? endforeach ?>
-		</ol>
-	<? endif ?>
+### 语言
 
 
-Jade
 
-	if info
-		div.alert= info
-	if steps
-		ol.process
-			each step in steps
-				li= step
+### Examples
 
-
-Jedi
-
-	:if info
-		div.alert
-			= info
-	:if steps
-		ol.process
-			:for step in steps
-				li
-					= step
-
-
-Jedi (terse syntax)
-
-	div.alert if info
-		= info
-	ol.process
-		:for step in steps
-			li = step
-
-
-Jedi (even more terse)
-
-	div.alert = info
-	ol.process
-		li *= step for step in steps
-
-
-Jedi (even more terse)
-
-	div.alert = info
-	ol.process = steps
-		li = *
-
-
-Jedi (more examples)
-
-	nav > ul for cat in categories
-		li > a = cat.link
-			= cat.label | i18n 'zh'
-
-	table let fields = ['name', 'gender', 'age', 'tel']
-		:for field in fields
-			col.{field}
-		thead
-			tr > th "Name" + th "Gender" + th "Age" + th "Tel"
-		tbody = users
-			tr for field in fields
-				td = *.[field]
-
-	div.a.b#id markdown
-
-	ol = path.segments
-		case
-		li > a = *
-
-
-	:define bx:crumbs
-		ol = model
-			li
-				a = *
-					:content
-
-	bx:crumbs = path
-		@a-class segment
-		@li-title *.fullName
-
-
+```jedi
 	:if x > 90
 		p 'A
 	:else if x > 80
@@ -121,12 +38,34 @@ Jedi (more examples)
 		p 'C
 	:else
 		p 'D
+```
 
+```jedi
+nav > ul > *li = cat in categories
+	?a = cat.label if !cat.disabled
+		@href = cat.url
+	^span = "{cat.name} is disabled!"
+
+table = {fields: ['name', 'gender', 'age', 'tel']}
+	col for f in fields
+		@class += f
+	thead
+		tr > th "Name" + th "Gender" + th "Age" + th "Tel"
+			= ':'
+			= #
+	tbody
+		*tr for user in users
+			*td = user[f] for f in fields
+
+	div.a.b#id markdown
+```
+
+```jedi
 	dl.contact#pid = contact
 		dt 'First Name
-		dd = *.firstName
+		dd = contact.firstName
 		dt 'Last Name
-		dd = *.lastName
+		dd = contact.lastName
 
 	ul.contacts = contacts
 		li > dl.contact#pid-{*.id}
@@ -134,64 +73,8 @@ Jedi (more examples)
 				dd = *.firstName
 				dt 'Last Name
 				dd = *.lastName
+```
 
-信息架构
-	ul.contacts
-		= myself
-		= contacts.starred
-		= contacts.unstarred
-
-第一个实现
-	ul.contacts
-		= myself
-			li.me > h1 = *.fullName
-		= contacts starred
-			li.starred > dl.contact#pid-{*.id}
-				dt 'First Name
-				dd = *.firstName
-				dt 'Last Name
-				dd = *.lastName
-		= contacts unstarred
-			li > *.fullName
-
-复用
-	:: dl.contact
-		dt 'First Name
-		dd = *.firstName
-		dt 'Last Name
-		dd = *.lastName
-
-	ul.contacts
-		= myself
-			li.me > h1 = *.fullName
-		= contacts starred
-			li.starred > dl.contact#pid-{*.id} = *
-		= contacts unstarred
-			li.unstarred > dl.contact#pid-{*.id} = *
-
-	div
-		'
-			ksdfjl
-			slkdfjl
-			slkdfj
-			skdlflk
-
-复用是针对模型的
-	:: dl (contact)
-		@class += 'contact'
-		dt 'First Name
-		dd = contact.firstName
-		dt 'Last Name
-		dd = contact.lastName
-
-	ul.contacts
-		= myself
-			li.me > h1 = *.fullName
-		= contacts starred
-			li.starred > dl = *
-		= contacts unstarred
-			li.unstarred > dl = *
-	dl = myself
 
 	:define dl (any)
 		@dataset = any.meta

@@ -10,7 +10,7 @@ ometa PlainParser <: OffsideRule {
 	expr	=	Expression.expression,
 	symbol	=	Expression.symbol,
 	comma	=	Expression.comma,
-	
+
 	load string:filename readFile(filename):content source(content):nodes
 		->	[#document, [filename, 1, 1], content, undefined, nodes],
 
@@ -30,11 +30,11 @@ ometa PlainParser <: OffsideRule {
 		|	parse('fragment'),
 
 	suppress	=	[suppressFlag spaces char*:x] :xs	->	[[x].concat(xs).map(string)],
-	suppressFlag	=	'-' '-',	
+	suppressFlag	=	'-' '-',
 
 	inject	=	[injectFlag spaces char*:x] block:b	->	[string(x), null, b],
-	injectFlag	=	'-',	
-					
+	injectFlag	=	'-',
+
 	binding	=	[bindingPattern:e] block:b	->	[null, e, b],
 	bindingPattern	=	bindingFlag spaces bindingArg:expr spaces	->	expr,
 	bindingFlag	=	'=',
@@ -54,18 +54,14 @@ ometa PlainParser <: OffsideRule {
 	stringLiteralSection	=	<(Expression.escapedChar | ~'{' char)+:cooked>:raw
 			-> [#String, string(cooked), string(raw)],
 	templateStrings	=	[(skip | [templateString:x] -> x)*:y] -> y,
-			
-	fragment	=	[idName:id pseudoElement?:pe spaces pos:col offset(0, col):pos bindingPattern?:x] block:b
-			-> [id, pe, x ? [[#binding, pos, null, x, b]] : b],
+
+	fragment	=	[idName:id pseudoElement?:pe spaces position:p pos:col bindingPattern?:x] block:b
+			-> [id, pe, x ? [[#binding, [p[0], p[1] + col], null, x, b]] : b],
 	pseudoElement	=	':' ':' simpleName,
-		
+
 	instruction	=	[instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
-	instruction	=	[elementPattern:y offsetCol position:pos postInstruction:x] block:b
-			-> [x[0], x[1], [
-						[#element, pos, y, undefined, b]
-					]],
 	instructionStart	=	':',
-		
+
 	import_	=	"import" space+ char*:path	->	[#import, string(path)],
 	if_	=	"if" spaces expr:x spaces	->	[#if, x],
 	unless_	=	"unless" spaces expr:x spaces	->	[#unless, x],
@@ -79,7 +75,7 @@ ometa PlainParser <: OffsideRule {
 	let_binding	=	Expression.bindingPattern:x spaces '=' spaces expr:y	->	[x, y],
 	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
 	external_	=	"external" space+ symbol:x (spaces ',' spaces symbol)*:xs spaces	->	[#external, [x].concat(xs)],
-	
+
 	instructionPattern	=	import_
 		|	if_ | elseif_ | else_
 		|	for_
@@ -90,9 +86,9 @@ ometa PlainParser <: OffsideRule {
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
 	instructionName	=	<symbol>:x -> string(x),
 	instructionParam	=	expr,
-	
+
 	postInstruction	=	if_ | unless_ | for_ | let_ | else_,
-	
+
 	END
 }
 
@@ -107,34 +103,42 @@ ometa Parser <: PlainParser {
 		|	^jediSection
 	//	|	parse('endElement')
 		|	parse('element'),
-		
+
 	comment	=	[commentFlag spaces char*:x] :xs	->	[[x].concat(xs).map(string)],
-	commentFlag	=	'!',	
-				
+	commentFlag	=	'!',
+
 	macro	=	[macroStart macroPattern:x] block:b	->	x.concat([b]),
-	macroStart	=	':' ':' spaces,	
+	macroStart	=	':' ':' spaces,
 	macroPattern	=	elementPattern:sel spaces macroParam:param spaces	->	[sel, param],
-	macroParam	=	Expression.tuplePattern,	
-				
+	macroParam	=	Expression.tuplePattern,
+
 	element	=	[elementPattern:e bindingPattern?:b] block:children	->	[e, b, children],
 	element	=	[elementPattern:e childCombinator offsetCol char+:rest]
-			parse('element', rest):child
+			(parse('element', rest) | parse('fragment', rest)):child
 			-> [e, undefined, [child]],
 	element	=	[elementPattern:e offsetCol char+:rest]
-			parse('text', rest):child
+			(parse('text', rest) | parse('comment', rest)):child
 			-> [e, undefined, [child]],
 	element	=	[elementPattern:e offsetCol attributes:attrs] block:children
 			-> [e, undefined, attrs.concat(children)],
-		
-	elementPattern	=	tagName:tag classList:cls idName?:id spaces	->	[tag, cls, id],
+
+	elementPattern	=	quantifier? tagName:tag classList:cls idName?:id spaces	->	[tag, cls, id],
 	simpleName	=	(Expression.escapedChar
 				| ~(space|'.'|'#'|':'|'='|'@'|'\''|'"'|'!') char)+:x
 			-> string(x),
 	tagName	=	simpleName,
 	aclass	=	'.' simpleName,
-	classList	=	aclass*,
+	classList	=	(aclass | pseudoClass)*,
 	idName	=	'#' simpleName,
-		
+	pseudoClass	=	':' simpleName:s	-> (':' + s),
+
+	instruction = ^instruction,
+	instruction	=	[elementPattern:y offsetCol position:pos postInstruction:x] block:b
+			-> [x[0], x[1], [
+						[#element, pos, y, undefined, b]
+					]],
+	quantifier	= '*' | '?',
+
 	childCombinator	=	'>' spaces,
 	attributes	=	(
 				position:pos
@@ -143,16 +147,17 @@ ometa Parser <: PlainParser {
 					(Expression.expression | Expression.interpolation):expr
 					-> [op, expr])?:assign
 				spaces
+				offsetCol
 				-> [#attribute, pos, attr].concat(assign)
 			)*,
-		
+
 	attribute	=	[attributeFlag attrName:attr assignOperator?:op char*:x] :xs
 			aexpr([].concat.apply(x, xs)):expr
 			-> [attr, op, expr],
 	attributeFlag	=	'@',
 	attrName	=	(~(space | assignOperator | '@') char)+:x -> string(x),
 	assignOperator	=	spaces <('+' | '-' | '^' | '$')? '='>:x spaces -> x,
-		
+
 	aexpr	=	[spaces]	->	undefined
 		|	[spaces (Expression.expression | Expression.interpolation):x spaces]	->	x
 		|	error,

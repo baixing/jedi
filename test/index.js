@@ -40,9 +40,9 @@ testOMeta(parser.Parser, parserTests.Parser, [
 
 var transformer = require('../src/transformer')
 var transformerTests = require('./transformer')
-testOMeta(transformer.InstructionsProcessor, transformerTests.InstructionsProcessor, [
-	'document',
-])
+// testOMeta(transformer.InstructionsProcessor, transformerTests.InstructionsProcessor, [
+// 	'document',
+// ])
 
 testOMeta(transformer.Sorter, transformerTests.Sorter, [
 	'document',

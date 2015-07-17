@@ -97,8 +97,8 @@ exports.Parser =
 
 			expect: [
 				[
-					'binding', 
-					[ 1, Number ], 
+					'binding',
+					[ 1, Number ],
 					null,
 					[
 						'Tuple',
@@ -248,8 +248,8 @@ exports.Parser =
 					]],
 					[
 						[
-							'text', 
-							[2, Number], 
+							'text',
+							[2, Number],
 							undefined,
 							[
 								[
@@ -271,7 +271,7 @@ exports.Parser =
 			expect: [[ 'instruction',
 				[ 1, 1 ],
 				'for',
-				[ 
+				[
 					[ [ 'Symbol', 'x' ], [ 'Symbol', 'list1' ] ],
 					[ [ 'Symbol', 'y' ], [ 'Symbol', 'list2' ] ]
 				],
@@ -279,16 +279,16 @@ exports.Parser =
 					'text',
 					[ 2, 5 ],
 					undefined,
-					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ] 
+					[ [ [ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ] ] ]
 				]]
 			]]
-			
+
 		'multiple for with key value':
 			input: '''
 				:for x in list1, y in list2, (key, value) in list3
 					"{x}, {y}, {key}{value}
 			'''
-			
+
 			expect: [[ 'instruction',
 				[ 1, 1 ],
 				'for',
@@ -311,13 +311,13 @@ exports.Parser =
 					]]
 				]]
 			]]
-		
+
 		'let simple binding':
 			input: '''
 				:let x = 10
 					"12345{x}
 			'''
-			
+
 			expect: [[ 'instruction',
 				[ 1, 1 ],
 				'let',
@@ -329,13 +329,13 @@ exports.Parser =
 					[[[ 'String', '12345', '12345' ],[ 'Symbol', 'x' ]]]
 				]]
 			]]
-			
+
 		'let binding':
 			input: '''
 				:let x = 1, y = 2
 					"{x}, {y}
 			'''
-			
+
 			expect: [[
 				'instruction',
 				[ 1, 1 ],
@@ -355,7 +355,7 @@ exports.Parser =
 					]]
 				]]
 			]]
-            
+
 		'let binding with pattern match':
 			input: '''
 				:let (x, y, z) = (1, 2, 3)
@@ -382,7 +382,7 @@ exports.Parser =
 					[[[ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ]]]
 				]]
 			]]
-	
+
 		'let binding with named pattern match':
 			input: '''
 				:let (name:haxName, age) = (name:"hax", age:18)
@@ -403,16 +403,16 @@ exports.Parser =
 			'''
 			expect: [
 				['element', [1, Number], ['div', ['test1'], undefined], ['Symbol', 'x'], []]
-			]	
+			]
 
 		'element bug 001':
 			input: '''
 				meta @charset='utf-8'
 			'''
-			
+
 			expect: [
 				[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
-					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ] ] ] ]
+					[[ 'attribute', [ 1, Number ], 'charset', '=', [ 'String', 'utf-8' ] ] ] ] ]
 
 		'element double quot':
 			input: '''
@@ -420,7 +420,7 @@ exports.Parser =
 			'''
 			expect: [
 				[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
-					[[ 'attribute', [ 1, 16 ], 'charset', '=',
+					[[ 'attribute', [ 1, Number ], 'charset', '=',
 						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ] ] ] ]
 					]
 				]
@@ -430,13 +430,13 @@ exports.Parser =
 			input: '''
 				meta @charset="utf-8{x}"
 			'''
-		
+
 			expect: [ [ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
-					[ [ 'attribute', [ 1, 16 ], 'charset', '=',
-						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ], [ 'Symbol', 'x' ] ] ] 
+					[ [ 'attribute', [ 1, Number ], 'charset', '=',
+						[ 'Quasi', undefined, [ [ 'String', 'utf-8', 'utf-8' ], [ 'Symbol', 'x' ] ] ]
 					] ]
 				]]
-            
+
 		'nested elements with binding':
 			input: '''
 				div.test1 > div.test2 = x
@@ -466,7 +466,7 @@ exports.Parser =
 				]]
 			]
 			# should be [1, 7] and [1, 17]
-			
+
 		'nested elements with attribute':
 			input: "li > a @href=url"
 			expect: [
@@ -480,7 +480,7 @@ exports.Parser =
 
 		'extend':
 			input: ''':import layout'''
-			
+
 			expect: [[
 				'instruction',
 				[1,1],
@@ -488,14 +488,14 @@ exports.Parser =
 				'layout',
 				''
 			]]
-			
+
 		'extend with after hook':
 			input: '''
 			:import layout
 				#headBlock::after
 					style @src='test.css'
 			'''
-			
+
 			expect:[[
 				'instruction',
 				[1,1],
@@ -511,7 +511,7 @@ exports.Parser =
 						[ 3, 9 ],
 						[ 'style', '', undefined ],
 						undefined,
-						[[ 
+						[[
 							'attribute',
 							[ 3, Number ],
 							'src',
@@ -544,7 +544,7 @@ exports.Parser =
 						[ 3, 9 ],
 						[ 'style', '', undefined ],
 						undefined,
-						[[ 
+						[[
 							'attribute',
 							[ 3, Number ],
 							'src',
@@ -576,7 +576,7 @@ exports.Parser =
 						[ 3, 9 ],
 						[ 'style', '', undefined ],
 						undefined,
-						[[ 
+						[[
 							'attribute',
 							[ 3, Number ],
 							'src',
@@ -597,7 +597,7 @@ exports.Parser =
 				#headBlock::before
 					style @src='test.css'
 			'''
-			
+
 			expect:[[
 				'instruction',
 				[1,1],
@@ -614,7 +614,7 @@ exports.Parser =
 							[ 3, Number ],
 							[ 'style', '', undefined ],
 							undefined,
-							[[ 
+							[[
 								'attribute',
 								[ 3, Number ],
 								'src',
@@ -633,7 +633,7 @@ exports.Parser =
 							[ Number, Number ],
 							[ 'style', '', undefined ],
 							undefined,
-							[[ 
+							[[
 								'attribute',
 								[ Number, Number ],
 								'src',
@@ -652,7 +652,7 @@ exports.Parser =
 							[ Number, Number ],
 							[ 'style', '', undefined ],
 							undefined,
-							[[ 
+							[[
 								'attribute',
 								[ Number, Number ],
 								'src',

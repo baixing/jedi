@@ -2,14 +2,13 @@
 
 'use strict'
 
+require('babel/polyfill')
 require('../lib/ometa-js')
-//require('ometajs')
-//require('ometa-js')
 
 var Parser = require('./parser').Parser
-var transformer = require('./transformer')
+var transform = require('./transform')
 var transpiler = {
-	php5: require('./transpiler.php5').PHP5Transpiler,
+	php5: require('./transpiler.php5').PHP5TranspilerWithDebug,
 	php5b: require('./transpiler.php5').Beautify,
 	es5: require('./transpiler.es5').ES5Transpiler
 }
@@ -53,32 +52,13 @@ function parseFile(filename) {
 	return t
 }
 
-function transform(tree, debug) {
-	if (debug === undefined) debug = []
-	var tree1 = tree
-	if (debug[0]) util.dir(tree1)
-	console.time('tr1')
-	var tree2 = transformer.InstructionsProcessor.match(tree1, 'document')
-	console.timeEnd('tr1')
-	if (debug[1]) util.dir(tree2)
-	console.time('tr2')
-	var tree3 = transformer.TemplateMatcher.match(tree2, 'document')
-	var tree3 = transformer.ScriptIIFEWrapper.match(tree3, 'document')
-	console.timeEnd('tr2')
-	if (debug[2]) util.dir(tree3)
-	console.time('tr3')
-	var tree4 = transformer.Sorter.match(tree3, 'document')
-	console.timeEnd('tr3')
-	if (debug[3]) util.dir(tree4)
-	return tree4
-}
-
 function compile(ast, target) {
 	switch (target) {
 		case 'php5': case 'php':
 			console.time('compile php')
 			var code = transpiler.php5.match(ast, 'document')
-			return transpiler.php5b.match(code, 'document')
+			//code = transpiler.php5b.match(code, 'document')
+			return alignEchosAndComments(code)
 			console.timeEnd('compile php')
 		case 'es5': case 'ecmascript':
 		case 'js': case 'javascript':
@@ -86,6 +66,20 @@ function compile(ast, target) {
 		default:
 			throw Error('Unknown target language: ' + target)
 	}
+}
+
+function alignEchosAndComments(code) {
+	code = code
+		.replace(/^(\s*)echo\s/gm, 'echo$1  ')
+		.replace(/((?:^|\n)echo\s+'<.*?)';\necho\s+'>';(?=\n|$)/g, "$1>';")
+
+	code = code
+		.replace(/(.*)\n *(\/\/ \d+, \d+ @ .*\n)/g, function (m, $1, $2) {
+			var fill = new Array(Math.max(81 - $1.length, 0)).join(' ')
+			return $1 + fill + $2
+		})
+
+	return code
 }
 
 function transpile(source, dest, lang, adaptive, debug) {
@@ -110,11 +104,40 @@ function transpile(source, dest, lang, adaptive, debug) {
 		} else {
 			fs.writeFileSync(dest, compile(tree, lang))
 		}
-	} catch(e) {
-		var info = e.stack || e.message || e
-		console.error('Error: ', String(info))
-		fs.writeFileSync(dest, info)
+	} catch (e) {
+		if (e.position) {
+			var filename = e.position[0] === '*' ? source : e.position[0]
+			var errorType = e.message === 'Section' ? 'SyntaxError' : e.message
+			console.log()
+			console.error('Syntax error:', e.position[0] === '*' ? 'I guest it may be ' + filename + ' , but not sure...' : filename)
+			console.log()
+			var lines = fs.readFileSync(filename).toString().split(/\r?\n/)
+			var startLine = Math.max(e.position[1] - 8, 0),
+				endLine = Math.min(e.position[1] + 7, lines.length)
+
+			var showLines = lines.slice(startLine, endLine).map(function (line, i) {
+				return (startLine + i + 1) + ' | ' + line.replace(/\t/g, '    ')
+			})
+			var spaces = new Array(e.position[2] + 3 + String(e.position[1]).length).join(' ')
+			showLines.splice(e.position[1] - startLine, 0,
+				spaces + '^',
+				spaces + '|__ Ooops, ' + errorType +' at line ' + e.position[1] + ', column ' + e.position[2],
+				spaces)
+
+			showLines.forEach(function (l) {
+				console.log(l)
+			})
+		} else {
+			var info = e.stack || e.message || e
+			console.error(String(info))
+		}
+		fs.writeFileSync(dest, outputCompileingError(e, lang))
 	}
+}
+
+function outputCompileingError(e, lang) {
+	var info = e.stack || e.message || e
+	return String(info)
 }
 
 function watch(source, dest, lang, adaptive, debug) {

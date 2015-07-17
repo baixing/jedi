@@ -221,6 +221,7 @@ exports.PHP5Transpiler =
 
 			expect: [["echo htmlspecialchars(('Hello ') . ($data->user) . ('!\n'), 0x88);"]]
 
+		###
 		'double quot multiple lines text with tag':
 			input: [
 				['text', [1, 1], ['Symbol', 'r'],
@@ -231,7 +232,7 @@ exports.PHP5Transpiler =
 						[['String', 'super cool', 'super cool']]
 					]
 				]
-			]
+			]###
 
 		'if':
 			input: [
@@ -415,6 +416,7 @@ exports.PHP5Transpiler =
 				'}, 1,2);'
 			]]
 
+		###
 		'let binding with pattern match':
 			input: [[
 				'instruction',
@@ -436,7 +438,7 @@ exports.PHP5Transpiler =
 					undefined,
 					[[[ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ]]]
 				]]
-			]]
+			]]###
 
 		'element':
 			input: [
