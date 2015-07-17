@@ -24,48 +24,6 @@ ometa Transformer {
 	END
 }
 
-ometa InstructionsProcessor <: Transformer {
-
-	node	=	&[#document [src number number] anything*] ^node,
-	node	=	[#instruction :pos #import string:path anything:sub] load(path):imported document(imported):base override(sub, base),
-	node	=	^node,
-
-	src	=	string:f !(this.filename = f),
-
-	override :sub [#fragment :pos string:name undefined :children]:base findFragment(sub, name, base),
-	override :sub [nodeType:type :pos :x :y [override(sub)*:children]]	->	[type, pos, x, y, children],
-	override :sub :x	-> x,
-
-	END
-}
-InstructionsProcessor.initialize = function () {
-	this.load = function (filename) {
-		var filename = path.resolve(path.dirname(this.filename), filename)
-		if (!fs.existsSync(filename)) {
-			filename += '.jedi'
-		}
-		var tree = parseFile(filename)
-		//console.log('parse:', inspect(tree, {depth: Infinity}))
-		//tree = this.match(tree, 'document')
-		//console.log('import:', inspect(tree, {depth: Infinity}))
-		return tree
-	}
-	this.findFragment = function (nodes, name, base) {
-		var fragments = nodes.filter(function(node){
-			return node[0] === 'fragment' && node[2] === name
-		})
-		if (fragments.length === 0) throw fail
-		if (fragments.every(function(node){ return !!node[3] })) fragments.push(base)
-		fragments.sort(function(a, b){
-			if (a[3] === b[3]) return 0
-			else if (a[3] === 'before') return -1
-			else if (a[3] === 'after') return 1
-			else if (b[3] === 'before') return 1
-			else if (b[3] === 'after') return -1
-		})
-		return fragments
-	}
-}
 
 ometa DocumentStripper <: Transformer {
 
