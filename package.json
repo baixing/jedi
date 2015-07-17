@@ -15,6 +15,7 @@
   "dependencies": {
     "babel-runtime": "^5.6.20",
     "commander": "*",
+    "es6-shim": "^0.32.2",
     "mmclass": "*",
     "my": "*"
   },
