@@ -1,0 +1,11 @@
+:import channel
+
+	#main
+		section.breaking-news
+		section.normal
+
+	#title = "News
+	#stylesheets::after
+		link @rel="stylesheet" @href="news1.css"
+	#stylesheets::before
+		link @rel="stylesheet" @href="news0.css"

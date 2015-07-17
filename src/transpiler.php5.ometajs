@@ -1,6 +1,6 @@
 "import string, concat, flattenLines, isCharArray, dir, flattenArray from './util'"
 "import OutputHTML, OutputXML, OutputXHTML from './output'"
-"export PHP5Transpiler, Beautify"
+"export PHP5Transpiler, PHP5TranspilerWithDebug, Beautify"
 
 ometa Beautify {
 	document = lines:x -> deleteRedundantEcho(x),
@@ -22,16 +22,16 @@ ometa PHP5Transpiler {
 	block = [node*:x] -> x,
 
 	position = [string:filename number:line number:col]	-> [filename, line, col],
-	position = [number:line number:col]	-> ['?', line, col],
+	position = [number:line number:col]	-> ['*', line, col], // for compatibility
 
 	ignore	=	[char*:s]	->	string(s), // empty or ignore
 
 	node ignore,
 	node [#closeStartTag] -> this.output.closeStartTag(),
-	node [string:nodeType position:pos apply(nodeType):x] -> (['// ' + pos[1] + ', ' + pos[2] + ' @ ' + pos[0]].concat(x)),
-	node :unknown -> ['/*', JSON.stringify(unknown), '*/'],
-
-	Section :head :body -> ['/* Unknown section: ', JSON.stringify(string(head)), ' ... */'],
+	node [(#MixedWhitespace | #Offside | #Section):syntaxError position:pos anything*:data]
+		-> { var err = new Error(syntaxError); err.position = pos; err.data = data; throw err; },
+	node [string:nodeType position:pos apply(nodeType):x] -> this.attachDebugInfo(x, pos),
+	node :unknown -> { throw new Error(unknown) },
 
 	doctype = [#comment position [outputMethod:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	outputMethod [spaces ("html" spaces? "5"?) spaces] -> ["echo '<!doctype html>', \"\\n\";"],
@@ -89,7 +89,11 @@ ometa PHP5Transpiler {
 	trans [#String :s :raw]	->	("'" + s.replace(/'/g, '\\\'') + "'"),
 	trans [#Tuple [trans*:list]]	->	('(' + list.join(', ') + ')'),
 	trans [#Tuple [tupleItem*:list]]	->	('[' + list.join(', ') + ']'),
+	trans [#Error position:pos]
+			-> { var err = new Error('TranspilingError'); err.position = pos; throw err; },
 	trans :unknown	->	['/*', JSON.stringify(unknown), '*/'],
+
+
 	//trans [trans*:x] -> ( x ),
 
 
@@ -298,6 +302,21 @@ PHP5Transpiler.initialize = function() {
 		}
 	}
 
+	this.attachDebugInfo = function (x, pos) {
+		return x
+	}
+
+}
+
+ometa PHP5TranspilerWithDebug <: PHP5Transpiler {}
+
+PHP5TranspilerWithDebug.initialize = function () {
+	PHP5Transpiler.initialize.apply(this, arguments)
+	this.attachDebugInfo = function (x, pos) {
+		return [
+			'// ' + pos[1] + ', ' + pos[2] + ' @ ' + pos[0]
+		].concat(x)
+	}
 }
 
 function deleteRedundantEcho(lines) {

@@ -60,10 +60,6 @@ ometa PlainParser <: OffsideRule {
 	pseudoElement	=	':' ':' simpleName,
 
 	instruction	=	[instructionStart instructionPattern:x] block:b -> [x[0], x[1], b],
-	instruction	=	[elementPattern:y offsetCol position:pos postInstruction:x] block:b
-			-> [x[0], x[1], [
-						[#element, pos, y, undefined, b]
-					]],
 	instructionStart	=	':',
 
 	import_	=	"import" space+ char*:path	->	[#import, string(path)],
@@ -126,7 +122,7 @@ ometa Parser <: PlainParser {
 	element	=	[elementPattern:e offsetCol attributes:attrs] block:children
 			-> [e, undefined, attrs.concat(children)],
 
-	elementPattern	=	tagName:tag classList:cls idName?:id spaces	->	[tag, cls, id],
+	elementPattern	=	quantifier? tagName:tag classList:cls idName?:id spaces	->	[tag, cls, id],
 	simpleName	=	(Expression.escapedChar
 				| ~(space|'.'|'#'|':'|'='|'@'|'\''|'"'|'!') char)+:x
 			-> string(x),
@@ -135,6 +131,13 @@ ometa Parser <: PlainParser {
 	classList	=	(aclass | pseudoClass)*,
 	idName	=	'#' simpleName,
 	pseudoClass	=	':' simpleName:s	-> (':' + s),
+
+	instruction = ^instruction,
+	instruction	=	[elementPattern:y offsetCol position:pos postInstruction:x] block:b
+			-> [x[0], x[1], [
+						[#element, pos, y, undefined, b]
+					]],
+	quantifier	= '*' | '?',
 
 	childCombinator	=	'>' spaces,
 	attributes	=	(

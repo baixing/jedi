@@ -1,0 +1,17 @@
+:import skeleton
+	#title = "Channel"
+	#stylesheets::before
+		link @rel="stylesheet" @href="channel0.css"
+	#stylesheets::after
+		link @rel="stylesheet" @href="channel1.css"
+	#defer-scripts
+		script @src="channel.js"
+
+
+	#main = list
+		ol
+			*li for item in list
+				= item
+
+	aside
+		"aside"

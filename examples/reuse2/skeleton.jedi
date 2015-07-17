@@ -1,0 +1,20 @@
+html
+	head
+		title > #title = 'skeleton'
+			'Demo'
+		#stylesheets
+			link @rel="stylesheet" @href="common.css"
+		#async-scripts
+			script @async @src="base.js"
+	body
+		header > #header
+			:import common#header
+				strong 'header'
+		script#fold-point
+		#scripts
+		#templates
+		div.content > #content
+			'skeleton default content'
+		footer > #footer
+			'footer'
+		#defer-scripts
