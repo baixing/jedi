@@ -75,19 +75,21 @@ function testRule(grm, rule, testsuite, matchAll) {
 
 function testOMeta(grm, testsuites, rules) {
 	rules.forEach(function(rule){
-		var tested
-		var suiteName = rule
+		var tested, suiteName
+
+		suiteName = rule
 		if (suiteName in testsuites) {
 			heading(suiteName)
 			testRule(grm, rule, testsuites[suiteName], false)
 			tested = true
 		}
-		var suiteName = '[' + rule + ']'
+		suiteName = '[' + rule + ']'
 		if (suiteName in testsuites) {
 			heading(suiteName)
 			testRule(grm, rule, testsuites[suiteName], true)
 			tested = true
 		}
+
 		if (!tested) heading('no testsuite for ' + rule)
 	})
 	console.log()

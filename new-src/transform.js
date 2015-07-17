@@ -5,25 +5,14 @@ function transformImport(document) {
 	return document::traverse(node => {
 		const {nodeType, position: [path]} = node
 		if (nodeType !== 'document') throw new Error()
-		node.childNodes = node.childNodes::traverse(node => {
-			attachPath(node)
-			// resolveImport(node)
+		node.childNodes = node.childNodes::traverse(({position}) => {
+			position.unshift(path)
 		}, undefined, true)
 		return false
-
-		function attachPath({position}) {
-			position.unshift(path)
-		}
-		// function resolveImport(node) {
-		// 	const {nodeType, nodeName, nodeValue} = node
-		// 	if (nodeType === 'instruction' && nodeName === 'import') {
-		// 		node.nodeValue = resolve(nodeValue, path)
-		// 	}
-		// }
 	})::traverse(node => {
-		const {nodeType, nodeName, nodeValue, childNodes} = node
+		const {nodeType, position: [path], nodeName, nodeValue, childNodes} = node
 		if (nodeType === 'instruction' && nodeName === 'import') {
-			let tree = loadTree(nodeValue)
+			let tree = loadTree(resolve(nodeValue, path))
 			tree = override(tree, childNodes)
 			Object.assign(node, tree)
 		}
@@ -100,8 +89,8 @@ function override(template, blocks) {
 				contentFragment = node
 			}
 			if (frags.befores.length > 0) {
-				const i = node.childNodes.findIndex(node => {
-					const {nodeType, nodeName, nodeValue} = tuple2record(node)
+				const i = node.childNodes.findIndex(child => {
+					const {nodeType, nodeName, nodeValue} = tuple2record(child)
 					return nodeType !== 'fragment' || nodeName !== frag || nodeValue !== 'before'
 				})
 				node.childNodes.splice(0, i, ...frags.befores.map(record2tuple))
@@ -134,10 +123,12 @@ function matchesFragment(fragName) {
 	return (result, node) => {
 		const {befores, afters, rest} = result
 		if (node.nodeType !== 'fragment' || node.nodeName !== fragName) rest.push(node)
-		else switch (node.nodeValue) {
-			case 'before': befores.push(node); break
-			case 'after': afters.push(node); break
-			default: result.replace = node //TODO: throw error if multiple replacement
+		else {
+			switch (node.nodeValue) {
+				case 'before': befores.push(node); break
+				case 'after': afters.push(node); break
+				default: result.replace = node //TODO: throw error if multiple replacement
+			}
 		}
 		return result
 	}

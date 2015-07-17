@@ -1,0 +1,35 @@
+---
+  env:
+    node: true
+
+  rules:
+
+    # Best Practices
+
+    semi: [2, never]
+
+    curly: [2, multi-line]
+    comma-dangle: [2, always-multiline]
+    no-use-before-define: [2, nofunc]
+
+
+    # Strict Mode
+
+    strict: [2, global]
+    global-strict: 0
+
+
+    # Consistence
+
+    quotes: [2, single, avoid-escape]
+    new-cap: [2, capIsNew: false]
+
+    no-underscore-dangle: 0
+    new-parens: 0
+
+
+    # Extra
+
+    no-labels: 1
+    no-proto: 1
+    no-constant-condition: 1

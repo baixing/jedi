@@ -1,0 +1,21 @@
+---
+  env:
+    es6: true
+  ecmaFeatures:
+    modules: true
+  parser: babel-eslint
+
+  rules:
+
+    no-loop-func: 1 # should allow arrow function
+
+
+    no-var: 2
+    prefer-const: 2
+
+    object-shorthand: 1 # buggy
+
+    constructor-super: 2
+    no-this-before-super: 2
+
+    generator-star-spacing: 1 # buggy for babel async

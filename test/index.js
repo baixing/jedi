@@ -32,7 +32,7 @@ testOMeta(expression.Expression, exprTests.Expression, [
 var parser = require('../src/parser')
 var parserTests = require('./jedi')
 testOMeta(parser.Parser, parserTests.Parser, [
-	'source'
+	'source',
 	//'text',
 	//'blocks',
 	//element,
@@ -53,5 +53,5 @@ var transpilerPhp = require('../src/transpiler.php5')
 var transpilerPhpTests = require('./transpiler.php5')
 testOMeta(transpilerPhp.PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
 	'block',
-	'document'
+	'document',
 ])

@@ -37,7 +37,7 @@ exports.Text = {
 			'\'Hello world!',
 			'	foo bar baz',
 			'	rawr rawr',
-			'	super cool'
+			'	super cool',
 		],
 		['"Hello world!'],
 		['"Hello {user}!'],
@@ -54,7 +54,7 @@ exports.Text = {
 			'r"Hello world!',
 			'	foo bar baz',
 			'	rawr rawr',
-			'	super cool'
+			'	super cool',
 		],
 
 		['div.test1'],
@@ -79,7 +79,7 @@ exports.Text = {
 			'{a > b > c}',
 			'{(a > b) > c}',
 			'{a > (b > c)}',
-		]]
+		]],
 	],
 	text: [
 		['"Hello!"', [], null],
@@ -158,4 +158,3 @@ var jediTests = [
 
 	*/
 }
-

@@ -38,30 +38,24 @@ function transformImport(document) {
 		var path = _node$position[0];
 
 		if (nodeType !== 'document') throw new Error();
-		node.childNodes = (_context2 = node.childNodes, _util2.traverse).call(_context2, function (node) {
-			attachPath(node);
-		}, undefined, true);
-		return false;
-
-		function attachPath(_ref) {
+		node.childNodes = (_context2 = node.childNodes, _util2.traverse).call(_context2, function (_ref) {
 			var position = _ref.position;
 
 			position.unshift(path);
-		}
-		// function resolveImport(node) {
-		// 	const {nodeType, nodeName, nodeValue} = node
-		// 	if (nodeType === 'instruction' && nodeName === 'import') {
-		// 		node.nodeValue = resolve(nodeValue, path)
-		// 	}
-		// }
+		}, undefined, true);
+		return false;
 	}), _util2.traverse).call(_context, function (node) {
 		var nodeType = node.nodeType;
+
+		var _node$position2 = _slicedToArray(node.position, 1);
+
+		var path = _node$position2[0];
 		var nodeName = node.nodeName;
 		var nodeValue = node.nodeValue;
 		var childNodes = node.childNodes;
 
 		if (nodeType === 'instruction' && nodeName === 'import') {
-			var tree = loadTree(nodeValue);
+			var tree = loadTree((0, _util2.resolve)(nodeValue, path));
 			tree = override(tree, childNodes);
 			_Object$assign(node, tree);
 		}
@@ -147,8 +141,8 @@ function override(template, blocks) {
 			if (frags.befores.length > 0) {
 				var _node$childNodes2;
 
-				var i = node.childNodes.findIndex(function (node) {
-					var _tuple2record = (0, _util2.tuple2record)(node);
+				var i = node.childNodes.findIndex(function (child) {
+					var _tuple2record = (0, _util2.tuple2record)(child);
 
 					var nodeType = _tuple2record.nodeType;
 					var nodeName = _tuple2record.nodeName;
@@ -194,16 +188,17 @@ function matchesFragment(fragName) {
 		var afters = result.afters;
 		var rest = result.rest;
 
-		if (node.nodeType !== 'fragment' || node.nodeName !== fragName) rest.push(node);else switch (node.nodeValue) {
-			case 'before':
-				befores.push(node);break;
-			case 'after':
-				afters.push(node);break;
-			default:
-				result.replace = node //TODO: throw error if multiple replacement
-				;}
+		if (node.nodeType !== 'fragment' || node.nodeName !== fragName) rest.push(node);else {
+			switch (node.nodeValue) {
+				case 'before':
+					befores.push(node);break;
+				case 'after':
+					afters.push(node);break;
+				default:
+					result.replace = node //TODO: throw error if multiple replacement
+					;}
+		}
 		return result;
 	};
 }
 module.exports = exports['default'];
-// resolveImport(node)

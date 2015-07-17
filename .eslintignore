@@ -1,0 +1,11 @@
+src/*.ometa.js
+src/util2.js
+src/transform.js
+node_modules
+dist
+coverage
+example
+examples
+sandbox
+archive
+lib/ometa-js

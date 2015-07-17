@@ -68,8 +68,8 @@ var Output = {
 	startTag: function startTag(tag, cls, id) {
 		lastTag = tag
 		return echo(
-			"<", tag,
-			cls.length > 0 ? ' class="' + cls.join(' ') + '"': '',
+			'<', tag,
+			cls.length > 0 ? ' class="' + cls.join(' ') + '"' : '',
 			id ? ' id="' + id + '"' : '')
 	},
 	closeStartTag: function () {
@@ -81,7 +81,7 @@ var Output = {
 		return voidElements.indexOf(tag) >= 0 ?
 			[] :
 			echo('</', tag, '>')
-	}
+	},
 }
 
 var OutputHTML = Object.create(Output)
@@ -101,8 +101,8 @@ OutputXHTML.startTag = function (tag, cls, id) {
 	}
 	lastTag = tag
 	var r = echo(
-		"<", tag,
-		cls.length > 0 ? ' class="' + cls.join(' ') + '"': '',
+		'<', tag,
+		cls.length > 0 ? ' class="' + cls.join(' ') + '"' : '',
 		id ? ' id="' + id + '"' : '')
 	return r
 }

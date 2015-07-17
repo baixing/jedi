@@ -10,16 +10,13 @@ var transform = require('./transform')
 var transpiler = {
 	php5: require('./transpiler.php5').PHP5TranspilerWithDebug,
 	php5b: require('./transpiler.php5').Beautify,
-	es5: require('./transpiler.es5').ES5Transpiler
+	es5: require('./transpiler.es5').ES5Transpiler,
 }
 
 var fs = require('fs'), path = require('path')
 var http = require('http'), url = require('url')
 var crypto = require('crypto')
 
-var util = require('./util')
-
-var Class = require('mmclass').Class
 var Cache = require('./Cache').Cache
 //var FileCache = require('./Cache').FileCache
 
@@ -38,15 +35,17 @@ function parseFile(filename) {
 	shasum.update(fs.readFileSync(filename))
 	var d = shasum.digest('base64')
 	console.timeEnd('digest')
+
+	var t
 	if (cache.has(d)) {
-		var t = cache.get(d)
+		t = cache.get(d)
 		// hack: replace filename in the cache
 		//       note it's not thread-safe
 		t[1][0] = filename
 		return t
 	}
 	console.time('parse')
-	var t = Parser.match(filename, 'load')
+	t = Parser.match(filename, 'load')
 	console.timeEnd('parse')
 	cache.set(d, t)
 	return t
@@ -58,8 +57,9 @@ function compile(ast, target) {
 			console.time('compile php')
 			var code = transpiler.php5.match(ast, 'document')
 			//code = transpiler.php5b.match(code, 'document')
-			return alignEchosAndComments(code)
+			code = alignEchosAndComments(code)
 			console.timeEnd('compile php')
+			return code
 		case 'es5': case 'ecmascript':
 		case 'js': case 'javascript':
 			return transpiler.es5.match(ast, 'document')
@@ -89,7 +89,7 @@ function transpile(source, dest, lang, adaptive, debug) {
 			try {
 				config = JSON.parse(fs.readFileSync(configFile))
 			} catch(e) {
-				console.error('Bad JSON format: ' + configFile);
+				console.error('Bad JSON format: ' + configFile)
 			}
 		}
 
@@ -121,7 +121,7 @@ function transpile(source, dest, lang, adaptive, debug) {
 			var spaces = new Array(e.position[2] + 3 + String(e.position[1]).length).join(' ')
 			showLines.splice(e.position[1] - startLine, 0,
 				spaces + '^',
-				spaces + '|__ Ooops, ' + errorType +' at line ' + e.position[1] + ', column ' + e.position[2],
+				spaces + '|__ Ooops, ' + errorType + ' at line ' + e.position[1] + ', column ' + e.position[2],
 				spaces)
 
 			showLines.forEach(function (l) {
@@ -136,6 +136,7 @@ function transpile(source, dest, lang, adaptive, debug) {
 }
 
 function outputCompileingError(e, lang) {
+	if (lang !== 'php') throw new Error(lang + ' is not supported')
 	var info = e.stack || e.message || e
 	return String(info)
 }
@@ -143,7 +144,7 @@ function outputCompileingError(e, lang) {
 function watch(source, dest, lang, adaptive, debug) {
 	//TODO: watch dependencies
 	transpile(source, dest, lang, adaptive, debug)
-	fs.watch(source, function(evt, filename) {
+	fs.watch(source, function(/*evt, filename*/) {
 		transpile(source, dest, lang, adaptive, debug)
 	})
 }
@@ -167,6 +168,7 @@ function service(options) {
 						send(404, 'file not exist')
 					} else {
 						fs.stat(f, function(err, stats){
+							if (err) throw err // should never happen
 							if (stats.isFile()) {
 								var t0 = Date.now()
 								options.lang.forEach(function(lang){
@@ -182,7 +184,7 @@ function service(options) {
 
 					function send(status, message){
 						res.writeHead(status)
-						res.end(message + ': ' + f  + '\n')
+						res.end(message + ': ' + f + '\n')
 						if (status >= 400) {
 							console.error(message + ': ' + f)
 						} else {

@@ -29,104 +29,6 @@ function resolve(name, referrer) {
 	return path;
 }
 
-function match(pattern) {
-	var _this = this;
-
-	if (typeof pattern === 'function' && pattern.prototype) return this instanceof pattern;
-	if (pattern && typeof pattern.test === 'function') return pattern.test(this);
-	switch (typeof this) {
-		case 'undefined':
-		case 'boolean':
-		case 'number':
-		case 'string':
-		case 'symbol':
-			return this === pattern;
-		case 'object':
-			if (this === null) return pattern === null;
-			if (Array.isArray(pattern)) return pattern.every(function (p, i) {
-				var _context;
-
-				return (_context = _this[i], match).call(_context, p);
-			});
-			if (typeof pattern === 'object') return _Object$keys(pattern).every(function (key) {
-				var _context2;
-
-				return (_context2 = _this[key], match).call(_context2, pattern[key]);
-			});
-			return false;
-		default:
-			throw new Error('should not be function');
-	}
-}
-
-function query(f, order) {
-	var match = undefined;
-	traverse.call(this, function (node) {
-		if (match) return false;
-		if (f(node)) {
-			match = node;
-			return false;
-		}
-	}, order);
-	return record2tuple(match);
-}
-
-function queryAll(f, order) {
-	var matches = [];
-	traverse.call(this, function (node) {
-		if (f(node)) matches.push(node);
-	}, order);
-	return matches;
-}
-
-function traverse(f, order, traverseAll) {
-	var _this2 = this;
-
-	if (order === undefined) order = 'pre';
-
-	if (skip(this)) return this;
-
-	if (isNode(this)) {
-		var _ret = (function () {
-			var traverseChildNodes = function traverseChildNodes() {
-				if (Array.isArray(node.childNodes)) {
-					node.childNodes = node.childNodes.map(function (child) {
-						return traverse.call(child, f, order, traverseAll);
-					});
-				}
-				if (traverseAll) {
-					if (Array.isArray(node.binding) && isNode(node.binding)) {
-						var _context3;
-
-						node.binding = (_context3 = node.binding, traverse).call(_context3, f, order, traverseAll);
-					}
-					// if (Array.isArray(node.data) && Array.isArray(node.data[node.data.length - 1])) {
-					// 	node.data[node.data.length - 1] = node.data[node.data.length - 1].map(child => child::traverse(f, order, traverseAll))
-					// }
-				}
-			};
-
-			var node = tuple2record(_this2);
-			if (order === 'post') traverseChildNodes();
-			var recursive = f(node);
-			if (recursive || recursive === undefined && order === 'pre') traverseChildNodes();
-			return {
-				v: record2tuple(node)
-			};
-		})();
-
-		if (typeof _ret === 'object') return _ret.v;
-	}
-
-	if (Array.isArray(this)) {
-		return this.map(function (child) {
-			return traverse.call(child, f, order, traverseAll);
-		});
-	}
-
-	throw new Error(this);
-}
-
 var tuple2record = function tuple2record(t) {
 	if (skip(t)) return { nodeType: 'skip', data: t };
 
@@ -190,6 +92,97 @@ var record2tuple = function record2tuple(_ref) {
 };
 
 exports.record2tuple = record2tuple;
+
+function match(pattern) {
+	var _this = this;
+
+	if (typeof pattern === 'function' && pattern.prototype) return this instanceof pattern;
+	if (pattern && typeof pattern.test === 'function') return pattern.test(this);
+	switch (typeof this) {
+		case 'undefined':
+		case 'boolean':
+		case 'number':
+		case 'string':
+		case 'symbol':
+			return this === pattern;
+		case 'object':
+			if (this === null) return pattern === null;
+			if (Array.isArray(pattern)) return pattern.every(function (p, i) {
+				var _context;
+
+				return (_context = _this[i], match).call(_context, p);
+			});
+			if (typeof pattern === 'object') return _Object$keys(pattern).every(function (key) {
+				var _context2;
+
+				return (_context2 = _this[key], match).call(_context2, pattern[key]);
+			});
+			return false;
+		default:
+			throw new Error('should not be function');
+	}
+}
+
+function query(f, order) {
+	var match1 = undefined;
+	traverse.call(this, function (node) {
+		if (match1) return false;
+		if (f(node)) {
+			match1 = node;
+			return false;
+		}
+	}, order);
+	return record2tuple(match1);
+}
+
+function queryAll(f, order) {
+	var matches = [];
+	traverse.call(this, function (node) {
+		if (f(node)) matches.push(node);
+	}, order);
+	return matches;
+}
+
+function traverse(f, order, traverseAll) {
+	if (order === undefined) order = 'pre';
+
+	if (skip(this)) return this;
+
+	if (isNode(this)) {
+		var node = tuple2record(this);
+		if (order === 'post') traverseChildNodes(node);
+		var recursive = f(node);
+		if (recursive || recursive === undefined && order === 'pre') traverseChildNodes(node);
+		return record2tuple(node);
+	}
+
+	if (Array.isArray(this)) {
+		return this.map(function (child) {
+			return traverse.call(child, f, order, traverseAll);
+		});
+	}
+
+	throw new Error(this);
+
+	function traverseChildNodes(node) {
+		if (Array.isArray(node.childNodes)) {
+			node.childNodes = node.childNodes.map(function (child) {
+				return traverse.call(child, f, order, traverseAll);
+			});
+		}
+		if (traverseAll) {
+			if (Array.isArray(node.binding) && isNode(node.binding)) {
+				var _context3;
+
+				node.binding = (_context3 = node.binding, traverse).call(_context3, f, order, traverseAll);
+			}
+			// if (Array.isArray(node.data) && Array.isArray(node.data[node.data.length - 1])) {
+			// 	node.data[node.data.length - 1] = node.data[node.data.length - 1].map(child => child::traverse(f, order, traverseAll))
+			// }
+		}
+	}
+}
+
 function isNode(nodeTuple) {
 	return /^(?:document|element|attribute|text|comment|scriptsource|suppress|inject|binding|instruction|macro|fragment|Section|Offside|MixedWhitespace|Error)$/.test(nodeTuple[0]);
 }

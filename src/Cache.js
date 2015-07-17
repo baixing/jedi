@@ -1,3 +1,5 @@
+'use strict'
+
 var Class = require('mmclass').Class
 
 var Cache = Class({
@@ -26,11 +28,11 @@ var Cache = Class({
 	},
 	stats: function (key) {
 		if (!(key in this._stats)) {
-			this._stats[key] = {timestamp:Date.now(), visits:0}
+			this._stats[key] = {timestamp: Date.now(), visits: 0}
 		}
 		return this._stats[key]
 	},
-	checkValidity: function (key) {
+	checkValidity: function (/*key*/) {
 		return true
 	},
 	remove: function (key) {
@@ -41,9 +43,9 @@ var Cache = Class({
 		this._cache[key] = undefined
 		this.stats(key).timestamp = Date.now()
 	},
-	refresh: function (key) {
+	refresh: function (/*key*/) {
 		return undefined
-	}
+	},
 })
 
 var fs = require('fs')
@@ -68,7 +70,7 @@ var FileCache = Class.extend(Cache)({
 			this.invalid()
 			return undefined
 		}
-	}
+	},
 })
 
 exports.Cache = Cache

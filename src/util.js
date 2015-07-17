@@ -58,7 +58,7 @@ util.toUTF16 = function toUTF16(codePoint) {
 }
 
 util.diff = function diff(a, b) {
-	if (a === b) return
+	if (a === b) return false
 	if (typeof b === 'function') return a instanceof b
 	if (Array.isArray(a)) {
 		if (a.length !== b.length) return [a, b, 'length', a.length, b.length]
@@ -66,7 +66,7 @@ util.diff = function diff(a, b) {
 			var r = diff(a[i], b[i])
 			if (r) return r
 		}
-		return
+		return false
 	}
 	return [a, b]
 }
