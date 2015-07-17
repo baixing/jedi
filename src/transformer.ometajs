@@ -13,13 +13,14 @@ ometa Transformer {
 	node	=	[#closeStartTag],
 	node	=	Parser.skip,
 
+	containerNodeType	= #document | #element | #binding | #instruction | #macro | #fragment,
 	nodeType	=	#document | #element | #attribute | #text | #comment | #scriptsource
 		|	#suppress | #inject | #binding | #instruction | #macro | #fragment
 		|	#Section | #Offside | #MixedWhitespace,
-	position	=	[number number] | [string number number],
+	position	=	[string number number],
+	position	=	[number number], // for compatibility
 
-	nodeList nodeType	=	[(node+ | [node*])*:x]	->	flattenArray(x),
-
+	nodeList nodeType	= [node*:x]	-> x,
 
 	END
 }
@@ -27,10 +28,10 @@ ometa Transformer {
 
 ometa DocumentStripper <: Transformer {
 
-	nodeList (#document | #fragment)	=	[(importNodes | node+ | [node*])*:x] !dir(x)	->	flattenArray(x),
+	nodeList (#document | #fragment)	=	[(importNodes | node+ | [node*])*:x]	->	flattenArray(x),
 	nodeList	= ^nodeList,
 
-	importNodes	=	[#document :pos :x :y nodeList(#document):children] !dir(children) -> children,
+	importNodes	=	[#document :pos :x :y nodeList(#document):children]	-> children,
 
 	END
 }
