@@ -4,8 +4,6 @@
 
 require('babel/polyfill')
 require('../lib/ometa-js')
-//require('ometajs')
-//require('ometa-js')
 
 var Parser = require('./parser').Parser
 var transform = require('./transform')
@@ -106,11 +104,40 @@ function transpile(source, dest, lang, adaptive, debug) {
 		} else {
 			fs.writeFileSync(dest, compile(tree, lang))
 		}
-	} catch(e) {
-		var info = e.stack || e.message || e
-		console.error('Error: ', String(info))
-		fs.writeFileSync(dest, info)
+	} catch (e) {
+		if (e.position) {
+			var filename = e.position[0] === '*' ? source : e.position[0]
+			var errorType = e.message === 'Section' ? 'SyntaxError' : e.message
+			console.log()
+			console.error('Syntax error:', e.position[0] === '*' ? 'I guest it may be ' + filename + ' , but not sure...' : filename)
+			console.log()
+			var lines = fs.readFileSync(filename).toString().split(/\r?\n/)
+			var startLine = Math.max(e.position[1] - 8, 0),
+				endLine = Math.min(e.position[1] + 7, lines.length)
+
+			var showLines = lines.slice(startLine, endLine).map(function (line, i) {
+				return (startLine + i + 1) + ' | ' + line.replace(/\t/g, '    ')
+			})
+			var spaces = new Array(e.position[2] + 3 + String(e.position[1]).length).join(' ')
+			showLines.splice(e.position[1] - startLine, 0,
+				spaces + '^',
+				spaces + '|__ Ooops, ' + errorType +' at line ' + e.position[1] + ', column ' + e.position[2],
+				spaces)
+
+			showLines.forEach(function (l) {
+				console.log(l)
+			})
+		} else {
+			var info = e.stack || e.message || e
+			console.error(String(info))
+		}
+		fs.writeFileSync(dest, outputCompileingError(e, lang))
 	}
+}
+
+function outputCompileingError(e, lang) {
+	var info = e.stack || e.message || e
+	return String(info)
 }
 
 function watch(source, dest, lang, adaptive, debug) {
