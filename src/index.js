@@ -2,14 +2,15 @@
 
 'use strict'
 
+require('babel/polyfill')
 require('../lib/ometa-js')
 //require('ometajs')
 //require('ometa-js')
 
 var Parser = require('./parser').Parser
-var transformer = require('./transformer')
+var transform = require('./transform')
 var transpiler = {
-	php5: require('./transpiler.php5').PHP5Transpiler,
+	php5: require('./transpiler.php5').PHP5TranspilerWithDebug,
 	php5b: require('./transpiler.php5').Beautify,
 	es5: require('./transpiler.es5').ES5Transpiler
 }
@@ -51,27 +52,6 @@ function parseFile(filename) {
 	console.timeEnd('parse')
 	cache.set(d, t)
 	return t
-}
-
-function transform(tree, debug) {
-	if (debug === undefined) debug = []
-	var tree1 = tree
-	if (debug[0]) util.dir(tree1)
-	console.time('tr1')
-	var tree2 = transformer.InstructionsProcessor.match(tree1, 'document')
-	console.timeEnd('tr1')
-	if (debug[1]) util.dir(tree2)
-	console.time('tr2')
-	var tree3 = transformer.DocumentStripper.match(tree2, 'document')
-	var tree3 = transformer.TemplateMatcher.match(tree3, 'document')
-	var tree3 = transformer.ScriptIIFEWrapper.match(tree3, 'document')
-	console.timeEnd('tr2')
-	if (debug[2]) util.dir(tree3)
-	console.time('tr3')
-	var tree4 = transformer.Sorter.match(tree3, 'document')
-	console.timeEnd('tr3')
-	if (debug[3]) util.dir(tree4)
-	return tree4
 }
 
 function compile(ast, target) {
