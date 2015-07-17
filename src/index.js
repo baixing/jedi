@@ -71,7 +71,7 @@ function compile(ast, target) {
 function alignEchosAndComments(code) {
 	code = code
 		.replace(/^(\s*)echo\s/gm, 'echo$1  ')
-		.replace(/((?:^|\n)echo\s+'<.*?)';\necho\s+'>';(?=\n|$)/g, "$1>';")
+		.replace(/((?:^|\n)echo\s+'<.*?)';\necho\s+'>'/g, "$1>'")
 
 	code = code
 		.replace(/(.*)\n *(\/\/ \d+, \d+ @ .*\n)/g, function (m, $1, $2) {
