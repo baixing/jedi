@@ -155,6 +155,7 @@ ometa PHP5Transpiler {
 		->	translateMultiLoops(binds, b),
 
 	instruction #unsafe trans:x :b -> ('echo ' + x + ';'),
+	instruction #d trans:x :b	->	('var_dump(' + x + ');'),
 
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
