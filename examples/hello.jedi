@@ -46,7 +46,7 @@ html
 			p
 				'Note: all whitespaces include newline character will be
 				'collapsed to a single space. So multiple lines of text
-				'will produce redundunt spaces for East-Asian languages. 
+				'will produce redundunt spaces for East-Asian languages.
 
 				'But it can be controlled by adding quatation mark a'
 				't the end of the line'
@@ -109,7 +109,7 @@ html
 				'Welcome to the lost paradise.
 
 			ul
-				li for x in 1 ... 10
+				*li for x in 1 ... 10
 					"x = {x}
 
 		section#inject
