@@ -30,25 +30,6 @@ export const record2tuple = ({nodeType, position, ...data}) => {
 	return ([nodeType, position, ...data.data])
 }
 
-export function match(pattern) {
-	if (typeof pattern === 'function' && pattern.prototype) return this instanceof pattern
-	if (pattern && typeof pattern.test === 'function') return pattern.test(this)
-	switch (typeof this) {
-		case 'undefined':
-		case 'boolean':
-		case 'number':
-		case 'string':
-		case 'symbol':
-			return this === pattern
-		case 'object':
-			if (this === null) return pattern === null
-			if (Array.isArray(pattern)) return pattern.every((p, i) => this[i]::match(p))
-			if (typeof pattern === 'object') return Object.keys(pattern).every(key => this[key]::match(pattern[key]))
-			return false
-		default: throw new Error('should not be function')
-	}
-}
-
 export function query(f, order) {
 	let match1
 	this::traverse(node => {
@@ -126,3 +107,22 @@ function hasChildNodes(nodeType) {
 			return false
 	}
 }
+
+// export function match(pattern) {
+// 	if (typeof pattern === 'function' && pattern.prototype) return this instanceof pattern
+// 	if (pattern && typeof pattern.test === 'function') return pattern.test(this)
+// 	switch (typeof this) {
+// 		case 'undefined':
+// 		case 'boolean':
+// 		case 'number':
+// 		case 'string':
+// 		case 'symbol':
+// 			return this === pattern
+// 		case 'object':
+// 			if (this === null) return pattern === null
+// 			if (Array.isArray(pattern)) return pattern.every((p, i) => this[i]::match(p))
+// 			if (typeof pattern === 'object') return Object.keys(pattern).every(key => this[key]::match(pattern[key]))
+// 			return false
+// 		default: throw new Error('should not be function')
+// 	}
+// }
