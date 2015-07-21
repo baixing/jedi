@@ -170,8 +170,10 @@ function service(options) {
 						res.end(message + ': ' + f + '\n')
 						if (status >= 400) {
 							console.error(message + ': ' + f)
+							console.error()
 						} else {
 							console.info(message + ': ' + f)
+							console.info()
 						}
 					}
 				})
