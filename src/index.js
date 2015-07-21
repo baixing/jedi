@@ -18,7 +18,7 @@ var fs = require('fs'), path = require('path')
 var http = require('http'), url = require('url')
 var crypto = require('crypto')
 
-var Cache = require('./Cache').Cache
+var Cache = require('./cache').Cache
 //var FileCache = require('./Cache').FileCache
 
 /*
