@@ -39,7 +39,7 @@ export function query(f, order) {
 			return false
 		}
 	}, order)
-	return record2tuple(match1)
+	return match1 ? record2tuple(match1) : match1
 }
 
 export function queryAll(f, order) {
