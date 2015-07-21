@@ -57,7 +57,6 @@ function compile(ast, target) {
 		case 'php5': case 'php':
 			console.time('compile php')
 			var code = transpiler.php5.match(ast, 'document')
-			//code = transpiler.php5b.match(code, 'document')
 			code = alignEchosAndComments(code)
 			console.timeEnd('compile php')
 			return code
