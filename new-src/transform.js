@@ -33,11 +33,16 @@ function loadTree(name) {
 	if (existsSync(path + '.jedi')) path += '.jedi'
 	let tree = parseFile(path)
 	tree = transformImport(tree)
-	if (!frag) return tree
+	if (!frag) {
+		tree[0] = 'fragment'
+		tree[2] = name + '#'
+		return tree
+	}
 	tree = tree::query(({nodeType, nodeName, nodeValue, id}) =>
 		nodeType === 'fragment' && nodeName === frag && nodeValue === undefined
 		|| nodeType === 'element' && id === frag)
 	if (!tree) throw new Error('Failed to load ' + name)
+	tree[2] = name
 	return tree
 }
 
