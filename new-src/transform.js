@@ -37,6 +37,7 @@ function loadTree(name) {
 	tree = tree::query(({nodeType, nodeName, nodeValue, id}) =>
 		nodeType === 'fragment' && nodeName === frag && nodeValue === undefined
 		|| nodeType === 'element' && id === frag)
+	if (!tree) throw new Error('Failed to load ' + name)
 	return tree
 }
 
