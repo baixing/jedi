@@ -53,7 +53,7 @@ export default function transform(tree, show = []) {
 	console.time('transform 2')
 	tree = transformer.DocumentStripper.match(tree, 'document')
 	//tree = transformer.TemplateMatcher.match(tree, 'document')
-	//tree = transformer.ScriptIIFEWrapper.match(tree, 'document')
+	tree = transformer.ScriptIIFEWrapper.match(tree, 'document')
 	console.timeEnd('transform 2')
 	if (show[2]) dir(tree)
 
