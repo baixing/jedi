@@ -1,9 +1,6 @@
 import {resolve as resolvePath} from 'url'
-import {existsSync} from 'fs'
 export function resolve(name, referrer) {
-	const path = resolvePath(referrer, name)
-	if (!existsSync(path + '.jedi')) return path + '.jedi'
-	return path
+	return resolvePath(referrer, name)
 }
 
 export const tuple2record = (t) => {
