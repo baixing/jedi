@@ -7,7 +7,7 @@ function transformImport(document) {
 		const {nodeType, position: [path]} = node
 		if (nodeType !== 'document') throw new Error()
 		node.childNodes = node.childNodes::traverse(({position}) => {
-			position.unshift(path)
+			if (position.length === 2) position.unshift(path)
 		}, undefined, true)
 		return false
 	})::traverse(node => {
