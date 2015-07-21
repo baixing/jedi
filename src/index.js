@@ -45,9 +45,9 @@ function parseFile(filename) {
 		t[1][0] = filename
 		return t
 	}
-	console.time('parse')
+	console.time('parse ' + filename)
 	t = Parser.match(filename, 'load')
-	console.timeEnd('parse')
+	console.timeEnd('parse ' + filename)
 	cache.set(d, t)
 	return t
 }
