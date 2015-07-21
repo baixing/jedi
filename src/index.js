@@ -82,6 +82,8 @@ function alignEchosAndComments(code) {
 	return code
 }
 
+var errorInfo = require('./util2').errorInfo
+
 function transpile(source, dest, lang, adaptive, debug) {
 	try {
 		var configFile = path.dirname(source) + path.sep + 'jedi.json', config = {}
@@ -105,39 +107,20 @@ function transpile(source, dest, lang, adaptive, debug) {
 			fs.writeFileSync(dest, compile(tree, lang))
 		}
 	} catch (e) {
-		if (e.position) {
-			var filename = e.position[0] === '*' ? source : e.position[0]
-			var errorType = e.message === 'Section' ? 'SyntaxError' : e.message
-			console.log()
-			console.error('Syntax error:', e.position[0] === '*' ? 'I guest it may be ' + filename + ' , but not sure...' : filename)
-			console.log()
-			var lines = fs.readFileSync(filename).toString().split(/\r?\n/)
-			var startLine = Math.max(e.position[1] - 8, 0),
-				endLine = Math.min(e.position[1] + 7, lines.length)
-
-			var showLines = lines.slice(startLine, endLine).map(function (line, i) {
-				return (startLine + i + 1) + ' | ' + line.replace(/\t/g, '    ')
-			})
-			var spaces = new Array(e.position[2] + 3 + String(e.position[1]).length).join(' ')
-			showLines.splice(e.position[1] - startLine, 0,
-				spaces + '^',
-				spaces + '|__ Ooops, ' + errorType + ' at line ' + e.position[1] + ', column ' + e.position[2],
-				spaces)
-
-			showLines.forEach(function (l) {
-				console.log(l)
-			})
-		} else {
-			var info = e.stack || e.message || e
-			console.error(String(info))
-		}
-		fs.writeFileSync(dest, outputCompileingError(e, lang))
+		errorInfo(e, source).forEach(function (args) {
+			console.error.apply(console, args)
+		})
+		fs.writeFileSync(dest, outputCompilingError(e, source, lang))
 	}
 }
 
-function outputCompileingError(e, lang) {
+function outputCompilingError(e, source, lang) {
 	if (lang !== 'php') throw new Error(lang + ' is not supported')
-	var info = e.stack || e.message || e
+	return '<pre>'
+		+ errorInfo(e, source).map(function (args) {
+			return args.join(' ').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+		}).join('\n')
+		+ '\n</pre>'
 	return String(info)
 }
 

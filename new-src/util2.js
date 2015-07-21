@@ -112,6 +112,46 @@ function hasChildNodes(nodeType) {
 	}
 }
 
+import {readFileSync} from 'fs'
+export function errorInfo(e, source) {
+
+	const info = []
+
+	if (e.position) {
+
+		const [filename, line, col] = e.position
+		const errorType = e.message === 'Section' ? 'SyntaxError' : e.message
+		info.push([])
+		info.push(['Syntax error:',
+			filename === '*'
+			? `I guest it may be ${source} , but not sure...`
+			: filename
+		])
+		info.push([])
+
+		const lines = readFileSync(filename === '*' ? source : filename).toString().split(/\r?\n/)
+		lines[lines.length - 1] += '\u{1F51A}'
+
+		const startLine = Math.max(e.position[1] - 8, 0),
+			endLine = Math.min(e.position[1] + 7, lines.length)
+
+		const showLines = lines.slice(startLine, endLine).map(
+			(line, i) => (startLine + i + 1) + ' | ' + line.replace(/\t/g, '    '))
+
+		var spaces = ' '.repeat(String(line).length + 2 + col)
+		showLines.splice(line - startLine, 0,
+			spaces + '^',
+			spaces + '|__ Ooops, ' + errorType + ' at line ' + line + ', column ' + col,
+			spaces)
+
+		showLines.forEach(l => info.push([l]))
+
+	} else {
+		info.push([String(err = e.stack || e.message || e)])
+	}
+	return info
+}
+
 // export function match(pattern) {
 // 	if (typeof pattern === 'function' && pattern.prototype) return this instanceof pattern
 // 	if (pattern && typeof pattern.test === 'function') return pattern.test(this)
