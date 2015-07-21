@@ -1,4 +1,5 @@
-import {dir} from './util'
+import Debug from 'debug'
+const debug = Debug('transform')
 
 import {tuple2record, record2tuple, traverse, resolve, query} from './util2'
 function transformImport(document) {
@@ -39,26 +40,27 @@ function loadTree(name) {
 	return tree
 }
 
+import {dir} from './util'
 import transformer from './transformer'
-export default function transform(tree, debug = []) {
-	if (debug[0]) dir(tree)
+export default function transform(tree, show = []) {
+	if (show[0]) dir(tree)
 
-	console.time('tr1')
+	console.time('transform 1')
 	tree = transformImport(tree)
-	console.timeEnd('tr1')
-	if (debug[1]) dir(tree)
+	console.timeEnd('transform 1')
+	if (show[1]) dir(tree)
 
-	console.time('tr2')
+	console.time('transform 2')
 	tree = transformer.DocumentStripper.match(tree, 'document')
 	//tree = transformer.TemplateMatcher.match(tree, 'document')
 	//tree = transformer.ScriptIIFEWrapper.match(tree, 'document')
-	console.timeEnd('tr2')
-	if (debug[2]) dir(tree)
+	console.timeEnd('transform 2')
+	if (show[2]) dir(tree)
 
-	console.time('tr3')
+	console.time('transform 3')
 	tree = transformer.Sorter.match(tree, 'document')
-	console.timeEnd('tr3')
-	if (debug[3]) dir(tree)
+	console.timeEnd('transform 3')
+	if (show[3]) dir(tree)
 
 	return tree
 }
@@ -110,14 +112,13 @@ function override(template, blocks) {
 	})
 	if (contentFragment) {
 		contentFragment.childNodes.splice(0, Infinity, ...blocks.map(record2tuple))
-		console.log('replace default content to',
+		debug('replace default content to',
 			blocks,
 			contentFragment.childNodes)
 	}
 
 	return tpl
 }
-
 
 function matchesFragment(fragName) {
 	return (result, node) => {
