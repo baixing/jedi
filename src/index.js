@@ -75,9 +75,9 @@ function alignEchosAndComments(code) {
 		.replace(/((?:^|\n)echo\s+'<.*?)';\necho\s+'>'/g, "$1>'")
 
 	code = code
-		.replace(/(.*)\n *(\/\/ \d+, \d+ @ .*\n)/g, function (m, $1, $2) {
-			var fill = new Array(Math.max(81 - $1.length, 0)).join(' ')
-			return $1 + fill + $2
+		.replace(/\n *(\/\/ \d+, \d+ @ .*)(\n.*)/g, function (m, $1, $2) {
+			var fill = new Array(Math.max(81 - $2.length, 0)).join(' ')
+			return $2 + fill + $1
 		})
 
 	return code
