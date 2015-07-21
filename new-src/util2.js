@@ -87,11 +87,15 @@ function isNode(nodeTuple) {
 }
 
 function skip(nodeTuple) {
-	const white = /^\s*$/
-	if (typeof nodeTuple === 'string') return white.test(nodeTuple)
-	if (typeof nodeTuple === 'undefined') return true
-	//if (!Array.isArray(nodeTuple)) throw new Error(nodeTuple)
-	return white.test(nodeTuple[0]) || nodeTuple[0] === 'closeStartTag'
+	const white = /^\s*(?:\/\/.*)?$/
+	if (Array.isArray(nodeTuple)) {
+		if (nodeTuple.length === 1 && nodeTuple[0] === 'closeStartTag') return true
+		if (nodeTuple.every(x => typeof x === 'string' && x.length === 1)
+			&& white.test(nodeTuple.join(''))) return true
+	} else {
+		if (typeof nodeTuple === 'string' && white.test(nodeTuple)) return true
+		throw new Error(nodeTuple)
+	}
 }
 
 function hasChildNodes(nodeType) {
