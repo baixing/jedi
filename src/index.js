@@ -42,6 +42,7 @@ function parseFile(filename) {
 		t = cache.get(d)
 		// hack: replace filename in the cache
 		//       note it's not thread-safe
+		console.log('replace filename', t[1][0], 'to', filename)
 		t[1][0] = filename
 		return t
 	}
