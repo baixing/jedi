@@ -147,7 +147,7 @@ export function errorInfo(e, source) {
 		showLines.forEach(l => info.push([l]))
 
 	} else {
-		info.push([String(err = e.stack || e.message || e)])
+		info.push([String(e.stack || e.message || e)])
 	}
 	return info
 }
