@@ -1,51 +1,81 @@
-:let hax = [family-name = 'HE', given-name = 'Shi-Jun', sex = 'Male']
-:log hax.family-name == 'HE'
-:log hax['family-name'] == 'HE'
-:let tuple = [a, b, c]
-:log tuple#1 == a
-:log tuple#-1 == c
-:log tuple#(2,3)
-:log tuple[0] == a
-:log tuple.a == a
+-- Here are some thoughts/samples of future features
 
-?div = user
-	'Hello {*.name}!'
-^p
-	'Please login'
+-- quantifier and caret
+?p.welcome if user
+	'Hello {user.name}!'
+^p.alert
+	'Please login!'
 
-*div = users
-	'Hello {*.name}!'
+*div for user in users
+	'Hello {user.name}!'
 ^p
 	'No user.'
 
-* = users
-	div 'Hello {*.name}!'
-^
-	p 'No user.'
+*'Hello {u.name}!' for u in users
 
-
-?a if item#link
-^input:checkbox if item.check
-^span
-
-:if a
-	...
-:else if b
-	...
+:if users for u in users
+	foo = u
+	bar = u
 :else
+	bla
+	bla
+	bla
+
+-- pairs
+article
+	:for sec in sections
+		?nav if sec is contents
+			ul.contents = sec
+		^aside if sec is ad
+			a @href = sec.url
+				= sec.content
+		^section
+			h1 = sec.heading
+			= sec.content
+		^^
+	:end for
+/article
+
+-- function
+:fn sum [a, b] = a + b
+
+-- multiline instruction
+:fn sum [a, b] =
+~	a + b
 
 
+:for i in 1...x
+~ where x =
+~	1...10
+
+	li = i
+
+-- space control
+span 'Hello'
+_
+span 'world!'
+
+span 'Hello'
+_ span 'world!'
+
+-- auto strip unnecessary space
+p
+	_ span 'a'
+	_ span 'b'
+
+*_span.word = word in words
 
 ul
-	+li '{user.name}' for user in users
-	^ 'No user.'
+	*li '{user.name}' for user in users
+	^li 'No user.'
 
 table.contacts
 	thead > tr
 
-	tbody > +tr for c in contacts
+	tbody > *tr for c in contacts
 
-$ div.test
+
+:: div.test
 	content @select=p.first
 
 dl.name = hax
@@ -73,3 +103,89 @@ $dl.name of {familyName as f, givenName as g}
 	$dl.sex = {sex}
 		dt 'sex
 		dd '{sex}
+
+
+
+-- tuple
+:let t = [1, 2, 3, 4, 5]
+	-- 1 based
+	:d t#1 == 1
+	:d t#-1 == 5
+	:d t#0 // error
+	:d t#(a) // null if a == 0
+	:d t#(0) //
+	:d t#[2] == [2]
+	:d t#[1, -1] == [1, 5]
+	:d t#[2...4] == [2, 3, 4]
+	:d t#[-2...] == [4, 5]
+	:d t#[..<3, -4...] == [1, 2, 2, 3, 4, 5]
+	-- 0 based
+	:d t[0] == 1
+	:d t[-1] == undefined
+
+-- tuple destructuring
+:let [a, b, ...c] = t
+:d a == 1
+:d b == 2
+:d c == [3, 4, 5]
+:let [a, ...b, c] = t
+:d a == 1
+:d b == [2, 3, 4]
+:d c == 5
+
+-- record type, like js object literal
+
+
+:let hax = [family-name = 'HE', given-name = 'Shi-Jun', sex = 'Male']
+:d hax.family-name == 'HE'
+:d hax['given-name'] == 'Shi-Jun'
+:let [:family-name, :given-name] = hax
+:d
+
+:let a = 1, b = 2, c = 3, d = 4
+:let tuple = [a: 0, b, c + 0, :d]
+:d tuple[0] == 0
+:d tuple[1, 2, 3] == [2, 3, 4]
+:d tuple.a == 0
+:d tuple.b == 2
+:d tuple.c == 3
+:d tuple.d == undefined
+:d tuple#1 == 0
+:d tuple#-1 == 4
+:d tuple#(2,3) === [b, c]
+
+
+
+-- php mapping (fucking php)
+	how to deal with call?
+	for object
+		a.b => $a->b
+		a[b] => $a->{b}
+		a/b => $a['b']
+		a/[b] => $a[b]
+	for array
+		a[b] => $a[b]
+		a.b => $a['b']
+-- js mapping
+	for object
+		a.b => a.b
+		a[b] => a[b]
+		a/b => a[Symbol.for('b')]
+		a/[b] => a[Symbol.for(b)]
+	for array
+		a[b] => a[b]
+		a.b => a.b
+
+
+
+:json-call(name, [])
+script = [a, b] !
+	(data)
+
+= item-list
+	div
+
+is-iOS-safari
+
+is-XML-ready
+is-valid-URL
