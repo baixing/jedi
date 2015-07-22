@@ -1,3 +1,15 @@
+Bug Fixes:
+  * fix specificity
+  * fix sort for all type  
+  * convert name of imported fragment which make cache work
+
+Refactor
+  * rewrite sort transformer
+
+Tests:
+  * remove legacy tests for transformers
+
+
 1.0.0-rc1 / 2015-07-21
 ========================
 
