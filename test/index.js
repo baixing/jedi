@@ -44,9 +44,9 @@ var transformerTests = require('./transformer')
 // 	'document',
 // ])
 
-testOMeta(transformer.Sorter, transformerTests.Sorter, [
-	'document',
-])
+// testOMeta(transformer.Sorter, transformerTests.Sorter, [
+// 	'document',
+// ])
 
 
 var transpilerPhp = require('../src/transpiler.php5')
