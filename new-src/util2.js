@@ -27,7 +27,7 @@ export const record2tuple = ({nodeType, position, ...data}) => {
 		const {nodeName, nodeValue, childNodes} = data
 		return [nodeType, position, nodeName, nodeValue, childNodes]
 	}
-	return ([nodeType, position, ...data.data])
+	return [nodeType, position, ...data.data]
 }
 
 export function query(f, order) {
@@ -51,8 +51,12 @@ export function queryAll(f, order) {
 }
 
 export function traverse(f, order = 'pre', traverseAll) {
-	if (skip(this)) return this
-
+	if (skip(this)) {
+		if (!traverseAll) return this
+		const node = tuple2record(this)
+		f(node)
+		return record2tuple(node)
+	}
 	if (isNode(this)) {
 		const node = tuple2record(this)
 		if (order === 'post') traverseChildNodes(node)
