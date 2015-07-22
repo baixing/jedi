@@ -3,7 +3,7 @@
 "import parseFile from './index'"
 "import Parser from './parser'"
 "import dir, flattenArray from './util'"
-"export Transformer, InstructionsProcessor, DocumentStripper, Sorter, ScriptIIFEWrapper, TemplateMatcher"
+"export Transformer, ScriptIIFEWrapper"
 
 ometa Transformer {
 
@@ -26,110 +26,9 @@ ometa Transformer {
 }
 
 
-ometa DocumentStripper <: Transformer {
-
-	nodeList (#document | #fragment)	=	[(importNodes | node+ | [node*])*:x]	->	flattenArray(x),
-	nodeList	= ^nodeList,
-
-	importNodes	=	[#document :pos :x :y nodeList(#document):children]	-> children,
-
-	END
-}
-
-ometa Sorter <: Transformer {
-
-	nodeList (#element | #macro)	=	[node*:x]	->	sortNodes(x),
-	nodeList	=	^nodeList,
-
-	END
-}
-function sortNodes(nodes) {
-	var attributes = [], macros = [], normalNodes = []
-	nodes.forEach(function(node){
-		switch (node[0]) {
-			case 'attribute':
-				attributes.push(node)
-				break
-			case 'macro':
-				macros.push(node)
-				break
-			case 'instruction':
-				if (node[2] === 'import') {
-					[].push.apply(normalNodes, node[3])
-					break
-				}
-			default:
-				normalNodes.push(node)
-				break
-		}
-	})
-	return [].concat(attributes, [['closeStartTag']], macros, normalNodes)
-}
-
 ometa ScriptIIFEWrapper <: Transformer {
 	node	=	[#element position:pos [#script anything anything]:x [anything*]:y scriptBlocks:children]	->	[#element, pos, x, y, children],
 	node	=	^node,
 	scriptBlocks	=	[([#comment :pos :lines] -> [#scriptsource, pos, lines] | node:x)*:blocks] -> blocks,
 	END
 }
-
-ometa TemplateMatcher <: Transformer {
-
-/*
-	nodeList #element	=
-	nodeList #macro	=
-	nodeList #instruction	=
-	nodeList	=	^nodeList,
-
-	node	=	[#element :pos :x :y enterScope nodeList(#element):children exitScope]	->	[#element, pos, x, y, block],
-	node	=	[#macro :pos :x :y nodeList(#macro):children]	->
-	node	=	^node,*/
-	END
-}
-
-/*
-TemplateMatcher.initialize = function () {
-	this._stack = [['page']]
-	this.enterScope = function(bindings) {
-		this._stack.unshift(bindings)
-	}
-	this.exitScope = function() {
-		this._stack.shift()
-	}
-	this.resolve = function(symbol) {
-		for (var i = 0; i < this._stack.length; i++) {
-			if (this._stack[i].indexOf(symbol) >= 0) return '$' + symbol
-		}
-		return '$model->' + symbol
-	}
-	this.saveMacro = function(elementPattern, parameter, body) {
-		if (this._stack[0].macros === undefined) this._stack[0].macros = []
-		this._stack[0].macros.push([elementPattern, parameter, body])
-	}
-	this.elementOutput = function (tag, cls, id, bind, body, startT, endT) {
-		if (bind === undefined) return [startT, body, endT]
-		else {
-			var m = this.findMacro(tag, cls, id, bind)
-			body.some(function(node){
-				return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
-			})
-			return closure(bind, [startT, m, endT]) // || ['//call macro']
-		}
-	}
-	this.findMacro = function (tag, cls, id, param) {
-		for (var n = 0; n < this._stack.length; n++) {
-			if (this._stack[n].macros)
-				for (var i = 0; i < this._stack[n].macros.length; i++) {
-					var m = this._stack[n].macros[i]
-					var elemPattern = m[0]
-					if (elemPattern[0] === tag &&
-						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })) {
-						return m[2]
-					}
-				}
-		}
-		//return "echo '>', htmlspecialchars($context);"
-		return [['text', [0, 0], undefined, [['Symbol', '*']]]]
-	}
-}
-*/

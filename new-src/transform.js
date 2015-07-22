@@ -6,8 +6,8 @@ function transformImport(document) {
 	return document::traverse(node => {
 		const {nodeType, position: [path]} = node
 		if (nodeType !== 'document') throw new Error()
-		node.childNodes = node.childNodes::traverse(({position}) => {
-			if (position.length === 2) position.unshift(path)
+		node.childNodes = node.childNodes::traverse(({nodeType, position}) => {
+			if (nodeType !== 'skip' && position.length === 2) position.unshift(path)
 		}, undefined, true)
 		return false
 	})::traverse(node => {
@@ -19,6 +19,54 @@ function transformImport(document) {
 		}
 	}, 'post')
 }
+
+function sortNodes(tree) {
+	return tree::traverse(node => {
+		if (node.childNodes) {
+			const attributes = [], macros = [], normalNodes = []
+			let skips = []
+			const flush = to => {
+				if (skips.length > 0) {
+					to.push(...skips)
+					skips = []
+				}
+			}
+			node.childNodes::traverse(node => {
+				switch (node.nodeType) {
+					case 'skip':
+					case 'suppress':
+					case 'inject':
+						skips.push(node)
+						break
+					case 'attribute':
+						flush(attributes)
+						attributes.push(node)
+						break
+					case 'macro':
+						flush(macros)
+						macros.push(node)
+						break
+					default:
+						flush(normalNodes)
+						normalNodes.push(node)
+						break
+				}
+				return false
+			}, undefined, true)
+			flush(normalNodes)
+			const sorted = macros.concat(normalNodes)
+			if (node.nodeType === 'element' || node.nodeType === 'macro') {
+				sorted.unshift(...attributes, {nodeType: 'skip', data: ['closeStartTag']})
+			} else if (attributes.length > 0) {
+				const e = new Error('OnlyElementAllowAttribute')
+				e.position = attributes[0].position
+				throw e
+			}
+			node.childNodes = sorted.map(record2tuple)
+		}
+	}, 'post')
+}
+
 
 import {existsSync} from 'fs'
 import {parseFile} from '.'
@@ -57,14 +105,12 @@ export default function transform(tree, show = []) {
 	if (show[1]) dir(tree)
 
 	console.time('transform 2')
-	tree = transformer.DocumentStripper.match(tree, 'document')
-	//tree = transformer.TemplateMatcher.match(tree, 'document')
 	tree = transformer.ScriptIIFEWrapper.match(tree, 'document')
 	console.timeEnd('transform 2')
 	if (show[2]) dir(tree)
 
 	console.time('transform 3')
-	tree = transformer.Sorter.match(tree, 'document')
+	tree = sortNodes(tree)
 	console.timeEnd('transform 3')
 	if (show[3]) dir(tree)
 
