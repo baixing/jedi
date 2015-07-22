@@ -263,17 +263,24 @@ PHP5Transpiler.initialize = function() {
 		}
 	}
 	this.findMacro = function (tag, cls, id, param) {
+		var mostSpecific, specificity
 		for (var n = 0; n < this._stack.length; n++) {
 			if (this._stack[n].macros)
 				for (var i = 0; i < this._stack[n].macros.length; i++) {
 					var m = this._stack[n].macros[i]
 					var elemPattern = m[0]
 					if (elemPattern[0] === tag &&
-						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })) {
-						return m
+						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })
+					) {
+						var s = (elemPattern[1].length * 256) - n
+						if (!mostSpecific || s >= specificity) {
+							mostSpecific = m
+							specificity = s
+						}
 					}
 				}
 		}
+		return mostSpecific
 		/*return [
 			['closeStartTag'],
 			['text', [0, 0], undefined, [['Symbol', '*']]]
