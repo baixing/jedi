@@ -94,7 +94,7 @@ function skip(nodeTuple) {
 	const white = /^\s*(?:\/\/.*)?$/
 	if (Array.isArray(nodeTuple)) {
 		if (nodeTuple.length === 1 && nodeTuple[0] === 'closeStartTag') return true
-		if (nodeTuple.every(x => typeof x === 'string' && x.length === 1)
+		if (nodeTuple.length > 0 && nodeTuple.every(x => typeof x === 'string' && x.length === 1)
 			&& white.test(nodeTuple.join(''))) return true
 	} else {
 		if (typeof nodeTuple === 'string' && white.test(nodeTuple)) return true
