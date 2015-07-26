@@ -12,7 +12,7 @@ export const tuple2record = (t) => {
 	}
 	if (hasChildNodes(nodeType)) {
 		const [nodeName, nodeValue, childNodes] = data
-		return ({nodeType, position, nodeName, nodeValue, childNodes})
+		return {nodeType, position, nodeName, nodeValue, childNodes}
 	}
 	return {nodeType, position, data}
 }
@@ -87,7 +87,8 @@ export function traverse(f, order = 'pre', traverseAll) {
 }
 
 function isNode(nodeTuple) {
-	return /^(?:document|element|attribute|text|comment|scriptsource|suppress|inject|binding|instruction|macro|fragment|Section|Offside|MixedWhitespace|Error)$/.test(nodeTuple[0])
+	return nodeTuple.length > 0
+		&& /^(?:document|element|attribute|text|comment|scriptsource|suppress|inject|binding|instruction|macro|fragment|Section|Offside|MixedWhitespace|Error)$/.test(nodeTuple[0])
 }
 
 function skip(nodeTuple) {
