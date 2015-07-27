@@ -46,6 +46,12 @@ function sortNodes(tree) {
 						flush(macros)
 						macros.push(node)
 						break
+					case 'instruction':
+						if (node.nodeName === 'external') {
+							flush(macros)
+							macros.push(node)
+							break
+						}
 					default:
 						flush(normalNodes)
 						normalNodes.push(node)
