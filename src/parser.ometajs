@@ -144,7 +144,7 @@ ometa Parser <: PlainParser {
 				position:pos
 				attributeFlag attrName:attr
 				(assignOperator:op
-					(Expression.expression | Expression.interpolation):expr
+					(Expression.interpolation | Expression.expression):expr
 					-> [op, expr])?:assign
 				spaces
 				offsetCol
@@ -159,7 +159,7 @@ ometa Parser <: PlainParser {
 	assignOperator	=	spaces <('+' | '-' | '^' | '$')? '='>:x spaces -> x,
 
 	aexpr	=	[spaces]	->	undefined
-		|	[spaces (Expression.expression | Expression.interpolation):x spaces]	->	x
+		|	[spaces (Expression.interpolation | Expression.expression):x spaces]	->	x
 		|	error,
 
 	END
