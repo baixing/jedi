@@ -1,7 +1,14 @@
+1.0.0-rc2 / 2015-07-27
+========================
+
+Features:
+  * Record (object hash)
+
 Bug Fixes:
   * fix specificity
   * fix sort for all type  
   * convert name of imported fragment which make cache work
+  * empty array is not skip node
 
 Refactor
   * rewrite sort transformer
