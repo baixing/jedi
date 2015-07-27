@@ -56,6 +56,9 @@ ometa PHP5Transpiler {
 	stringLiteral [#String :s]	->	("'" + s.replace(/'/g, "\\'") + "'"),
 	templateLiteral [#Quasi undefined [trans*:list]]	->	('(' + list.join(') . (') + ')'),
 	listLiteral [#List [expr*:list]]	->	('[' + list.join(', ') + ']'),
+	recordLiteral [#Record [recordItem*:list]]	->	('(object)[' + list.join(', ') + ']'),
+	recordItem [#RecordItem string:s trans:value]	->	("'" + s + "' => " + value),
+	recordItem [#RecordItem trans:key trans:value]	->	(key + ' => ' + value),
 
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	call ['.' [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
@@ -82,7 +85,7 @@ ometa PHP5Transpiler {
 	ternary [#Ternary expr:x expr:y undefined]	->	('(' + x + ') ? (' + y + ') : null'),
 	ternary [#Ternary expr:x expr:y expr:z]	->	('(' + x + ') ? (' + y + ') : (' + z + ')'),
 
-	expr	=	literal | stringLiteral | templateLiteral | listLiteral | symbol | call | range | bin | ternary,
+	expr	=	literal | stringLiteral | templateLiteral | listLiteral | recordLiteral | symbol | call | range | bin | ternary,
 
 	trans	=	expr,
 

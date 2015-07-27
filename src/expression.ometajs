@@ -5,8 +5,8 @@
 ometa Expression {
 
 	keyword	=	("not" | "if" | "then" | "else" | "mod" | "div" | "mul" | "&&" | "-") ~nameChar,
-	primary	=	literal | listLiteral | tupleLiteral | path | symbol,
-		
+	primary	=	literal | listLiteral | recordLiteral | tupleLiteral | path | symbol,
+
 	symbol	=	('*' | ~keyword nameChar+):s -> [#Symbol, string(s)],
 	nameChar	=	UnicodeText.nameChar | '$',
 
@@ -31,7 +31,7 @@ ometa Expression {
 	numberLiteral "∞" -> [#PosInf],
 	numberLiteral "+∞" -> [#PosInf],
 	numberLiteral "-∞" -> [#NegInf],
-	
+
 	numberLiteral <signedInt ('.' digit+)? ('e' signedInt)?>:n
 		-> [#Number, parseFloat(string(n))],
 	signedInt = <('+' | '-')? digit+>,
@@ -76,6 +76,18 @@ ometa Expression {
 		-> [#List, y ? x.concat([y]) : x],
 	listItem = expression,
 
+	recordLiteral =
+		'{' spaces
+		(recordItem:item comma -> item)*:x recordItem?:y
+		spaces '}'
+		-> [#Record, y ? x.concat([y]) : x],
+	recordItem = '[' expression:key ']' spaces ':' spaces expression:value
+		-> [#RecordItem, key, value],
+	recordItem = symbol:x spaces ':' spaces expression:value
+		-> [#RecordItem, x[1], value],
+	recordItem = symbol:x
+		-> [#RecordItem, x[1], x],
+
 	tupleLiteral =
 		'(' spaces
 		(tupleItem:item comma -> item)*:x tupleItem?:y
@@ -104,7 +116,7 @@ ometa Expression {
 	// x.name | x?.name
 	refExp = refExp:x (``.'' | ``?.''):op symbol:name -> [op, x, name],
 	// x(y) | x [y]
-	refExp = refExp:x spaces (tupleLiteral | listLiteral):y -> [#Call, x, y],
+	refExp = refExp:x spaces (tupleLiteral | listLiteral | recordLiteral):y -> [#Call, x, y],
 	refExp = refExp:x space+ primary:y -> [#Call, x, y], // x y
 	refExp = primary,
 
@@ -137,4 +149,3 @@ ometa Expression {
 
 	END
 }
-
