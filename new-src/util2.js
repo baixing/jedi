@@ -110,6 +110,7 @@ function hasChildNodes(nodeType) {
 		case 'element':
 		case 'binding':
 		case 'instruction':
+		case 'inject':
 		case 'macro':
 			return true
 		default:
