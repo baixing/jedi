@@ -1,4 +1,6 @@
-:let z = 3
+:let z = 'ok'
 	:let record = {x: 1, y: 2, z, [z]: 4}
 		= record.x
 		= record.y
+		= record.z
+		= record.ok
