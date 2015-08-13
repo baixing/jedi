@@ -1,9 +1,5 @@
-#!/usr/bin/env node
-
-var pkg = require('../package.json')
-var jedi = require('../src')
-
-var program = require('commander')
+import pkg from '../../package'
+import program from 'commander'
 
 program.
 	version(pkg.version).
@@ -14,12 +10,13 @@ program.
 	option('-p, --port <n>', '编译服务端口', parseInt).
 	parse(process.argv)
 
-var lang = []
+const lang = []
 if (program.php) lang.push('php')
 if (program.js) lang.push('js')
 
-jedi.service({
+import {service} from '../../src'
+service({
 	lang: lang,
 	base: program.args[0] || process.cwd(),
-	port: program.port || 1337
+	port: program.port || 1337,
 })
