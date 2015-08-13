@@ -143,6 +143,7 @@ function override(template, blocks) {
 			let frags = {replace: undefined, befores: [], afters: [], rest: []}
 			frags = blocks.reduce(matchesFragment(frag), frags)
 			blocks = frags.rest
+			//TODO: adopted nodes should not be traversed
 			if (frags.replace) {
 				node.childNodes.splice(0, Infinity, ...frags.replace.childNodes)
 			} else if (frag === 'content') {
@@ -164,7 +165,6 @@ function override(template, blocks) {
 				}
 				node.childNodes.push(last, ...frags.afters.map(record2tuple))
 			}
-			return false
 		}
 
 	})
