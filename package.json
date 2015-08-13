@@ -17,6 +17,7 @@
     "commander": "*",
     "debug": "^2.2.0",
     "es6-shim": "^0.32.2",
+    "maps": "^0.3.0",
     "mmclass": "*",
     "my": "*",
     "source-map-support": "^0.3.2",

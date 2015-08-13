@@ -1,4 +1,4 @@
-// import {HashMap} from 'maps'
+import {HashMap} from 'maps'
 
 export class Cache extends Map {
 	constructor() {
