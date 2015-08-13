@@ -1,8 +1,8 @@
 'use strict'
 
+require('../register')
 require('js-yaml')
 require('coffee-script')
-require('../lib/ometa-js')
 
 var testOMeta = require('./test').testOMeta
 
@@ -49,7 +49,7 @@ var transformerTests = require('./transformer')
 // ])
 
 
-var transpilerPhp = require('../src/transpiler.php5')
+var transpilerPhp = require('../src/codegen/transpiler.php5')
 var transpilerPhpTests = require('./transpiler.php5')
 testOMeta(transpilerPhp.PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
 	'block',

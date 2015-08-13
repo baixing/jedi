@@ -1,18 +1,7 @@
 /* Jedi public API */
-
-'use strict'
-
-require('source-map-support').install()
-require('babel/polyfill')
-require('../lib/ometa-js')
-
-var Parser = require('./parser').Parser
-var transform = require('./transform')
-var transpiler = {
-	php5: require('./transpiler.php5').PHP5TranspilerWithDebug,
-	php5b: require('./transpiler.php5').Beautify,
-	es5: require('./transpiler.es5').ES5Transpiler,
-}
+import {Parser} from './parser'
+import transform from './transform'
+import * as codegen from './codegen'
 
 var fs = require('fs'), path = require('path')
 var http = require('http'), url = require('url')
@@ -57,13 +46,13 @@ function compile(ast, target) {
 	switch (target) {
 		case 'php5': case 'php':
 			console.time('compile php')
-			var code = transpiler.php5.match(ast, 'document')
+			var code = codegen.php5.match(ast, 'document')
 			code = alignEchosAndComments(code)
 			console.timeEnd('compile php')
 			return code
 		case 'es5': case 'ecmascript':
 		case 'js': case 'javascript':
-			return transpiler.es5.match(ast, 'document')
+			return codegen.es5.match(ast, 'document')
 		default:
 			throw Error('Unknown target language: ' + target)
 	}

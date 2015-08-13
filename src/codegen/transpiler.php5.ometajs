@@ -1,5 +1,5 @@
-"import string, concat, flattenLines, isCharArray, dir, flattenArray from './util'"
-"import OutputHTML, OutputXML, OutputXHTML from './output'"
+"import string, concat, flattenLines, isCharArray, dir, flattenArray from '../util'"
+"import OutputHTML, OutputXML, OutputXHTML from '../output'"
 "export PHP5Transpiler, PHP5TranspilerWithDebug, Beautify"
 
 ometa Beautify {
@@ -162,6 +162,11 @@ ometa PHP5Transpiler {
 
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
+	bindingPattern [#ListPattern [bindingPattern*]:bindings]
+		-> ([
+			bindings.reduce(function (a, b) { return a.concat(b[0]) }, []),
+			bindings.reduce(function (a, b) { return a.concat(b[1]) }, [])
+		]),
 
 	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
 	fragment :name :_ block:b -> ['//  #' + name, b],
