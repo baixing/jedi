@@ -14,7 +14,7 @@ const lang = []
 if (program.php) lang.push('php')
 if (program.js) lang.push('js')
 
-import {service} from '../../src'
+import service from '../service'
 service({
 	lang: lang,
 	base: program.args[0] || process.cwd(),
