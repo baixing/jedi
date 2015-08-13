@@ -3,5 +3,8 @@
 	"blacklist": [
 
 	],
-	"optional": ["runtime"]
+	"optional": ["runtime"],
+	"only": [
+		"src/**",
+	]
 }
