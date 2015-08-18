@@ -1,3 +1,4 @@
+import {record2tuple} from './adapter'
 import traverse from './traverse'
 
 export function query(f, order) {
