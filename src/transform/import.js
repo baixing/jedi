@@ -57,7 +57,6 @@ import {tuple2record, record2tuple} from '../util/adapter'
 function override(template, blocks) {
 
 	blocks = blocks.map(tuple2record)
-	let contentFragment
 
 	const tpl = tuple2record(template)
 	tpl.childNodes::traverse(node => {
@@ -76,8 +75,6 @@ function override(template, blocks) {
 			//TODO: adopted nodes should not be traversed
 			if (frags.replace) {
 				node.childNodes.splice(0, Infinity, ...frags.replace.childNodes)
-			} else if (frag === 'content') {
-				contentFragment = node
 			}
 			if (frags.befores.length > 0) {
 				const i = node.childNodes.findIndex(child => {
