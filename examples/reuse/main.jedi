@@ -1,9 +1,0 @@
-:import layout-directives
-
-		#bodyBlock::after
-			::div.note (text)
-				'NOOOOOTE:'
-				p = text
-			div.note = 'ok 2'
-			div.note = 'ok 3'
-				'Oops'

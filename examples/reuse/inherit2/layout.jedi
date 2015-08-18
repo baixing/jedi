@@ -1,0 +1,23 @@
+html
+	head
+		! start head
+
+		#headBlock
+			meta @charset='utf-8'
+
+		! end head
+
+	body
+		! start body
+
+		#bodyBlock
+			div.todo = {id: 1, done: true, title: 'task 1'}
+			div.todo = {id: 2, done: false, title: 'task 2'}
+			div.todo = {id: 3, done: false, title: 'task 3'}
+
+		! end body
+
+
+:: div.todo ()
+	@class = "{if *.done then 'done'}"
+	p = *.title

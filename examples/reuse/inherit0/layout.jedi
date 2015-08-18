@@ -1,18 +1,16 @@
-!html5
-
 html
 	head
 		! start head
-		
+
 		#headBlock
 			meta @charset='utf-8'
-		
+
 		! end head
-			
+
 	body
 		! start body
-		
+
 		#bodyBlock
 			'Hello world!
-		
+
 		! end body

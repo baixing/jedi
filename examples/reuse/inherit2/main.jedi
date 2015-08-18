@@ -1,0 +1,13 @@
+:import layout
+
+	#bodyBlock::after
+		div.todo = {id: 4, done: true, title: 'task 4'}
+
+		:: div.todo ()
+				input
+					@id = "taskid-{*.id}"
+					@type = 'checkbox'
+					@checked = *.done
+				label
+					@for = "taskid-{*.id}"
+					= *.title
