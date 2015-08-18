@@ -1,0 +1,9 @@
+:import a
+
+	#xx
+		'b: xxx'
+	#yy
+		'b: yyy'
+
+	#level-2
+		'b: 1.2.3'
