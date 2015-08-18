@@ -20,7 +20,7 @@ exports.OffsideRule =
 		spaces_and_tab:
 			'  \t'
 
-	block:
+	block: [
 		['head line'],
 		['head line', '\tbody line 1', '\tbody line 2'],
 		['\thead line', '\t\tbody line 1', '\t\tbody line 2'],
@@ -63,6 +63,7 @@ exports.OffsideRule =
 			'\tline',
 			'\tline',
 		],
+	]
 	source:
 		require('fs').readFileSync(require.resolve('./offside.txt')).
 			toString().split(/(?:^|\r?\n)\r?\n?={4}.*\r?\n?(?:\r?\n|$)/)
