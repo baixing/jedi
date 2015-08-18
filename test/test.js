@@ -25,7 +25,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 		console.log(summary)
 	}
 	function doTest(testcase){
-		let input, expect
+		let input, expect, actual
 		if (typeof testcase === 'object' && 'input' in testcase) {
 			input = testcase.input
 			expect = testcase.expect
@@ -33,7 +33,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 			input = testcase
 		}
 		try {
-			const actual = matchAll ?
+			actual = matchAll ?
 				grm.matchAll(input, rule) :
 				grm.match(input, rule)
 		} catch(e) {
