@@ -1,7 +1,0 @@
-.*
-*.log
-node_modules
-doc
-archive
-sandbox
-*.php
