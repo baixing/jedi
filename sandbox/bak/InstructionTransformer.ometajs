@@ -1,0 +1,94 @@
+ometa InstructionsProcessor <: Transformer {
+/*
+	node	=	&[#document [src number number] anything*] ^node,
+	node	=	[#instruction :pos #import string:path anything:sub] load(path):imported override(sub, imported),
+	node	=	^node,
+
+	src	=	string:f !(this.filename = f),
+
+	override :sub [#fragment :pos string:name undefined :children]:base findFragment(sub, name, base),
+	override :sub [containerNodeType:type :pos :x :y overrideAll(sub):children]	->	[type, pos, x, y, children],
+	override :sub anything:x	-> x,
+
+	overrideAll :sub [override(sub)*:result] -> result,
+	overrideAll :sub :x -> x,
+
+	END
+*/}
+/*
+InstructionsProcessor.initialize = function () {
+	this.load = function (filename) {
+		var filename = path.resolve(path.dirname(this.filename), filename)
+		if (!fs.existsSync(filename)) {
+			filename += '.jedi'
+		}
+		var tree = parseFile(filename)
+		//console.log('parse:', inspect(tree, {depth: Infinity}))
+		tree = InstructionsProcessor.match(tree, 'document')
+		tree = DocumentStripper.match(tree, 'document')
+		//console.log('imported')
+		//dir(tree)
+		return tree
+	}
+
+	this.findFragment = function (nodes, name, base) {
+		console.log('find fragment', name)
+		var beforeFrags = [], afterFrags = [], replaceFrags = []
+		nodes.forEach(function(node){
+			if (node[0] === 'fragment' && node[2] === name) {
+				switch (node[3]) {
+					case 'before': beforeFrags.push(node); break
+					case 'after': afterFrags.push(node); break
+					default: replaceFrags.push(node); break
+				}
+			}
+		})
+		console.log(name, 'before')
+		dir(beforeFrags)
+		console.log(name, 'after')
+		dir(afterFrags)
+
+		var useBase
+		if (replaceFrags.length === 0) {
+			useBase = true
+			console.log('base')
+			dir(base)
+			replaceFrags.push(base)
+		}
+
+		var _this = this
+		replaceFrags.forEach(function (frag) {
+			console.log('current frag')
+			dir(frag)
+			var content = frag[4]
+				.filter(function (node) {
+					console.log('current node')
+					dir(node)
+					return !(node[0] === 'fragment' && node[2] === name)
+				})
+			console.log(name, 'content')
+			dir(content)
+			if (useBase) {
+				console.log(name, 'content2')
+				if (content.length) {
+					try {
+						content = _this.overrideAll(nodes, content)
+					} catch (e) {
+						console.log('error', String(e))
+						console.log('sub')
+						dir(nodes)
+						console.log('fragments')
+						dir(content)
+						console.log('end error')
+					}
+				}
+				dir(content)
+			}
+			frag[4] = [].concat(beforeFrags, content, afterFrags)
+		})
+		console.log('find segment', name, 'result')
+		dir(replaceFrags)
+		return replaceFrags
+	}
+}
+*/

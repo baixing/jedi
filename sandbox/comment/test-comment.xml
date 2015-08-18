@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+<script><!--
+void function () {
+	var x = 3
+	while (x-&#45;) console.log(x)
+}()
+//--></script>
+</head>
+<body>
+</body>
+</html>
+
+
