@@ -1,11 +1,7 @@
-'use strict'
+import {dir, diff} from '../src/util/debug'
 
-exports.testOMeta = testOMeta
-
-var util = require('../src/util')
-
-function heading(s, level) {
-	var p = new Array((level || 2) + 1).join('=')
+const heading = (s, level = 2) => {
+	const p = '='.repeat(level)
 	console.log()
 	console.log(p, s, p)
 }
@@ -49,23 +45,23 @@ function testRule(grm, rule, testsuite, matchAll) {
 			throw e
 		}
 		if (expect) {
-			var r = util.diff(actual, expect)
+			var r = diff(actual, expect)
 			if (r) {
 				console.error('input:')
 				console.log(input)
 				console.error('expect:')
-				util.dir(expect)
+				dir(expect)
 				console.error('actual:')
-				util.dir(actual)
+				dir(actual)
 				console.log('diff:')
-				util.dir(r)
+				dir(r)
 				console.assert(false)
 			} else ok++
 		} else {
-			if (util.diff(actual, input)) {
+			if (diff(actual, input)) {
 				console.log('input:', input)
 				console.log('output:')
-				util.dir(actual)
+				dir(actual)
 				console.log()
 				skip++
 			} else ok++
@@ -73,7 +69,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 	}
 }
 
-function testOMeta(grm, testsuites, rules) {
+export function testOMeta(grm, testsuites, rules) {
 	rules.forEach(function(rule){
 		var tested, suiteName
 
