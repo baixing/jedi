@@ -1,10 +1,5 @@
 {
 	"stage": 0,
-	"blacklist": [
-
-	],
-	"optional": ["runtime"],
-	"only": [
-		"src/**",
-	]
+	"blacklist": [],
+	"optional": ["runtime"]
 }
