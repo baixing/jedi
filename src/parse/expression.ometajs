@@ -1,4 +1,5 @@
-"import string, toUTF16, namedCharRef from './util'"
+"module namedCharRef at './named-char-ref'"
+"import string, codepoint from '../util/ometa-string'"
 "import UnicodeText from './text'"
 "export Expression"
 
@@ -7,7 +8,7 @@ ometa Expression {
 	keyword	=	("not" | "if" | "then" | "else" | "mod" | "div" | "mul" | "&&" | "-") ~nameChar,
 	primary	=	literal | listLiteral | recordLiteral | tupleLiteral | path | symbol,
 
-	symbol	=	('*' | ~keyword nameChar+):s -> [#Symbol, string(s)],
+	symbol	=	<'*' | ~keyword nameChar+>:s -> [#Symbol, string(s)],
 	nameChar	=	UnicodeText.nameChar | '$',
 
 	path = symbol?:start segment+:segments
@@ -38,7 +39,7 @@ ometa Expression {
 
 	stringLiteral
 		'\''
-		(~'\'' char | '\'' '\'' -> '\'')*:s
+		<(~'\'' char | '\'' '\'' -> '\'')*>:s
 		'\''
 		-> [#String, string(s)],
 
@@ -50,7 +51,7 @@ ometa Expression {
 		-> [#Quasi, tag, s],
 	interpolation = '{' expression:expr '}' -> expr,
 	stringLiteralSection = <(escapedChar | ~('"' | '{') char)+:cooked>:raw
-		-> [#String, string(cooked), string(raw)],
+		-> [#String, cooked.join(''), raw],
 
 	escapedChar '\\' 'b' -> '\u0008',
 	escapedChar '\\' 't' -> '\u0009',
@@ -59,13 +60,13 @@ ometa Expression {
 	escapedChar '\\' 'f' -> '\u000c',
 	escapedChar '\\' 'r' -> '\u000d',
 	escapedChar '\\' <hex hex? hex? hex? hex? hex?>:u space?
-		-> toUTF16(parseInt(string(u), 16)),
+		-> codepoint(u),
 	escapedChar '\\' 'u' <hex hex hex hex>:u
-		-> String.fromCharCode(parseInt(string(u), 16)),
+		-> codepoint(u),
 	escapedChar '\\' 'u' '{' <hex+>:u '}'
-		-> toUTF16(parseInt(string(u), 16)),
+		-> codepoint(u),
 	escapedChar '\\' <'&' (~';' char)+ ';'>:entity
-		-> namedCharRef(string(entity)),
+		-> namedCharRef(entity),
 	escapedChar '\\' char:c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 
@@ -96,12 +97,21 @@ ometa Expression {
 	tupleItem = mapping | expression,
 	mapping = symbol:name spaces ':' spaces expression:expr -> [#Mapping, name, expr],
 
-	bindingPattern = tuplePattern | listPattern | symbol,
+	bindingPattern = tuplePattern | listPattern | recordPattern | symbol,
 	listPattern =
 		'[' spaces
-		(bindingPattern:item comma -> item)*:x bindingPattern?:y
+		((bindingPattern | restPattern):item comma -> item)*:x
+		(bindingPattern | restPattern)?:y
 		spaces ']'
 		-> [#ListPattern, y ? x.concat([y]) : x],
+	restPattern = "..." spaces symbol:x
+		-> [#RestPattern, x],
+	recordPattern =
+		'{' spaces
+		((mappingPattern | bindingPattern | restPattern):item comma -> item)*:x
+		(mappingPattern | bindingPattern | restPattern)?:y
+		spaces '}'
+		-> [#RecordPattern, y ? x.concat([y]) : x],
 	tuplePattern =
 		'(' spaces
 		((bindingPattern | mappingPattern):item comma -> item)*:x bindingPattern?:y

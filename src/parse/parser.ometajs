@@ -2,8 +2,8 @@
 "module fs at 'fs'"
 "import OffsideRule from './offside'"
 "import Expression from './expression'"
-"import string, concat from './util'"
-"export Parser, InstructionsProcessor, Sorter, TemplateMatcher"
+"import string, concat from '../util/ometa-string'"
+"export Parser"
 
 ometa PlainParser <: OffsideRule {
 
@@ -52,7 +52,7 @@ ometa PlainParser <: OffsideRule {
 //	templateStrings	=	[[anything*]*],
 	templateString	=	(Expression.interpolation | stringLiteralSection)*,
 	stringLiteralSection	=	<(Expression.escapedChar | ~'{' char)+:cooked>:raw
-			-> [#String, string(cooked), string(raw)],
+			-> [#String, string(cooked), raw],
 	templateStrings	=	[(skip | [templateString:x] -> x)*:y] -> y,
 
 	fragment	=	[idName:id pseudoElement?:pe spaces position:p pos:col bindingPattern?:x] block:b
@@ -84,7 +84,7 @@ ometa PlainParser <: OffsideRule {
 		|	end_
 		|	external_,
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
-	instructionName	=	<symbol>:x -> string(x),
+	instructionName	=	<symbol>:x -> x,
 	instructionParam	=	expr,
 
 	postInstruction	=	if_ | unless_ | for_ | let_ | else_,
