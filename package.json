@@ -2,15 +2,19 @@
   "name": "jedi",
   "version": "1.0.0-rc2.3",
   "author": "Hax <johnhax@gmail.com>",
-  "description": "jedi -- a language for Web",
+  "description": "jedi — a language for Web development",
   "keywords": [
     "view",
     "template",
     "dsl"
   ],
+  "main": "lib/index.js",
+  "bin": {
+    "jedi": "./cli/jedi",
+    "jedi-transpiler-service": "./cli/jedi-transpiler-service"
+  },
   "scripts": {
-    "prepublish": "gulp --require babel/register",
-    "dev": "gulp --require babel/register dev"
+    "prepublish": "babel --source-maps --out-dir lib src"
   },
   "dependencies": {
     "babel-runtime": "^5.8.20",
@@ -31,10 +35,5 @@
     "url": "http://github.com/baixing/jedi.git"
   },
   "homepage": "http://github.com/baixing/jedi",
-  "bugs": "http://github.com/baixing/jedi/issues",
-  "main": "src/transpiler.js",
-  "bin": {
-    "jedi": "./cli/jedi",
-    "jedi-transpiler-service": "./cli/jedi-transpiler-service"
-  }
+  "bugs": "http://github.com/baixing/jedi/issues"
 }
