@@ -1,6 +1,8 @@
 export const parseFile = filename => {
+	console.time('parse ' + filename)
 	const lines = splitLines(readFile(filename))
 	const tree = parseLines(lines)
+	console.timeEnd('parse ' + filename)
 	return ['document', [filename, 1, 1], lines, undefined, tree]
 }
 
