@@ -16,7 +16,7 @@ if (program.js) lang.push('js')
 
 import service from '../service'
 service({
-	lang: lang,
+	lang,
 	base: program.args[0] || process.cwd(),
 	port: program.port || 1337,
 })

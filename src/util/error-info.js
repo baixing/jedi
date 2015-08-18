@@ -11,7 +11,7 @@ export default (e, source) => {
 		info.push(['Syntax error:',
 			filename === '*'
 			? `I guest it may be ${source} , but not sure...`
-			: filename
+			: filename,
 		])
 		info.push([])
 
@@ -24,7 +24,7 @@ export default (e, source) => {
 		const showLines = lines.slice(startLine, endLine).map(
 			(line, i) => (startLine + i + 1) + ' | ' + line.replace(/\t/g, '    '))
 
-		var spaces = ' '.repeat(String(line).length + 2 + col)
+		const spaces = ' '.repeat(String(line).length + 2 + col)
 		showLines.splice(line - startLine, 0,
 			spaces + '^',
 			spaces + '|__ Ooops, ' + errorType + ' at line ' + line + ', column ' + col,

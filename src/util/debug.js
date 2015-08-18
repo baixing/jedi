@@ -7,8 +7,8 @@ export const diff = (a, b) => {
 	if (typeof b === 'function') return a instanceof b
 	if (Array.isArray(a)) {
 		if (a.length !== b.length) return [a, b, 'length', a.length, b.length]
-		for (var i = 0; i < a.length; ++i) {
-			var r = diff(a[i], b[i])
+		for (let i = 0; i < a.length; ++i) {
+			const r = diff(a[i], b[i])
 			if (r) return r
 		}
 		return false

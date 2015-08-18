@@ -7,25 +7,25 @@ const heading = (s, level = 2) => {
 }
 
 function testRule(grm, rule, testsuite, matchAll) {
-	var total, ok = 0, skip = 0
+	let total, ok = 0, skip = 0
 	try {
 		if (Array.isArray(testsuite)) {
 			total = testsuite.length
 			testsuite.forEach(doTest)
 		} else {
-			var names = Object.keys(testsuite)
+			const names = Object.keys(testsuite)
 			total = names.length
 			names.forEach(function(name){
 				doTest(testsuite[name])
 			})
 		}
 	} finally {
-		var summary = ok + '/' + total + ' tests passed'
+		let summary = ok + '/' + total + ' tests passed'
 		if (skip) summary += ', ' + skip + ' tests skipped'
 		console.log(summary)
 	}
 	function doTest(testcase){
-		var input, expect
+		let input, expect
 		if (typeof testcase === 'object' && 'input' in testcase) {
 			input = testcase.input
 			expect = testcase.expect
@@ -33,7 +33,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 			input = testcase
 		}
 		try {
-			var actual = matchAll ?
+			const actual = matchAll ?
 				grm.matchAll(input, rule) :
 				grm.match(input, rule)
 		} catch(e) {
@@ -45,7 +45,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 			throw e
 		}
 		if (expect) {
-			var r = diff(actual, expect)
+			const r = diff(actual, expect)
 			if (r) {
 				console.error('input:')
 				console.log(input)
@@ -71,7 +71,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 
 export function testOMeta(grm, testsuites, rules) {
 	rules.forEach(function(rule){
-		var tested, suiteName
+		let tested, suiteName
 
 		suiteName = rule
 		if (suiteName in testsuites) {

@@ -1,3 +1,27 @@
+import {isCharArray} from '../util/ometa-string'
+
+const echo = (...args) =>
+	'echo '
+	+ args
+		.reduce((a, b) => {
+			if (isCharArray(b)) b = b.join('')
+			if (typeof b === 'string' && typeof a[a.length - 1] === 'string') {
+				a[a.length - 1] += b
+			} else {
+				a.push(b)
+			}
+			return a
+		}, [])
+		.map(o => {
+			if (typeof o === 'string') {
+				return "'" + o.replace(/'/g, "\\'") + "'"
+			}
+			return JSON.stringify(o)
+		})
+		.join(', ')
+	+ ';'
+
+
 const xhtmlMods = {
 	structure: ['body', 'head', 'html', 'title'],
 	text: ['abbr', 'acronym', 'address', 'blockquote', 'br', 'cite', 'code', 'dfn', 'div', 'em',
@@ -99,11 +123,10 @@ export class OutputXHTML extends OutputXML {
 			tag = blockElements.indexOf(tag) === -1 ? 'span' : 'div'
 		}
 		this.lastTag = tag
-		var r = echo(
+		return echo(
 			'<', tag,
 			cls.length > 0 ? ' class="' + cls.join(' ') + '"' : '',
 			id ? ' id="' + id + '"' : '')
-		return r
 	}
 	endTag(tag) {
 		if (xhtmlBasicElements.indexOf(tag) === -1) {
@@ -112,27 +135,3 @@ export class OutputXHTML extends OutputXML {
 		return OutputXML.endTag(tag)
 	}
 }
-
-
-import {isCharArray} from '../util/ometa-string'
-
-const echo = (...args) =>
-	'echo '
-	+ args
-		.reduce((a, b) => {
-			if (isCharArray(b)) b = b.join('')
-			if (typeof b === 'string' && typeof a[a.length - 1] === 'string') {
-				a[a.length - 1] += b
-			} else {
-				a.push(b)
-			}
-			return a
-		}, [])
-		.map(o => {
-			if (typeof o === 'string') {
-				return "'" + o.replace(/'/g, "\\'") + "'"
-			}
-			return JSON.stringify(o)
-		})
-		.join(', ')
-	+ ';'

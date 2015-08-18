@@ -35,7 +35,7 @@ switch (dest) {
 		dest = src.replace(/(\.jedi)?$/, '.' + dest)
 		break
 	default:
-		var m = /\.(php|php5|php7|js|es5|es6)$/.exec(dest)
+		const m = /\.(php|php5|php7|js|es5|es6)$/.exec(dest)
 		lang = m ? m[1] : null
 }
 
