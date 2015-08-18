@@ -146,7 +146,8 @@ ometa PHP5Transpiler {
 	binding :_ trans:expr enterBlock([]) block:body exitBlock:param
 		-> closure(expr, body, param),
 
-	instruction #external [[#Symbol :x saveExternalSymbol(x)]+] :_	->	'// external\n',
+	instruction #external [[#Symbol :x saveExternalSymbol(x)]+] :_
+		-> ('// external ' + x + '\n'),
 
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
