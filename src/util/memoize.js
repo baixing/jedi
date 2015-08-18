@@ -1,3 +1,6 @@
+import Debug from 'debug'
+const debug = Debug('memoize')
+
 import Cache from './cache'
 
 export default function memoize(hash = x => x) {
@@ -5,19 +8,24 @@ export default function memoize(hash = x => x) {
 	const cache = new Cache()
 	const g = function (...args) {
 		const thisAndArgs = [this].concat(args)
-		console.time('hash')
+
+		debug('start hash')
 		const k = hash(thisAndArgs)
-		console.timeEnd('hash')
-		console.time('lookup cache')
+		debug('end hash')
+
+		debug('lookup cache')
 		if (cache.has(k)) {
 			const result = cache.get(k)
-			console.timeEnd('lookup cache')
+			debug('cache hit')
 			return result
 		}
-		console.time(f.name)
+		debug('cache miss')
+
+		debug('start invoke')
 		const result = this::f(...args)
+		debug('end invoke')
 		cache.set(k, result)
-		console.timeEnd(f.name)
+
 		return result
 	}
 	return g
