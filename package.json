@@ -8,12 +8,20 @@
     "template",
     "dsl"
   ],
+  "license": "Apache2",
   "main": "lib/index.js",
+  "files": [
+    "cli/",
+    "lib/",
+    "src/",
+    "doc/"
+  ],
   "bin": {
     "jedi": "./cli/jedi",
     "jedi-transpiler-service": "./cli/jedi-transpiler-service"
   },
   "scripts": {
+    "test": "node test",
     "prepublish": "babel --source-maps --out-dir lib src"
   },
   "dependencies": {
