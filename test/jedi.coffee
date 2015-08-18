@@ -385,7 +385,7 @@ exports.Parser =
 
 		'let binding with named pattern match':
 			input: '''
-				:let (name:haxName, age) = (name:"hax", age:18)
+				:let {name:haxName, age} = {name:"hax", age:18}
 					"{haxName}, {age}
 			'''
 
