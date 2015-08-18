@@ -1,6 +1,6 @@
-import {HashMap} from 'maps'
+import {HashMap, ArrayMap} from 'maps'
 
-export class Cache extends Map {
+export default class Cache extends ArrayMap {
 	constructor() {
 		super()
 		this._stats = new Map
