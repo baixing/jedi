@@ -1,5 +1,6 @@
 lib/
 coverage/
+sandbox/
 *.ometa.js
 *.php
 
