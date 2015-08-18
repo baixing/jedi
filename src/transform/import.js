@@ -1,5 +1,6 @@
 import Debug from 'debug'
 const debug = Debug('transform')
+import {inspect} from 'util'
 
 import traverse from '../util/traverse'
 export default function doImport(document) {
@@ -60,7 +61,6 @@ function override(template, blocks) {
 
 	const tpl = tuple2record(template)
 	tpl.childNodes::traverse(node => {
-
 		let frag
 		if (node.nodeType === 'fragment' && node.nodeValue === undefined) {
 			frag = node.nodeName
@@ -96,14 +96,14 @@ function override(template, blocks) {
 				node.childNodes.push(last, ...frags.afters.map(record2tuple))
 			}
 		}
-
 	})
-	if (contentFragment) {
-		contentFragment.childNodes.splice(0, Infinity, ...blocks.map(record2tuple))
-		debug('replace default content to',
-			blocks,
-			contentFragment.childNodes)
-	}
+	tpl.childNodes::traverse(node => {
+		if (node.nodeType === 'fragment' && node.nodeValue === undefined && node.nodeName === 'content') {
+			node.childNodes.splice(0, Infinity, ...blocks.map(record2tuple))
+			debug('replace default content to', inspect(blocks, {depth: null}))
+		}
+		return false
+	})
 
 	return tpl
 }
