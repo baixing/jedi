@@ -1,6 +1,6 @@
-"import string, concat, flattenLines, isCharArray, dir, flattenArray from '../util'"
-"import OutputHTML, OutputXML, OutputXHTML from '../output'"
-"export PHP5Transpiler, PHP5TranspilerWithDebug, Beautify"
+"import string, flattenLines, flattenArray from '../util/ometa-string'"
+"import OutputHTML, OutputXML, OutputXHTML from './output'"
+"export PHP5Transpiler, PHP5TranspilerWithDebug"
 
 ometa Beautify {
 	document = lines:x -> deleteRedundantEcho(x),
@@ -12,7 +12,7 @@ ometa Beautify {
 
 ometa PHP5Transpiler {
 
-	document = [#document [string:filename number number] string:source undefined topBlock:xs] -> (
+	document = [#document [string:filename number number] anything:source undefined topBlock:xs] -> (
 		'<?php\n' +
 		//flattenString(x) +
 		flattenLines(xs).join('\n') +
@@ -299,19 +299,19 @@ PHP5Transpiler.initialize = function() {
 		this._currentPosition = [filename, line, column]
 	}
 
-	this.output = OutputHTML
+	this.output = new OutputHTML()
 
 	this.setOutputMethod = function (method) {
 		console.log(method)
 		switch (method) {
 			case 'html':
-				this.output = OutputHTML
+				this.output = new OutputHTML()
 				break
 			case 'xhtml':
-				this.output = OutputXHTML
+				this.output = new OutputXHTML()
 				break
 			case 'xml':
-				this.output = OutputXML
+				this.output = new OutputXML()
 				break
 			default:
 				throw Error('Unknown output method: ' + method)
