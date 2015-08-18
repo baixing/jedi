@@ -33,6 +33,11 @@ export default function sortNodes(tree) {
 							macros.push(node)
 							break
 						}
+					case 'fragment':
+						if (node.nodeName.slice(-1) === '#') {
+							skips.push(node)
+							break
+						}
 					default:
 						flush(normalNodes)
 						normalNodes.push(node)
