@@ -1,3 +1,4 @@
+"import dir from '../util/debug'"
 "import string, flattenLines, flattenArray from '../util/ometa-string'"
 "import OutputHTML, OutputXML, OutputXHTML from './output'"
 "export PHP5Transpiler, PHP5TranspilerWithDebug"
@@ -272,6 +273,8 @@ PHP5Transpiler.initialize = function() {
 		}
 	}
 	this.findMacro = function (tag, cls, id, param) {
+		//console.log('findMacro', tag, cls, id)
+		//dir(this._stack)
 		var mostSpecific, specificity
 		for (var n = 0; n < this._stack.length; n++) {
 			if (this._stack[n].macros)
@@ -289,12 +292,8 @@ PHP5Transpiler.initialize = function() {
 					}
 				}
 		}
+		//console.log('findMacro result:', mostSpecific)
 		return mostSpecific
-		/*return [
-			['closeStartTag'],
-			['text', [0, 0], undefined, [['Symbol', '*']]]
-		]*/
-
 	}
 	this.savePosition = function (filename, line, column) {
 		this._currentPosition = [filename, line, column]
