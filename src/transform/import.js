@@ -1,8 +1,8 @@
 import Debug from 'debug'
 const debug = Debug('transform')
 
-import {tuple2record, record2tuple, traverse, resolve, query} from './util2'
-function transformImport(document) {
+import traverse from '../util/traverse'
+export default function doImport(document) {
 	return document::traverse(node => {
 		const {nodeType, position: [path]} = node
 		if (nodeType !== 'document') throw new Error()
@@ -20,63 +20,15 @@ function transformImport(document) {
 	}, 'post')
 }
 
-function sortNodes(tree) {
-	return tree::traverse(node => {
-		if (node.childNodes) {
-			const attributes = [], macros = [], normalNodes = []
-			let skips = []
-			const flush = to => {
-				if (skips.length > 0) {
-					to.push(...skips)
-					skips = []
-				}
-			}
-			node.childNodes::traverse(node => {
-				switch (node.nodeType) {
-					case 'skip':
-					case 'suppress':
-					case 'inject':
-						skips.push(node)
-						break
-					case 'attribute':
-						flush(attributes)
-						attributes.push(node)
-						break
-					case 'macro':
-						flush(macros)
-						macros.push(node)
-						break
-					case 'instruction':
-						if (node.nodeName === 'external') {
-							flush(macros)
-							macros.push(node)
-							break
-						}
-					default:
-						flush(normalNodes)
-						normalNodes.push(node)
-						break
-				}
-				return false
-			}, undefined, true)
-			flush(normalNodes)
-			const sorted = macros.concat(normalNodes)
-			if (node.nodeType === 'element' || node.nodeType === 'macro') {
-				sorted.unshift(...attributes, {nodeType: 'skip', data: ['closeStartTag']})
-			} else if (attributes.length > 0) {
-				const e = new Error('OnlyElementAllowAttribute')
-				e.position = attributes[0].position
-				throw e
-			}
-			node.childNodes = sorted.map(record2tuple)
-		}
-	}, 'post')
-}
+import {resolve as resolvePath} from 'url'
+const resolve = (name, referrer) => resolvePath(referrer, name)
 
 
 import {existsSync} from 'fs'
-import {parseFile} from '.'
-function loadTree(name) {
+import {parseFile} from '../parse'
+import {query} from '../util/query'
+
+const loadTree = name => {
 	let path, frag
 	const i = name.lastIndexOf('#')
 	if (i >= 0) {
@@ -86,7 +38,7 @@ function loadTree(name) {
 
 	if (existsSync(path + '.jedi')) path += '.jedi'
 	let tree = parseFile(path)
-	tree = transformImport(tree)
+	tree = doImport(tree)
 	if (!frag) {
 		tree[0] = 'fragment'
 		tree[2] = name + '#'
@@ -100,29 +52,7 @@ function loadTree(name) {
 	return tree
 }
 
-import {dir} from './util'
-import transformer from './transformer'
-export default function transform(tree, show = []) {
-	if (show[0]) dir(tree)
-
-	console.time('transform 1')
-	tree = transformImport(tree)
-	console.timeEnd('transform 1')
-	if (show[1]) dir(tree)
-
-	console.time('transform 2')
-	tree = transformer.ScriptIIFEWrapper.match(tree, 'document')
-	console.timeEnd('transform 2')
-	if (show[2]) dir(tree)
-
-	console.time('transform 3')
-	tree = sortNodes(tree)
-	console.timeEnd('transform 3')
-	if (show[3]) dir(tree)
-
-	return tree
-}
-
+import {tuple2record, record2tuple} from '../util/adapter'
 function override(template, blocks) {
 
 	blocks = blocks.map(tuple2record)
@@ -178,17 +108,15 @@ function override(template, blocks) {
 	return tpl
 }
 
-function matchesFragment(fragName) {
-	return (result, node) => {
-		const {befores, afters, rest} = result
-		if (node.nodeType !== 'fragment' || node.nodeName !== fragName) rest.push(node)
-		else {
-			switch (node.nodeValue) {
-				case 'before': befores.push(node); break
-				case 'after': afters.push(node); break
-				default: result.replace = node //TODO: throw error if multiple replacement
-			}
+const matchesFragment = fragName => (result, node) => {
+	const {befores, afters, rest} = result
+	if (node.nodeType !== 'fragment' || node.nodeName !== fragName) rest.push(node)
+	else {
+		switch (node.nodeValue) {
+			case 'before': befores.push(node); break
+			case 'after': afters.push(node); break
+			default: result.replace = node //TODO: throw error if multiple replacement
 		}
-		return result
 	}
+	return result
 }

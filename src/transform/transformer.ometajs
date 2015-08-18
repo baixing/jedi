@@ -1,8 +1,4 @@
-"module path at 'path'"
-"module fs at 'fs'"
-"import parseFile from './index'"
-"import Parser from './parser'"
-"import dir, flattenArray from './util'"
+"import Parser from '../parse/parser'"
 "export Transformer, ScriptIIFEWrapper"
 
 ometa Transformer {
