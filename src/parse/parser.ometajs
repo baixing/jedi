@@ -10,6 +10,7 @@ ometa PlainParser <: OffsideRule {
 	expr	=	Expression.expression,
 	symbol	=	Expression.symbol,
 	comma	=	Expression.comma,
+	nameChar = Expression.nameChar,
 
 	load string:filename readFile(filename):content source(content):nodes
 		->	[#document, [filename, 1, 1], content, undefined, nodes],
@@ -84,7 +85,7 @@ ometa PlainParser <: OffsideRule {
 		|	end_
 		|	external_,
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
-	instructionName	=	<symbol>:x -> x,
+	instructionName	=	nameChar+:x -> string(x),
 	instructionParam	=	expr,
 
 	postInstruction	=	if_ | unless_ | for_ | let_ | else_,
