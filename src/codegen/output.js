@@ -132,6 +132,6 @@ export class OutputXHTML extends OutputXML {
 		if (xhtmlBasicElements.indexOf(tag) === -1) {
 			tag = blockElements.indexOf(tag) === -1 ? 'span' : 'div'
 		}
-		return OutputXML.endTag(tag)
+		return super.endTag(tag)
 	}
 }
