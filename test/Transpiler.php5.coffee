@@ -543,7 +543,7 @@ exports.PHP5Transpiler =
 				[['text', [1, 1], undefined, ['Big sheep testcase']]]
 			]
 
-			expect: '<?php\necho \'<!doctype html>\', "\\n";\n echo \'Big sheep testcase\', "\\n";\n?>'
+			expect: /^<\?php\n[\S\s]*\necho \'<!doctype html>\', "\\n";\n echo \'Big sheep testcase\', "\\n";$/
 
 		'extend with before hook':
 			input: [ 'document', [ './test/test', 1, 1 ], '', undefined,
@@ -559,7 +559,7 @@ exports.PHP5Transpiler =
 				]
 			]
 
-			expect: '<?php\necho \'<!doctype html>\', "\\n";\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'Big sheep testcase\', "\\n";\n?>'
+			expect: /^<\?php\n[\s\S]*\necho \'<!doctype html>\', "\\n";\n \/\/  #headBlock\n   echo \'<style\';\n     echo \' src="test\.css"\';\n   echo \'<\/style>\';\n \/\/  #headBlock\n   echo \'Big sheep testcase\', "\\n";$/
 
 		'extend with mutiple hooks':
 			input: [ 'document', [ './test/test', 1, 1 ], '', undefined,
@@ -581,4 +581,4 @@ exports.PHP5Transpiler =
 					],
 				]
 			]
-			expect: '<?php\necho \'<!doctype html>\', "\\n";\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n //  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'</style>\';\n?>'
+			expect: /^<\?php\n[\s\S]*\necho \'<!doctype html>\', "\\n";\n \/\/  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'<\/style>\';\n \/\/  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'<\/style>\';\n \/\/  #headBlock\n   echo \'<style\';\n     echo \' src="test\.css"\';\n   echo \'<\/style>\';$/

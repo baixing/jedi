@@ -45,7 +45,12 @@ function testRule(grm, rule, testsuite, matchAll) {
 			throw e
 		}
 		if (expect) {
-			const r = diff(actual, expect)
+			let r
+			if (expect.constructor === RegExp) {
+				r = expect.test(actual) ? null : 'unmatch'
+			} else {
+				r = diff(actual, expect)
+			}
 			if (r) {
 				console.error('input:')
 				console.log(input)
