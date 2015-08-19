@@ -27,7 +27,7 @@ ometa PHP5Transpiler {
 
 	node ignore,
 	node [#closeStartTag] -> this.output.closeStartTag(),
-	node [(#MixedWhitespace | #Offside | #Section):syntaxError position:pos anything*:data]
+	node [(#MixedWhitespace | #Offside | #Section | #Error):syntaxError position:pos anything*:data]
 		-> { var err = new Error(syntaxError); err.position = pos; err.data = data; throw err; },
 	node [string:nodeType position:pos apply(nodeType):x] -> this.attachDebugInfo(x, pos),
 	node :unknown -> { throw new Error(unknown) },
@@ -159,13 +159,13 @@ ometa PHP5Transpiler {
 	instruction #for [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(collectSymbols(binds)) block:b exitBlock
 		->	translateMultiLoops(binds, b),
 
-	instruction #unsafe trans:x :b -> ('echo ' + x + ';'),
-	instruction #d trans:x :b	->	('var_dump(' + x + ');'),
+	instruction #unsafe trans:x :_ -> ('echo ' + x + ';'),
+	instruction #d trans:x :_	->	('var_dump(' + x + ');'),
 	instruction #end :x :_	-> ('// end ' + x),
 
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
-	bindingPattern [#ListPattern [bindingPattern*]:bindings]
+	bindingPattern [#ListPattern [bindingPattern*:bindings]]
 		-> ([
 			bindings.reduce(function (a, b) { return a.concat(b[0]) }, []),
 			bindings.reduce(function (a, b) { return a.concat(b[1]) }, [])
