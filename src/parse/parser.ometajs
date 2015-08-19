@@ -2,7 +2,7 @@
 "module fs at 'fs'"
 "import OffsideRule from './offside'"
 "import Expression from './expression'"
-"import string, concat from '../util/ometa-string'"
+"import string, concat, flattenArray from '../util/ometa-string'"
 "export Parser"
 
 ometa PlainParser <: OffsideRule {
@@ -20,7 +20,7 @@ ometa PlainParser <: OffsideRule {
 	tabSize	->	0,
 
 	parse :rule	=	position:pos apply(rule):x	->	[rule, pos].concat(x),
-	error	=	offsetCol position:pos char*	->	[#Error, pos],
+	error	=	offsetCol position:pos char+	->	[#Error, pos],
 
 	processSection	=	jediSection | ^processSection,
 	jediSection	=	parse('suppress')
@@ -99,6 +99,7 @@ ometa PlainParser <: OffsideRule {
 ometa Parser <: PlainParser {
 
 	jediSection	=	parse('comment')
+		| literalAttributes
 		|	parse('attribute')
 		|	parse('macro')
 		|	^jediSection
@@ -120,7 +121,7 @@ ometa Parser <: PlainParser {
 	element	=	[elementPattern:e offsetCol char+:rest]
 			(parse('text', rest) | parse('comment', rest)):child
 			-> [e, undefined, [child]],
-	element	=	[elementPattern:e offsetCol attributes:attrs] block:children
+	element	=	[elementPattern:e (literalAttributesLine | legacyAttributes):attrs] block:children
 			-> [e, undefined, attrs.concat(children)],
 
 	elementPattern	=	quantifier? tagName:tag classList:cls idName?:id spaces	->	[tag, cls, id],
@@ -141,7 +142,22 @@ ometa Parser <: PlainParser {
 	quantifier	= '*' | '?',
 
 	childCombinator	=	'>' spaces,
-	attributes	=	(
+
+	literalAttributes	= [literalAttributesFlag spaces posCol char*:x] :xs
+		literalAttrList([x].concat(xs)):attrs -> attrs,
+	literalAttributesFlag = '@' '@',
+	literalAttrList = [(offsetLn [literalAttr*:attrs] -> attrs)+:attrsArray] -> flattenArray(attrsArray),
+	literalAttr = (offsetCol position:pos attrName:attr (spaces '=' spaces literalAttrValue:s)? spaces)
+		-> [#attribute, pos, attr].concat(s ? ['==', ['String', string(s)]] : [undefined, undefined]),
+	literalAttr = offsetCol position:pos char+	->	[#Error, pos],
+	literalAttrValue = '"'	<(~'"'	char)*>:s	'"'	-> s,
+	literalAttrValue = '\''	<(~'\''	char)*>:s	'\''	-> s,
+	literalAttrValue = <(~space char)*>:s -> s,
+
+	literalAttributesLine = literalAttributesFlag spaces posCol char*:x
+		literalAttrList([x]):attrs -> attrs,
+
+	legacyAttributes	=	(
 				position:pos
 				attributeFlag attrName:attr
 				(assignOperator:op
