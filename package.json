@@ -1,6 +1,6 @@
 {
   "name": "jedi",
-  "version": "1.0.0-rc2.6",
+  "version": "1.0.0-rc2.7",
   "author": "Hax <johnhax@gmail.com>",
   "description": "jedi — a language for Web development",
   "keywords": [
@@ -31,14 +31,14 @@
     "commander": "^2.8.1",
     "debug": "^2.2.0",
     "es6-shim": "^0.33.0",
+    "js-yaml": "^3.3.1",
     "maps": "^0.3.3",
     "source-map-support": "^0.3.2",
     "tabish": "*"
   },
   "devDependencies": {
     "babel": "^5.8.21",
-    "coffee-script": "^1.9.3",
-    "js-yaml": "^3.3.1"
+    "coffee-script": "^1.9.3"
   },
   "repository": {
     "type": "git",
