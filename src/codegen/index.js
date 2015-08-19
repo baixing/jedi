@@ -1,6 +1,7 @@
 import memoize from '../util/memoize'
 import {PHP5TranspilerWithDebug} from './transpiler.php5'
-const match = PHP5TranspilerWithDebug.match::memoize()
+
+const match = PHP5TranspilerWithDebug.match::memoize(JSON.stringify)
 
 export const compile = (ast, target) => {
 	switch (target) {

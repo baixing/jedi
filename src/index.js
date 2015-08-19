@@ -10,10 +10,10 @@ export const transpile = (source, dest, lang, adaptive, debug) => {
 		const config = loadConfig(source)
 		const tree = transform(parseFile(source), debug)
 		if (adaptive || config.adaptive) {
-			tree[4].unshift(['comment', [0, 0], ['html']])
+			tree[4].unshift(['comment', [source, 0, 1], ['html']])
 			fs.writeFileSync(dest, compile(tree, lang))
 
-			tree[4][0] = ['comment', [0, 0], ['xhtml mp 1.0']]
+			tree[4][0][2] = ['xhtml mp 1.0']
 			const wapDest = dest.replace(/(?=\.[^.]+$)/, '.wap')
 			fs.writeFileSync(wapDest, compile(tree, lang))
 		} else {
