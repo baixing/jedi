@@ -1,6 +1,6 @@
 {
   "name": "jedi",
-  "version": "1.0.0-rc2.5",
+  "version": "1.0.0-rc2.6",
   "author": "Hax <johnhax@gmail.com>",
   "description": "jedi — a language for Web development",
   "keywords": [
@@ -13,9 +13,10 @@
   "files": [
     "cli/",
     "lib/",
-    "src/",
     "doc/",
-    "register.js"
+		".babelrc",
+    "register.js",
+    "src/"
   ],
   "bin": {
     "jedi": "./cli/jedi",
