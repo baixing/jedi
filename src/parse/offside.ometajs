@@ -36,9 +36,8 @@ ometa OffsideRule {
 		|	apply(rule):x repeat(rule, n - 1):xs -> [x].concat(xs),
 
 	posLn	= 	pos:ln setLine(ln),
-	posCol	=	getIndent:n posIndent(n) offsetCol,
+	posCol	=	getIndent:n posIndent(n) pos:x0 getColumn:x1 setColumn(x0 - n + x1),
 	posIndent number:indent	=	shiftWidth:t setColumn((t || 1) * indent),
-	offsetCol pos:x	=	setColumn(x),
 
 	END
 }
@@ -92,10 +91,18 @@ OffsideRule.initialize = function() {
 			this._stack[0].col = n
 			return n
 		}
+	this.offsetLn	= function() {
+			this._stack[0].offsetLine = this.pos()
+			return this.getLine() + this._stack[0].offsetLine
+		}
+	this.offsetCol = function() {
+			this._stack[0].offsetColumn = this.pos()
+			return this.getColumn() + this._stack[0].offsetColumn
+		}
 	this.position	= function() {
 			return [
-				this._pos[0] + this.getLine(),
-				this._pos[1] + this.getColumn()
+				this._pos[0] + this.getLine() + (this._stack[0].offsetLine || 0),
+				this._pos[1] + this.getColumn() + (this._stack[0].offsetColumn || 0)
 			]
 		}
 }
