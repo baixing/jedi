@@ -1,0 +1,14 @@
+:let o = {x: 1, y: 2}
+
+	'o.x = '
+	= o.x
+	' and o.y = '
+	= o.y
+	hr
+
+	= o
+		'o: '
+		'x = '
+		= *.x
+		' and y = '
+		= *.y

@@ -1,0 +1,12 @@
+:let digits = [3, 1, 4, 1, 5, 9, 2, 6]
+
+	:for d in digits
+		span = d
+		' is '
+		:if d mod 2 == 0
+			strong.even 'even'
+		:else
+			strong.odd 'odd'
+		:end if
+		?span.triple if d mod 3 == 0
+			', and is multiple of 3. '

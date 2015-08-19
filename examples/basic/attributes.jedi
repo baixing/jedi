@@ -1,6 +1,0 @@
-:let pageTitle = 'Hello!', myData = {x: 1, y: 2}
-	input
-		//@@ name=user-name type=text required
-		@title = pageTitle
-		@data-x = myData.x
-		@data-y = myData.y

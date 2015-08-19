@@ -1,0 +1,9 @@
+script!
+	console.log('ok')
+
+script = [1, 2, 3, '</script>']
+	!
+		console.assert(data[0] === 1)
+		console.assert(data[1] === 2)
+		console.assert(data[2] === 3)
+		console.assert(data[3] === '</script>')

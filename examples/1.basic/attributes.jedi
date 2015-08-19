@@ -1,0 +1,5 @@
+:let hint = 'Please enter your email', myData = {x: 1, y: 2}
+	input @@ name=user-email type=email required
+		@placeholder = hint
+		@data-x = myData.x
+		@data-y = myData.y
