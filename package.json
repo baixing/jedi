@@ -1,6 +1,6 @@
 {
   "name": "jedi",
-  "version": "1.0.0-rc2.3",
+  "version": "1.0.0-rc2.4",
   "author": "Hax <johnhax@gmail.com>",
   "description": "jedi — a language for Web development",
   "keywords": [
@@ -22,7 +22,7 @@
   },
   "scripts": {
     "test": "node test",
-    "prepublish": "babel --source-maps --out-dir lib src"
+    "prepublish": "babel --source-maps --out-dir lib --ignore *.ometa.js src"
   },
   "dependencies": {
     "babel-runtime": "^5.8.20",
