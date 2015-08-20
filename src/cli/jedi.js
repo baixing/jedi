@@ -41,6 +41,6 @@ switch (dest) {
 
 const args = [src, dest, lang, program.adaptive,
 	[program.tree1, program.tree2, program.tree3, program.tree4]]
-import {transpile, watch} from '../../src'
+import {transpile, watch} from '..'
 if (program.watch) watch(...args)
 else transpile(...args)
