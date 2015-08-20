@@ -1,3 +1,2 @@
 #!/usr/bin/env node
-require('../register')
-require('../src/cli/jedi-transpiler-service')
+require('../load')('cli/jedi-transpiler-service')

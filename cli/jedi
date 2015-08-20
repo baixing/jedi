@@ -1,3 +1,2 @@
 #!/usr/bin/env node
-require('../register')
-require('../src/cli/jedi')
+require('../load')('cli/jedi')

@@ -1,6 +1,6 @@
 {
   "name": "jedi",
-  "version": "1.0.0-rc2.8",
+  "version": "1.0.0-rc2.9",
   "author": "Hax <johnhax@gmail.com>",
   "description": "jedi — a language for Web development",
   "keywords": [
@@ -9,13 +9,13 @@
     "dsl"
   ],
   "license": "Apache2",
-  "main": "lib/index.js",
+  "main": "index.js",
   "files": [
     "cli/",
     "lib/",
     "doc/",
-		".babelrc",
-    "register.js",
+		"index.js",
+    "load.js",
     "src/"
   ],
   "bin": {
