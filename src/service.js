@@ -4,7 +4,7 @@ import {join as joinPath} from 'path'
 import {exists as existsFile, stat} from 'fs'
 import {transpile} from '.'
 
-export function service({base, lang, port}) {
+export default function service({base, lang, port}) {
 	//var watched = []
 
 	httpServer((req, res) => {
