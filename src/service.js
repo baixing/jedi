@@ -2,7 +2,7 @@ import {createServer as httpServer} from 'http'
 import {parse as parseURL} from 'url'
 import {join as joinPath} from 'path'
 import {exists as existsFile, stat} from 'fs'
-import {transpile} from '.'
+import {transpile} from './index'
 
 export default function service({base, lang, port}) {
 	//var watched = []
