@@ -2,7 +2,7 @@ import {dir} from '../util/debug'
 
 import doImport from './import'
 import sortNodes from './sort-nodes'
-import {ScriptIIFEWrapper} from './transformer'
+import escapeScript from './script-element'
 
 export default (tree, show = []) => {
 	if (show[0]) dir(tree)
@@ -13,7 +13,7 @@ export default (tree, show = []) => {
 	if (show[1]) dir(tree)
 
 	console.time('transform 2')
-	tree = ScriptIIFEWrapper.match(tree, 'document')
+	tree = escapeScript(tree)
 	console.timeEnd('transform 2')
 	if (show[2]) dir(tree)
 
