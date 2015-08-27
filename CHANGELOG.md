@@ -1,34 +1,34 @@
 1.0.0-rc3 / 2015-08-27
 ========================
 
-  Architecture:
-    * migrate to ES6+
-    * add php runtime
-    * remove all old transformer
-    * add offsetLn/Col, make positions more accurate
-    * add source-map-support
-    * use new cache mechanism, codegen also use cache now
+Architecture:
+  * migrate to ES6+
+  * add php runtime
+  * remove all old transformer
+  * add offsetLn/Col, make positions more accurate
+  * add source-map-support
+  * use new cache mechanism, codegen also use cache now
 
-  Features:
-    * implement literal attributes
-    * make end instructions works
-    * output external symbols in comments
+Features:
+  * implement literal attributes
+  * make end instructions works
+  * output external symbols in comments
 
-  Bug Fixes:
-    * fix imported fragment order
-    * nest fragments need to be traversed
-    * keep order of external instructions
+Bug Fixes:
+  * fix imported fragment order
+  * nest fragments need to be traversed
+  * keep order of external instructions
 
-  Refactor:
-    * rewrite lots of code/tests to ES6+
-    * reorg src structure to parse/transform/codegen
-    * clean directories/files
-    * instead of .npmignore, use package.json/files field for npm publish
-    * update eslint config and fix problems
+Refactor:
+  * rewrite lots of code/tests to ES6+
+  * reorg src structure to parse/transform/codegen
+  * clean directories/files
+  * instead of .npmignore, use package.json/files field for npm publish
+  * update eslint config and fix problems
 
-  Documents:
-    * reorg/rewrite many examples
-    * add license fields of package.json
+Documents:
+  * reorg/rewrite many examples
+  * add license fields of package.json
 
 
 1.0.0-rc2 / 2015-07-27
