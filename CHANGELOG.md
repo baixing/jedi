@@ -7,6 +7,7 @@
     * remove all old transformer
     * add offsetLn/Col, make positions more accurate
     * add source-map-support
+    * use new cache mechanism, codegen also use cache now
 
   Features:
     * implement literal attributes
