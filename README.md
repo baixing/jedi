@@ -52,6 +52,10 @@ or ```%USERPROFILE%\.WebIde70\config\filetypes``` for Windows, restart WebStorm/
 There is also a variant edition [cssmagic/jedi.xml](https://github.com/cssmagic/jedi.xml)
 which adjust some details and add [CMUI](https://github.com/CMUI/CMUI) keywords.
 
+#### Sublime/TextMate ####
+
+See https://github.com/CyanSalt/Sublime-Jedi
+
 #### Others ####
 
 Planned:
@@ -63,7 +67,8 @@ Planned:
 ### Copyright & License ###
 
    Copyright 2012, 2013 HE Shi-Jun
-   Copyright 2014 baixing.com
+
+   Copyright 2014, 2015 baixing.com
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
