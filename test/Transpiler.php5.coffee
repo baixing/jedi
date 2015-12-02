@@ -100,7 +100,7 @@ exports.PHP5Transpiler =
 						[
 							['String', 'Hello ', 'Hello ']
 							['Symbol', 'user'],
-							['String', '!\n', '!\\n']
+							['String', '!', '!']
 						]
 					]]
 				]
@@ -108,7 +108,7 @@ exports.PHP5Transpiler =
 
 			expect: [[
 				'call_user_func(function ($context) use ($data) {',
-				[ [ "echo htmlspecialchars(('Hello ') . ($data->user) . ('!\n'), 0x88);" ] ],
+				[ [ "echo htmlspecialchars(('Hello ') . ($data->user) . ('!'), 0x88);" ] ],
 				'}, $data->x);'
 			]],
 
@@ -214,12 +214,12 @@ exports.PHP5Transpiler =
 					[
 						['String', 'Hello ', 'Hello ']
 						['Symbol', 'user'],
-						['String', '!\n', '!\\n']
+						['String', '!', '!']
 					]
 				]]
 			]
 
-			expect: [["echo htmlspecialchars(('Hello ') . ($data->user) . ('!\n'), 0x88);"]]
+			expect: [["echo htmlspecialchars(('Hello ') . ($data->user) . ('!'), 0x88);"]]
 
 		###
 		'double quot multiple lines text with tag':
@@ -464,7 +464,7 @@ exports.PHP5Transpiler =
 							[
 								['String', 'Hello ', 'Hello ']
 								['Symbol', 'user'],
-								['String', '!\n', '!\\n']
+								['String', '!', '!']
 							]
 						]]
 
@@ -475,7 +475,7 @@ exports.PHP5Transpiler =
 			expect: [[ 'echo \'<div class="test1"\';',
 				[[ 'call_user_func(function ($context) use ($data) {',
 					[ 'echo \'<div class="test2"\';',
-						[ [ 'echo htmlspecialchars((\'Hello \') . ($data->user) . (\'!\n\'), 0x88);' ] ],
+						[ [ 'echo htmlspecialchars((\'Hello \') . ($data->user) . (\'!\'), 0x88);' ] ],
 					'echo \'</div>\';' ],
 				'}, $data->x);' ] ],
 				'echo \'</div>\';'

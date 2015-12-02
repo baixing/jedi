@@ -88,7 +88,7 @@ ometa PHP5Transpiler {
 
 	trans	=	expr,
 
-	trans [#String :s :raw]	->	("'" + s.replace(/'/g, '\\\'') + "'"),
+	trans [#String :s :raw]	->	(this.output.convertNewlines("'" + s.replace(/'/g, '\\\'') + "'")),
 	trans [#Tuple [trans*:list]]	->	('(' + list.join(', ') + ')'),
 	trans [#Tuple [tupleItem*:list]]	->	('[' + list.join(', ') + ']'),
 	trans [#Error position:pos]

@@ -66,6 +66,11 @@ class Output {
 	constructor() {
 		this.lastTag = undefined
 	}
+	convertNewlines(s) {
+		const escaped = s.replace(/\n/g, '\' . "\\n" . \'')
+		if (escaped === s) return s
+		return '(' + escaped + ')'
+	}
 	escapeComment(s) {
 		// http://www.whatwg.org/specs/web-apps/current-work/multipage/syntax.html#comments
 		// Comment must not contain two consecutive U+002D HYPHEN-MINUS characters (--)
