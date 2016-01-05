@@ -9,8 +9,18 @@ Expression:
       expect: [Symbol, test-1-2-3]
     - input: m&n
       expect: [Symbol, m&n]
+    - input: null-value
+      expect: [Symbol, null-value]
     - input: '*'
       expect: [Symbol, '*']
+
+  '[primary]':
+    - input: 'x-value'
+      expect: [Symbol, x-value]
+    - input: 'nullValue'
+      expect: [Symbol, nullValue]
+    - input: 'null-value'
+      expect: [Symbol, null-value]
 
   '[path]':
     - input: 'test/attr'

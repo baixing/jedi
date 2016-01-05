@@ -17,8 +17,8 @@ ometa Expression {
 	segmentChar = ~(space | ambigSep | '/' | '?' | '#') char,
 	ambigSep = (',' | ']' | ')') (space | end),
 
-	literal = nullLiteral | booleanLiteral | numberLiteral
-		| stringLiteral | quasiLiteral,
+	literal = (nullLiteral | booleanLiteral | numberLiteral
+		| stringLiteral | quasiLiteral):lit ~nameChar -> lit,
 
 	nullLiteral "null" -> [#Null],
 
