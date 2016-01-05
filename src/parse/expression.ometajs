@@ -154,7 +154,7 @@ ometa Expression {
 	op4 = spaces ("<<<" | ">>>" | "<<" | ">>"):x spaces -> x,
 	op5 = spaces ("?:"):x spaces -> x,
 	op6 = spaces ("+" | "-"):x spaces -> x,
-	op7 = spaces ("×" | "÷" | "mul" | "div" | "mod"):x spaces -> x,
+	op7 = spaces ("×" -> "mul" | "÷" -> "div" | "mul" | "div" | "mod"):x spaces -> x,
 	op9 = spaces ('!' | "not"):x spaces -> x,
 
 	END
