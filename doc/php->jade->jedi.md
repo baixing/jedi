@@ -56,7 +56,7 @@ header
 main @id = currentStep.id
 	h1
 		= currentStep.summary
-	:markdown currentStep.content
+	!markdown = currentStep.content
 ```
 
 ### Jedi (post-instructions syntax)
@@ -67,12 +67,12 @@ header
 		= info
 	nav > ol.process
 		*li for step in steps
-			a	@href = { if currentStep !== step then "step?id={step.id}" }
+			a	@href = ( if currentStep !== step then "step?id={step.id}" )
 				= step.summary
 main @id = currentStep.id
 	h1
 		= currentStep.summary
-	:markdown currentStep.content
+	!markdown = currentStep.content
 ```
 
 ### Jedi (more terse)
@@ -83,7 +83,7 @@ header
 	nav > ol.process
 		*li > a = step.summary for step in steps
 			@href = "step?id={step.id}" if step !== currentStep
-main#step{step.id}
+main#step(step.id)
 	h1 = currentStep.summary
 	:markdown currentStep.content
 ```
