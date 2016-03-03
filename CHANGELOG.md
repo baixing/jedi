@@ -1,3 +1,18 @@
+1.0.0-rc4 / 2016-03-04
+========================
+
+Bug Fixes:
+  * fix #47
+	* fix literal grammar, allow symbol start with reserved words
+	* fix license field in the package.json as SPDX
+	* make ×/÷ operators work
+	* fix #50
+
+Documents:
+  * link to sublime syntax support
+	* add more examples
+
+
 1.0.0-rc3 / 2015-08-27
 ========================
 
