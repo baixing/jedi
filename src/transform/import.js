@@ -84,13 +84,13 @@ function override(template, blocks) {
 				node.childNodes.splice(0, i, ...frags.befores.map(record2tuple))
 			}
 			if (frags.afters.length > 0) {
-				let last
-				while (true) {
-					last = node.childNodes.pop()
+				while (node.childNodes.length > 0) {
+					const last = node.childNodes[node.childNodes.length - 1]
 					const {nodeType, nodeName, nodeValue} = tuple2record(last)
 					if (!(nodeType === 'fragment' && nodeName === frag && nodeValue === 'after')) break
+					else node.childNodes.pop()
 				}
-				node.childNodes.push(last, ...frags.afters.map(record2tuple))
+				node.childNodes.push(...frags.afters.map(record2tuple))
 			}
 		}
 	})
