@@ -1,7 +1,8 @@
-1.0.0-rc4 / 2016-03-04
+1.0.0-rc4 / 2016-03-07
 ========================
 
 Bug Fixes:
+  * fix cache problem
   * fix #47
   * fix literal grammar, allow symbol start with reserved words
   * fix license field in the package.json as SPDX
