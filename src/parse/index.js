@@ -14,4 +14,6 @@ const splitLines = s => s.split(/\r?\n|[\u2028\u2029]/)
 import memoize from '../util/memoize'
 import {Parser} from './parser'
 const match = Parser.match::memoize(JSON.stringify)
-export const parseLines = lines => Parser::match(lines, 'block')
+
+import clone from '../util/clone'
+export const parseLines = lines => clone(Parser::match(lines, 'block'))
