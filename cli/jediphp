@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [ ! $1 ]; then
+	echo "Usage: jediphp <file>"
+else
+	jedi $1 php && php -f $1.php
+fi

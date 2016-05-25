@@ -20,7 +20,8 @@
   ],
   "bin": {
     "jedi": "./cli/jedi",
-    "jedi-transpiler-service": "./cli/jedi-transpiler-service"
+    "jedi-transpiler-service": "./cli/jedi-transpiler-service",
+    "jediphp": "./cli/jediphp"
   },
   "scripts": {
     "test": "node test",
