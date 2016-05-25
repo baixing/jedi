@@ -1,5 +1,8 @@
 import {isCharArray} from '../util/ometa-string'
 
+function ignorePsuedoClass(c) {
+	return !c.startsWith(':')
+}
 const echo = (...args) =>
 	'echo '
 	+ args
@@ -93,6 +96,7 @@ class Output {
 	}
 	startTag(tag, cls, id) {
 		this.lastTag = tag
+		cls = cls.filter(ignorePsuedoClass)
 		return echo(
 			'<', tag,
 			cls.length > 0 ? ' class="' + cls.join(' ') + '"' : '',
@@ -128,6 +132,7 @@ export class OutputXHTML extends OutputXML {
 			tag = blockElements.indexOf(tag) === -1 ? 'span' : 'div'
 		}
 		this.lastTag = tag
+		cls = cls.filter(ignorePsuedoClass)
 		return echo(
 			'<', tag,
 			cls.length > 0 ? ' class="' + cls.join(' ') + '"' : '',
