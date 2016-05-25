@@ -25,7 +25,8 @@
   },
   "scripts": {
     "test": "node test",
-    "prepublish": "babel --source-maps --out-dir lib --ignore *.ometa.js --copy-files src"
+    "prepublish": "babel --source-maps --out-dir lib --ignore *.ometa.js --copy-files src",
+    "postinstall": "./cli/jedi --version"
   },
   "dependencies": {
     "babel": "^5.8.34",
