@@ -1,0 +1,32 @@
+:: div.a ()
+	= *
+
+:: div.b ()
+	= *
+
+:: div.a.b ()
+	div.a = *.a
+	div.b = *.b
+
+body
+	section
+		div.a = 'a'
+		div.b = 'b'
+		div.a.b = {a: 1, b: 2}
+
+		:: div.a ()
+			'inner '
+			= *
+
+	section
+		div.a = 'A'
+		div.b = 'B'
+		div.a.b = {a: 3, b: 4}
+
+		:: div.a ()
+			= *
+			= *
+
+		:: div.b.a ()
+			div.b = *.b
+			div.a = *.a

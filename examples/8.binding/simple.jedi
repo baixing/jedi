@@ -1,0 +1,5 @@
+:: div:greeting ()
+	:let user = *
+		'Hello {user}'
+
+div:greeting = 'hax'
