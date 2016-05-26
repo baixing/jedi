@@ -1,0 +1,5 @@
+:import skeleton
+	#body
+		*div for (i, x) in ['Apple', 'Banana', 'Tomato']
+			span.ord = i + 1
+			= x

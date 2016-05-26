@@ -1,0 +1,7 @@
+::	span.ord ()
+		:let i = *
+			"{i}. "
+
+:import page
+	#body::before
+		'page b'
