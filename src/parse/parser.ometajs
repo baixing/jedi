@@ -77,6 +77,15 @@ ometa PlainParser <: OffsideRule {
 	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
 	external_	=	"external" space+ symbol:x (spaces ',' spaces symbol)*:xs spaces	->	[#external, [x].concat(xs)],
 
+	/*use_	=	"use" spaces path:p space+ "as" space+ symbol
+
+	'{' alias:x (spaces ',' spaces alias)*:xs ',' '}' "from" space+ <Expression.path>:path,
+
+	#use a/b => import b from 'a/b'  /  use \a\b
+	#use ./a/b as b1 => import b1 from './a/b'  / use a\b
+	#use a/b/* as b1 => import * as b1 from 'a/b'
+	#use a/b/{c as c1, d}*/
+
 	instructionPattern	=	import_
 		|	if_ | elseif_ | else_
 		|	for_
