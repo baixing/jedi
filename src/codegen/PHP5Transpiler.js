@@ -1,6 +1,7 @@
 import {dir} from '../util/debug'
 import {OutputHTML, OutputXML, OutputXHTML} from './output'
-import {flattenArray} from '../util/ometa-string'
+import {string, flattenArray} from '../util/ometa-string'
+import {fail} from '../../lib/ometa-js'
 
 
 export function PHP5Transpiler_init() {
@@ -165,7 +166,7 @@ function deleteRedundantEcho(lines) {
 	return ans
 }
 
-function echoLines(lines) {
+export function echoLines(lines) {
 	var n = lines.length
 	return lines.map(function(l, i) {
 		return (i > 0 ? '     ' : 'echo ') + l + (i < n ? ',' : ';')
@@ -180,7 +181,7 @@ function translateMultiLoops(binds, b) {
 	return b;
 }
 
-function simpleString(s) {
+export function simpleString(s) {
 	return string(s).replace(/'/g, "\\'")
 }
 
@@ -202,7 +203,7 @@ function getImportString(param) {
 	return param.length > 0 ? ' use (' + result.join(',') + ')' : ''
 }
 
-function closure(context, body, param) {
+export function closure(context, body, param) {
 	return [
 		'call_user_func(function ($context)' + getImportString(param) + ' {',
 		body,

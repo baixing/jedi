@@ -1,6 +1,6 @@
 "import string, flattenLines from '../util/ometa-string'"
 "module jediRuntime at './php-runtime'"
-"import PHP5Transpiler_init, collectSymbols, assignment, phpAssignment from './PHP5Transpiler'"
+"import PHP5Transpiler_init, simpleString, collectSymbols, assignment, phpAssignment, closure, echoLines from './PHP5Transpiler'"
 "export PHP5Transpiler, PHP5TranspilerWithDebug"
 
 ometa Beautify {

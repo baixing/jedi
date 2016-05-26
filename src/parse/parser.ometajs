@@ -75,7 +75,7 @@ ometa PlainParser <: OffsideRule {
 	let_	=	"let" spaces let_binding:x (comma let_binding)*:y	->[#let, [x].concat(y)],
 	let_binding	=	Expression.bindingPattern:x spaces '=' spaces expr:y	->	[x, y],
 	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
-	external_	=	"external" space+ symbol:x (spaces ',' spaces symbol)*:xs spaces	->	[#external, [x].concat(xs)]
+	external_	=	"external" space+ symbol:x (spaces ',' spaces symbol)*:xs spaces	->	[#external, [x].concat(xs)],
 
 	/*
 	alias	= symbol:x space+ "as" space+ symbol:y	->	[x, y]
