@@ -37,7 +37,7 @@ header
 					= step.summary
 main(id= currentStep.id)
 	h1= currentStep.summary
-	:markdown currentStep.content
+	!= markdownToHTML(currentStep.content)
 ```
 
 ### Jedi (Jade-like)
