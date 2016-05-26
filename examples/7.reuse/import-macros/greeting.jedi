@@ -1,4 +1,4 @@
 :import ./uppercase
-::div.greeting ()
-	'Hello '
-	span.uppercase.name = *
+::	div.greeting ()
+		'Hello '
+		span.uppercase.name = *
