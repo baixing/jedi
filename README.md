@@ -7,8 +7,11 @@ inspired by
 and many others. It's still in beta phase but we already use it in
 production (http://m.baixing.com/) for several years.
 
-[![NPM version](https://badge.fury.io/js/jedi.png)](http://badge.fury.io/js/jedi)
-[![Dep status](https://david-dm.org/baixing/jedi.png)](https://david-dm.org/baixing/jedi)
+[![NPM version][npm-image]][npm-url]
+[![Build status][travis-image]][travis-url]
+[![Downloads][downloads-image]][npm-url]
+[![Dependencies status][deps-image]][deps-url]
+
 
 ### Install ###
 
@@ -79,3 +82,12 @@ See https://github.com/HerringtonDarkholme/jedi-syntax
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+
+[npm-image]: https://img.shields.io/npm/v/jedi.svg
+[npm-url]: https://npmjs.org/package/jedi
+[travis-image]: https://img.shields.io/travis/baixing/jedi.svg
+[travis-url]: https://travis-ci.org/baixing/jedi
+[downloads-image]: http://img.shields.io/npm/dm/jedi.svg
+[deps-image]: https://david-dm.org/baixing/jedi.svg
+[deps-url]: https://david-dm.org/baixing/jedi
