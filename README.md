@@ -26,15 +26,6 @@ Watch changes and auto compiling:
 
 See [examples](https://github.com/baixing/jedi/tree/master/examples)
 
-### Known major bugs and limitations for 1.0 milestone
-
-0. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not fully implemented
-
-0. only very basic support of import instruction
-
-0. string concat and some other expression operators are not implemented
-
-
 ### Build system
 
 * Gulp plugin: https://github.com/HerringtonDarkholme/gulp-jedi
@@ -61,6 +52,15 @@ See https://github.com/CyanSalt/Sublime-Jedi
 See https://github.com/HerringtonDarkholme/jedi-syntax
 
 
+### Known major bugs and limitations for 1.0 milestone
+
+0. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not fully implemented
+
+0. importing with parameters is not implemented
+
+0. destructuring is not implemented
+
+0. quantifiers is not fully implemented
 
 
 ### Copyright & License ###
