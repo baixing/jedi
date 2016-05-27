@@ -56,13 +56,12 @@ which adjust some details and add [CMUI](https://github.com/CMUI/CMUI) keywords.
 
 See https://github.com/CyanSalt/Sublime-Jedi
 
-#### Others ####
+#### Vim ####
 
-Planned:
+See https://github.com/HerringtonDarkholme/jedi-syntax
 
-1. Code Browser, jEdit
-2. NetBeans
-3. CodeMirror, ACE
+
+
 
 ### Copyright & License ###
 
