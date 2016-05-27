@@ -20,10 +20,19 @@ production (http://m.baixing.com/) for several years.
 ### Usage ###
 
 Compile to php:
-```jedi example.jedi php```
+```sh
+jedi example.jedi php
+```
+
+Compile and run:
+```sh
+jediphp example
+```
 
 Watch changes and auto compiling:
-```jedi -w example.jedi php```
+```sh
+jedi -w example.jedi php
+```
 
 ### Template Syntax ###
 
