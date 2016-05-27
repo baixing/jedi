@@ -1,11 +1,16 @@
-1.0.0 / 2016-04-01
+1.0.0 / 2016-07-01
 ========================
 
 
-1.0.0-rc4 / 2016-03-07
+1.0.0-rc4 / 2016-05-27
 ========================
+
+Features:
+  * `jediphp` command
+  * do not output pseudo class
 
 Bug Fixes:
+  * add postinstall script to ensure ometa files are compiled
   * fix cache problem
   * fix #47
   * fix literal grammar, allow symbol start with reserved words
