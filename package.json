@@ -29,12 +29,12 @@
     "postinstall": "./cli/jedi --version"
   },
   "dependencies": {
-    "babel": "^5.8.34",
-    "babel-runtime": "^5.8.34",
+    "babel": "^5.8.38",
+    "babel-runtime": "^5.8.38",
     "commander": "^2.9.0",
     "debug": "^2.2.0",
-    "es6-shim": "^0.34.0",
-    "js-yaml": "^3.4.6",
+    "es6-shim": "^0.35.1",
+    "js-yaml": "^3.6.1",
     "maps": "^0.3.3",
     "source-map-support": "^0.4.0"
   },
