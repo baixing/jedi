@@ -45,7 +45,7 @@ testOMeta(Parser, jediParserTests.Parser, [
 
 
 import {PHP5Transpiler} from '../src/codegen/transpiler.php5'
-import transpilerPhpTests from './transpiler.php5'
+import transpilerPhpTests from './codegen-php5'
 testOMeta(PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
 	'block',
 	'document',
