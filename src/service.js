@@ -33,9 +33,14 @@ export default function service({base, lang, port}) {
 						if (err) throw err // should never happen
 						if (stats.isFile()) {
 							const t0 = Date.now()
-							lang.forEach(function(lang){
-								transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
-							})
+							try {
+								lang.forEach(function(lang){
+										transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
+								})
+							} catch (e) {
+								send(403, 'jedi probably cannot access directory!')
+								return
+							}
 							const t1 = Date.now()
 							send(200, 'transpiled in ' + (t1 - t0) + 'ms')
 						} else {
