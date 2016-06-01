@@ -7,16 +7,10 @@ ometa Expression {
 
 	keyword	=	("not" | "if" | "then" | "else" | "mod" | "div" | "mul" | "&&" | "-") ~nameChar,
 
-	primary = tupleLiteral | listLiteral | recordLiteral | literal | path | symbol,
+	primary = tupleLiteral | listLiteral | recordLiteral | literal | symbol,
 
 	symbol	=	<'*' | ~keyword nameChar+>:s -> [#Symbol, string(s)],
 	nameChar	=	UnicodeText.nameChar | '$',
-
-	path = symbol?:start segment+:segments
-		-> [#Path, start].concat(segments),
-	segment = '/' <segmentChar*>,
-	segmentChar = ~(space | ambigSep | '/' | '?' | '#') char,
-	ambigSep = (',' | ']' | ')') (space | end),
 
 	literal = (nullLiteral | booleanLiteral | numberLiteral
 		| stringLiteral | quasiLiteral):lit ~nameChar -> lit,
@@ -157,6 +151,13 @@ ometa Expression {
 	op6 = spaces ("+" | "-"):x spaces -> x,
 	op7 = spaces ("×" -> "mul" | "÷" -> "div" | "mul" | "div" | "mod"):x spaces -> x,
 	op9 = spaces ('!' | "not"):x spaces -> x,
+
+	// for future use
+	path = symbol?:start segment+:segments
+		-> [#Path, start].concat(segments),
+	segment = '/' <segmentChar*>,
+	segmentChar = ~(space | ambigSep | '/' | '?' | '#') char,
+	ambigSep = (',' | ']' | ')') (space | end),
 
 	END
 }
