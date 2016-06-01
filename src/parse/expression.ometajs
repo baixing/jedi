@@ -6,7 +6,8 @@
 ometa Expression {
 
 	keyword	=	("not" | "if" | "then" | "else" | "mod" | "div" | "mul" | "&&" | "-") ~nameChar,
-	primary	=	literal | listLiteral | recordLiteral | tupleLiteral | path | symbol,
+
+	primary = tupleLiteral | listLiteral | recordLiteral | literal | path | symbol,
 
 	symbol	=	<'*' | ~keyword nameChar+>:s -> [#Symbol, string(s)],
 	nameChar	=	UnicodeText.nameChar | '$',
