@@ -17,16 +17,16 @@ ometa Expression {
 
 	nullLiteral "null" -> [#Null],
 
-	booleanLiteral "true" -> [#True],
-	booleanLiteral "false" -> [#False],
+	booleanLiteral "true"	-> [#True],
+	booleanLiteral "false"	-> [#False],
 
-	numberLiteral "NaN" -> [#NaN],
-	numberLiteral "INF" -> [#PosInf],
-	numberLiteral "+INF" -> [#PosInf],
-	numberLiteral "-INF" -> [#NegInf],
-	numberLiteral "∞" -> [#PosInf],
-	numberLiteral "+∞" -> [#PosInf],
-	numberLiteral "-∞" -> [#NegInf],
+	numberLiteral "NaN"	-> [#NaN],
+	numberLiteral "INF"	-> [#PosInf],
+	numberLiteral "+INF"	-> [#PosInf],
+	numberLiteral "-INF"	-> [#NegInf],
+	numberLiteral "∞"	-> [#PosInf],
+	numberLiteral "+∞"	-> [#PosInf],
+	numberLiteral "-∞"	-> [#NegInf],
 
 	numberLiteral <signedInt ('.' digit+)? ('e' signedInt)?>:n
 		-> [#Number, parseFloat(string(n))],
@@ -54,14 +54,10 @@ ometa Expression {
 	escapedChar '\\' 'v' -> '\u000b',
 	escapedChar '\\' 'f' -> '\u000c',
 	escapedChar '\\' 'r' -> '\u000d',
-	escapedChar '\\' <hex hex? hex? hex? hex? hex?>:u space?
-		-> codepoint(u),
-	escapedChar '\\' 'u' <hex hex hex hex>:u
-		-> codepoint(u),
-	escapedChar '\\' 'u' '{' <hex+>:u '}'
-		-> codepoint(u),
-	escapedChar '\\' <'&' (~';' char)+ ';'>:entity
-		-> namedCharRef(entity),
+	escapedChar '\\' <hex hex? hex? hex? hex? hex?>:u space?	-> codepoint(u),
+	escapedChar '\\' 'u' <hex hex hex hex>:u	-> codepoint(u),
+	escapedChar '\\' 'u' '{' <hex+>:u '}'	-> codepoint(u),
+	escapedChar '\\' <'&' (~';' char)+ ';'>:entity	-> namedCharRef(entity),
 	escapedChar '\\' char:c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 
