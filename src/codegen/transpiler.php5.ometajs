@@ -61,14 +61,15 @@ ometa PHP5Transpiler {
 
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	call ['.' [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
-	call ['.' expr:x [#Symbol :y]]	->	(x + '->' + y),
-	call ['?.' expr:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
+	call ['.' (symbol|call):x [#Symbol :y]]	->	(x + '->' + y),
+	call ['.' trans:x [#Symbol :y]]	->	('($_ = ' + x + ') && false ?: $_' + '->' + y),
+	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
 
-	call [#Call [#Symbol :s externalSymbol(s):x] &[#Tuple :_] trans:y]	->	(x + y),
-	call [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
 	call [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
-	call [#Call trans:x &[#Tuple :_] trans:y]	->	(x + y),
-	call [#Call trans:x trans:y]	->	(x + '(' + y + ')'),
+	call [#Call (symbol|call):x &[#Tuple :_] trans:y]	->	(x + y),
+	call [#Call (symbol|call):x trans:y]	->	(x + '(' + y + ')'),
+	call [#Call trans:x &[#Tuple :_] trans:y]	->	('($_ = ' + x + ') && false ?: $_' + y),
+	call [#Call trans:x trans:y]	->	('($_ = ' + x + ') && false ?: $_(' + y + ')'),
 
 	range ['...' trans:x trans:y]	->	('(range(' + x + ', ' + y + '))'),
 	range ['..<' trans:x trans:y]	->	('(range(' + x + ', ' + y + ' - 1))'),
