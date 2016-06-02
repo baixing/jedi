@@ -27,8 +27,6 @@ ometa PHP5Transpiler {
 
 	node ignore,
 	node [#closeStartTag] -> this.output.closeStartTag(),
-	node [(#MixedWhitespace | #Offside | #Section | #Error):syntaxError position:pos anything*:data]
-		-> { var err = new Error(syntaxError); err.position = pos; err.data = data; throw err; },
 	node [string:nodeType position:pos apply(nodeType):x] -> this.attachDebugInfo(x, pos),
 	node :unknown -> { throw new Error(unknown) },
 
@@ -92,13 +90,11 @@ ometa PHP5Transpiler {
 	trans [#String :s :raw]	->	(this.output.convertNewlines("'" + s.replace(/'/g, '\\\'') + "'")),
 	trans [#Tuple [trans*:list]]	->	('(' + list.join(', ') + ')'),
 	trans [#Tuple [tupleItem*:list]]	->	('[' + list.join(', ') + ']'),
-	trans [#Error position:pos]
-			-> { var err = new Error('TranspilingError'); err.position = pos; throw err; },
-	trans :unknown	->	['/*', JSON.stringify(unknown), '*/'],
-
-
-	//trans [trans*:x] -> ( x ),
-
+	trans :unknown	-> {
+			var err = new Error('php5-codegen error');
+			err.data = unknown;
+			throw err;
+		},
 
 	comment [:line] -> ["echo '<!-- " + this.output.escapeComment(simpleString(line)) + " -->';"],
 	comment [echoComment*:xs] -> [].concat(

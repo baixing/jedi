@@ -3,9 +3,12 @@ import {dir} from '../util/debug'
 import doImport from './import'
 import sortNodes from './sort-nodes'
 import escapeScript from './script-element'
+import reportError from './report-error'
 
 export default (tree, show = []) => {
 	if (show[0]) dir(tree)
+
+	reportError(tree)
 
 	console.time('transform 1')
 	tree = doImport(tree)

@@ -29,3 +29,15 @@ export const hasChildNodes = nodeType => {
 			return false
 	}
 }
+
+export function isErrorNode(nodeType) {
+	switch (nodeType) {
+		case 'MixedWhitespace':
+		case 'Offside':
+		case 'Section':
+		case 'Error':
+			return true
+		default:
+			return false
+	}
+}
