@@ -15,7 +15,7 @@ export const skip = nodeTuple => {
 	}
 }
 
-export const hasChildNodes = nodeType => {
+export function hasChildNodes(nodeType) {
 	switch (nodeType) {
 		case 'document':
 		case 'fragment':
