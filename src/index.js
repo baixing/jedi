@@ -5,25 +5,26 @@ import {compile} from './codegen'
 import errorInfo from './util/error-info'
 import * as fs from 'fs'
 
-export const transpile = (source, dest, lang, adaptive, debug) => {
+export function transpile(source, dest, lang, {adaptive, debug, writeErrorToFile = true} = {}) {
+	const outputs = []
 	try {
 		const config = loadConfig(source)
 		const tree = transform(parseFile(source), debug)
 		if (adaptive || config.adaptive) {
 			tree[4].unshift(['comment', [source, 0, 1], ['html']])
-			fs.writeFileSync(dest, compile(tree, lang))
-
+			outputs.push({file: dest, content: compile(tree, lang)})
 			tree[4][0][2] = ['xhtml mp 1.0']
 			const wapDest = dest.replace(/(?=\.[^.]+$)/, '.wap')
-			fs.writeFileSync(wapDest, compile(tree, lang))
+			outputs.push({file: wapDest, content: compile(tree, lang)})
 		} else {
-			fs.writeFileSync(dest, compile(tree, lang))
+			outputs.push({file: dest, content: compile(tree, lang)})
 		}
 	} catch (e) {
 		errorInfo(e, source).forEach(args => console.error(...args))
-		fs.writeFileSync(dest, outputCompilingError(e, source, lang))
-		throw e
+		if (writeErrorToFile) outputs.push({file: dest, content: outputCompilingError(e, source, lang)})
+		else throw e
 	}
+	for (const {file, content} of outputs) fs.writeFileSync(file, content)
 }
 
 
