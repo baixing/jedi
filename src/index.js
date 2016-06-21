@@ -5,6 +5,7 @@ import {compile} from './codegen'
 import errorInfo from './util/error-info'
 import * as fs from 'fs'
 
+// return whether transpile is success
 export const transpile = (source, dest, lang, adaptive, debug) => {
 	try {
 		const config = loadConfig(source)
@@ -19,11 +20,13 @@ export const transpile = (source, dest, lang, adaptive, debug) => {
 		} else {
 			fs.writeFileSync(dest, compile(tree, lang))
 		}
+		return true
 	} catch (e) {
 		errorInfo(e, source).forEach(args => console.error(...args))
 		fs.writeFileSync(dest, outputCompilingError(e, source, lang))
 		throw e
 	}
+	return false
 }
 
 
