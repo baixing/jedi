@@ -1,7 +1,7 @@
 "import dir from '../util/debug'"
 "import string, flattenLines, flattenArray from '../util/ometa-string'"
 "import OutputHTML, OutputXML, OutputXHTML from './output'"
-"module jediRuntime at './php-runtime'"
+"import phpRuntime from './php-runtime'"
 "export PHP5Transpiler, PHP5TranspilerWithDebug"
 
 ometa Beautify {
@@ -15,7 +15,7 @@ ometa Beautify {
 ometa PHP5Transpiler {
 
 	document = [#document [string:filename number number] anything:source undefined topBlock:xs]
-		-> (jediRuntime() + '\n' + flattenLines(xs).join('\n')),
+		-> (phpRuntime() + '\n' + flattenLines(xs).join('\n')),
 
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
 	block = [node*:x] -> x,
