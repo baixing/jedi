@@ -14,15 +14,11 @@ export default function service({base, lang, port}) {
 			f = f.replace(/^\\\\([A-Z])\|/, '$1:')
 			//if (watched.indexOf(path) >= 0)
 			const send = (status, message) => {
+				const s = message + ': ' + f + '\n'
 				res.writeHead(status)
-				res.end(message + ': ' + f + '\n')
-				if (status >= 400) {
-					console.error(message + ': ' + f)
-					console.error()
-				} else {
-					console.info(message + ': ' + f)
-					console.info()
-				}
+				res.end(s)
+				if (status >= 400) console.error(s)
+				else console.info(s)
 			}
 
 			existsFile(f, exists => {
