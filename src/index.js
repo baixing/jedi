@@ -22,6 +22,7 @@ export const transpile = (source, dest, lang, adaptive, debug) => {
 	} catch (e) {
 		errorInfo(e, source).forEach(args => console.error(...args))
 		fs.writeFileSync(dest, outputCompilingError(e, source, lang))
+		throw e
 	}
 }
 
