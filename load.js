@@ -9,6 +9,7 @@ function load(mod) {
 		console.info('jedi development version')
 		require('source-map-support').install()
 		require('babel-register')
+		require('babel-polyfill')
 		require('./lib/ometa-js')
 		return require('./src/' + mod)
 	}
