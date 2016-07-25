@@ -1,0 +1,17 @@
+:use a/b/c
+:d c
+:use a/b/d as D
+:d D
+:use a/b/{e, f as f1, g,}
+:d e.test
+:d f1.test()
+:d g
+:use a/b/* as B
+:d B.test
+:use x
+:d x.test
+:use y as Y
+:d Y.test
+
+:use * as php
+:d php.is_array([])

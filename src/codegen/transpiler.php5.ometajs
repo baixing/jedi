@@ -147,6 +147,8 @@ ometa PHP5Transpiler {
 
 	instruction #external ![]:xs [[#Symbol :x !xs.push(x) saveExternalSymbol(x)]+] :_
 		-> ('// external ' + xs.join(', ') + '\n'),
+	instruction #use [:segments :aliases saveUseSymbols(segments, aliases)] :_
+		-> ('// use ' + segments.join('/') + '/' + (aliases.length > 1 ? '{' + aliases.map(function (x) { return x[0] + (x[1] ? ' as ' + x[1] : '') }).join(', ') + '}' : aliases.map(function (x) { return x[0] + (x[1] ? ' as ' + x[1] : '') }).join() + '\n')),
 
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
@@ -236,9 +238,21 @@ PHP5Transpiler.initialize = function() {
 		if (this._stack[0].externals === undefined) this._stack[0].externals = [symbol]
 		else this._stack[0].externals.push(symbol)
 	}
+	this.saveUseSymbols = function (segments, aliases) {
+		if (this._stack[0].externals === undefined) this._stack[0].externals = []
+		var e = this._stack[0].externals
+		for (var i = 0; i < aliases.length; ++i) {
+			var a = aliases[i]
+			var id = a[0], as = a[1]
+			if (as === undefined) as = id
+			e[as] = segments.concat(id)
+			// console.log('save', as, e[as])
+		}
+	}
 	this.externalSymbol = function(symbol) {
 		for (var i = 0; i < this._stack.length; i++) {
 			var e = this._stack[i].externals || []
+			if (e[symbol]) return '\\' + e[symbol].join('\\')
 			if (e.indexOf(symbol) >= 0) return symbol
 		}
 		throw fail
