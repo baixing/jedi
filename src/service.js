@@ -29,7 +29,8 @@ export default function service({base, lang, port}) {
 				try {
 					lang.forEach(lang => transpile(f, f.replace(/\.jedi$/, '.' + lang), lang))
 				} catch (e) {
-					return send(403, 'jedi probably cannot access directory')
+					if (e.code === 'EACCES') return send(403, 'jedi probably cannot access directory')
+					else return send(500, e.message)
 				}
 				const t1 = Date.now()
 				send(200, 'transpiled in ' + (t1 - t0) + 'ms')
