@@ -169,7 +169,7 @@ ometa PHP5Transpiler {
 		]),
 
 	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
-	fragment :name :_ block:b -> ['//  #' + name, b],
+	fragment :name :_ enterBlock([]) block:b exitBlock -> ['//  #' + name, b],
 	macro :elementPattern paramPattern:parameter enterBlock(parameter) block:body exitBlock:free saveMacro(elementPattern, parameter, body, free)
 		-> ['// define ' + elementPattern],
 
