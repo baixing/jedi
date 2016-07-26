@@ -77,13 +77,27 @@ ometa PlainParser <: OffsideRule {
 	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
 	external_	=	"external" space+ symbol:x (spaces ',' spaces symbol)*:xs spaces	->	[#external, [x].concat(xs)],
 
+	use_	= "use" space+ path_imports:imports -> [#use, imports],
+	path_imports	= (segment:s '/' -> s)*:segments aliases:aliases -> [segments, aliases],
+	segment	= ('.' '.' | '.' | identifier):s -> string(s),
+	aliases	=	'*' alias:as	->	[['*', as]]
+		|	id_alias:x	->	[x]
+		|	'{' spaces id_aliases:xs spaces '}'	->	xs,
+
+	id_aliases	= (id_alias:x spaces comma spaces -> x)*:xs (id_alias:last)? -> (last ? xs.concat([last]) : xs),
+	alias	= spaces "as" spaces identifier:as -> as,
+	id_alias	= spaces identifier:id alias?:as -> [id, as],
+	identifier	= nameChar+:x -> string(x),
+
+
 	instructionPattern	=	import_
 		|	if_ | elseif_ | else_
 		|	for_
 		|	match_ | case_
 		|	let_
 		|	end_
-		|	external_,
+		|	external_
+		| use_,
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
 	instructionName	=	nameChar+:x -> string(x),
 	instructionParam	=	expr,

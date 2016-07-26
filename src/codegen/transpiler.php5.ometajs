@@ -20,15 +20,15 @@ ometa PHP5Transpiler {
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
 	block = [node*:x] -> x,
 
-	position = [string:filename number:line number:col]	-> [filename, line, col],
-	position = [number:line number:col]	-> ['*', line, col], // for compatibility
+	position = [string:filename number:line number:col savePosition(filename, line, col)]	-> [filename, line, col],
+	position = [number:line number:col savePosition('*', line, col)]	-> ['*', line, col], // for compatibility
 
 	ignore	=	[char*:s]	->	string(s), // empty or ignore
 
 	node ignore,
 	node [#closeStartTag] -> this.output.closeStartTag(),
 	node [string:nodeType position:pos apply(nodeType):x] -> this.attachDebugInfo(x, pos),
-	node :unknown -> { throw new Error(unknown) },
+	node :unknown -> { this.error('Unknown', unknown) },
 
 	doctype = [#comment position [outputMethod:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	outputMethod [spaces ("html" spaces? "5"?) spaces] -> ["echo '<!doctype html>', \"\\n\";"],
@@ -58,7 +58,7 @@ ometa PHP5Transpiler {
 	recordItem [#RecordItem trans:key trans:value]	->	(key + ' => ' + value),
 
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
-	call ['.' [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
+	call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol :y]]	-> (isNamespace(x) ? x + y : x + '::' + y),
 	call ['.' (symbol|call):x [#Symbol :y]]	->	(x + '->' + y),
 	call ['.' trans:x [#Symbol :y]]	->	('($_ = ' + x + ') && false ?: $_' + '->' + y),
 	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
@@ -90,11 +90,8 @@ ometa PHP5Transpiler {
 	trans [#String :s :raw]	->	(this.output.convertNewlines("'" + s.replace(/'/g, '\\\'') + "'")),
 	trans [#Tuple [trans*:list]]	->	('(' + list.join(', ') + ')'),
 	trans [#Tuple [tupleItem*:list]]	->	('[' + list.join(', ') + ']'),
-	trans :unknown	-> {
-			var err = new Error('php5-codegen error');
-			err.data = unknown;
-			throw err;
-		},
+
+	trans :unknown	->	{ this.error('UnknownExpression', unknown) },
 
 	comment [:line] -> ["echo '<!-- " + this.output.escapeComment(simpleString(line)) + " -->';"],
 	comment [echoComment*:xs] -> [].concat(
@@ -144,6 +141,8 @@ ometa PHP5Transpiler {
 
 	instruction #external ![]:xs [[#Symbol :x !xs.push(x) saveExternalSymbol(x)]+] :_
 		-> ('// external ' + xs.join(', ') + '\n'),
+	instruction #use [:segments :aliases saveUseSymbols(segments, aliases)] :_
+		-> ('// use ' + segments.join('/') + '/' + (aliases.length > 1 ? '{' + aliases.map(function (x) { return x[0] + (x[1] ? ' as ' + x[1] : '') }).join(', ') + '}' : aliases.map(function (x) { return x[0] + (x[1] ? ' as ' + x[1] : '') }).join() + '\n')),
 
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
@@ -232,13 +231,31 @@ PHP5Transpiler.initialize = function() {
 		return ans
 	}
 	this.saveExternalSymbol = function (symbol) {
-		if (this._stack[0].externals === undefined) this._stack[0].externals = [symbol]
-		else this._stack[0].externals.push(symbol)
+		this.saveUseSymbols([], [[symbol, symbol]])
 	}
-	this.externalSymbol = function(symbol) {
+	this.saveUseSymbols = function (segments, aliases) {
+		if (this._stack[0].externals === undefined) this._stack[0].externals = {}
+		var e = this._stack[0].externals
+		for (var i = 0; i < aliases.length; ++i) {
+			var a = aliases[i]
+			var id = a[0], as = a[1]
+			if (as === undefined) as = id
+			if (id === '*') id = ''
+			if (e[as]) this.error('SymbolConflict', {symbol: as})
+			e[as] = segments.concat(id)
+			// console.log('save', as, e[as])
+		}
+	}
+	this.externalSymbol = function(symbol, allowNamespace) {
 		for (var i = 0; i < this._stack.length; i++) {
 			var e = this._stack[i].externals || []
-			if (e.indexOf(symbol) >= 0) return symbol
+			var result = e[symbol]
+			if (result) {
+				if (!allowNamespace && result[result.length - 1] === '') {
+					this.error('IllegalNamespaceUsage', {symbol: symbol, namespace: result.join('/')})
+				}
+				return '\\' + result.join('\\')
+			}
 		}
 		throw fail
 	}
@@ -296,6 +313,12 @@ PHP5Transpiler.initialize = function() {
 	this.savePosition = function (filename, line, column) {
 		this._currentPosition = [filename, line, column]
 	}
+	this.error = function (name, data) {
+		var err = new Error(name)
+		err.position = this._currentPosition.slice()
+		err.data = data
+		throw err
+	}
 
 	this.output = new OutputHTML()
 
@@ -312,7 +335,7 @@ PHP5Transpiler.initialize = function() {
 				this.output = new OutputXML()
 				break
 			default:
-				throw Error('Unknown output method: ' + method)
+				this.error('UnknownOutputMethod', method)
 		}
 	}
 
@@ -429,4 +452,8 @@ function assignment(binds, body, param) {
 		body,
 		'}, ' + value + ');'
 	]
+}
+
+function isNamespace(s) {
+	return s.endsWith('\\')
 }
