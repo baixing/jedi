@@ -10,7 +10,12 @@
 :d g
 
 :use a/b/* as B
-:d B.test
+:d B.test()
+-- syntax error
+	:d B
+	:d B[1]
+	:d B()
+
 :use x
 :d x.test
 
@@ -19,3 +24,13 @@
 
 :use * as php
 :d php.is_array([])
+
+:external test
+:d test
+:d test()
+:d test.ok
+:d test.ok()
+
+-- syntax error
+	:external test
+	:use a/b/test
