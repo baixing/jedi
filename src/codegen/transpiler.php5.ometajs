@@ -64,6 +64,7 @@ ometa PHP5Transpiler {
 	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
 
 	call [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
+	call [#Call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol 'new']] &[#Tuple :_] trans:y]	->	('(new ' + x + y + ')'),
 	call [#Call (symbol|call):x &[#Tuple :_] trans:y]	->	(x + y),
 	call [#Call (symbol|call):x trans:y]	->	(x + '(' + y + ')'),
 	call [#Call trans:x &[#Tuple :_] trans:y]	->	('($_ = ' + x + ') && false ?: $_' + y),
