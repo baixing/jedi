@@ -60,7 +60,7 @@ ometa PHP5Transpiler {
 	recordItem [#RecordItem trans:key trans:value]	->	(key + ' => ' + value),
 
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
-	call ['.' [#Symbol :s externalSymbol(s):x] [#Symbol :y]]	-> (x + '::' + y),
+	call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol :y]]	-> (isNamespace(x) ? x + y : x + '::' + y),
 	call ['.' expr:x [#Symbol :y]]	->	(x + '->' + y),
 	call ['?.' expr:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
 
@@ -245,14 +245,23 @@ PHP5Transpiler.initialize = function() {
 			var a = aliases[i]
 			var id = a[0], as = a[1]
 			if (as === undefined) as = id
+			if (id === '*') id = ''
+			if (e[as]) this.error('SymbolConflict', {symbol: as})
 			e[as] = segments.concat(id)
 			// console.log('save', as, e[as])
 		}
 	}
-	this.externalSymbol = function(symbol) {
+	this.externalSymbol = function(symbol, allowNamespace) {
 		for (var i = 0; i < this._stack.length; i++) {
 			var e = this._stack[i].externals || []
-			if (e[symbol]) return '\\' + e[symbol].join('\\')
+			var result = e[symbol]
+			if (result) {
+				if (typeof result === 'string') return '\\' + result
+				if (!allowNamespace && result[result.length - 1] === '') {
+					this.error('IllegalNamespaceUsage', {symbol: symbol, namespace: result.join('/')})
+				}
+				return '\\' + result.join('\\')
+			}
 			if (e.indexOf(symbol) >= 0) return symbol
 		}
 		throw fail
@@ -434,4 +443,8 @@ function assignment(binds, body, param) {
 		body,
 		'}, ' + value + ');'
 	]
+}
+
+function isNamespace(s) {
+	return s.endsWith('\\')
 }
