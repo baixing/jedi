@@ -84,7 +84,7 @@ ometa PlainParser <: OffsideRule {
 		|	id_alias:x	->	[x]
 		|	'{' spaces id_aliases:xs spaces '}'	->	xs,
 
-	id_aliases	= (id_alias:x spaces comma spaces -> x)*:xs (id_alias:x)? -> (x ? xs.concat([x]) : xs),
+	id_aliases	= (id_alias:x spaces comma spaces -> x)*:xs (id_alias:last)? -> (last ? xs.concat([last]) : xs),
 	alias	= spaces "as" spaces identifier:as -> as,
 	id_alias	= spaces identifier:id alias?:as -> [id, as],
 	identifier	= nameChar+:x -> string(x),
