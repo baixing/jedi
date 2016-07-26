@@ -1,6 +1,28 @@
-1.0.0 / 2016-07-01
+1.0.0-rc5 / 2016-07-26
 ========================
 
+Features:
+  * `for (key, value, index?, count?) in ...`
+  * `use` directive
+  * `X.new()` for `new X()`
+  * report error in transform phase
+  * extra information when report error
+
+Bug Fixes:
+  * respond 403 forbidden if no permission for writing
+  * fix #63
+  * rethrow error for exit code
+
+Architecture:
+  * travis CI
+  * change to babel features preset
+  * factor out error emit with recent position info in codegen
+  * update deps
+  * output test case name
+
+Documents:
+  * update badges
+  * comment #65
 
 1.0.0-rc4 / 2016-05-27
 ========================
