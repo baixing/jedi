@@ -27,7 +27,7 @@ export default (e, source) => {
 		const spaces = ' '.repeat(String(line).length + 2 + col)
 		showLines.splice(line - startLine, 0,
 			spaces + '^',
-			spaces + '|__ Ooops, ' + errorType + ' at line ' + line + ', column ' + col,
+			spaces + '|__ Ooops, ' + errorType + (e.data ? ' ' + JSON.stringify(e.data) : '') + ' at line ' + line + ', column ' + col,
 			spaces)
 
 		showLines.forEach(l => info.push([l]))
