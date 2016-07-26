@@ -1,5 +1,17 @@
 {
-	"stage": 0,
-	"blacklist": [],
-	"optional": ["runtime"]
+	"presets": ["stage-0"],
+	"plugins": [
+		"transform-es2015-modules-commonjs",
+		"transform-es2015-function-name",
+		"transform-es2015-destructuring",
+		"transform-es2015-parameters",
+		"transform-object-rest-spread",
+		"transform-exponentiation-operator",
+		"syntax-trailing-function-commas",
+		"transform-es2015-generator-return",
+		"transform-async-to-generator",
+		"transform-function-sent",
+		"syntax-async-generators",
+		["transform-regenerator", {"generators": false, "async-functions": false, "async-generators": true}]
+	]
 }

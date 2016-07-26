@@ -15,7 +15,7 @@ export const skip = nodeTuple => {
 	}
 }
 
-export const hasChildNodes = nodeType => {
+export function hasChildNodes(nodeType) {
 	switch (nodeType) {
 		case 'document':
 		case 'fragment':
@@ -24,6 +24,18 @@ export const hasChildNodes = nodeType => {
 		case 'instruction':
 		case 'inject':
 		case 'macro':
+			return true
+		default:
+			return false
+	}
+}
+
+export function isErrorNode(nodeType) {
+	switch (nodeType) {
+		case 'MixedWhitespace':
+		case 'Offside':
+		case 'Section':
+		case 'Error':
 			return true
 		default:
 			return false

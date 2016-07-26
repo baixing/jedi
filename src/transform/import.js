@@ -29,6 +29,8 @@ import {existsSync} from 'fs'
 import {parseFile} from '../parse'
 import {query} from '../util/query'
 
+import reportError from './report-error'
+
 const loadTree = name => {
 	let path, frag
 	const i = name.lastIndexOf('#')
@@ -39,6 +41,7 @@ const loadTree = name => {
 
 	if (existsSync(path + '.jedi')) path += '.jedi'
 	let tree = parseFile(path)
+	reportError(tree)
 	tree = doImport(tree)
 	if (!frag) {
 		tree[0] = 'fragment'

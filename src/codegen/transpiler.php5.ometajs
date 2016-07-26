@@ -1,7 +1,7 @@
 "import dir from '../util/debug'"
 "import string, flattenLines, flattenArray from '../util/ometa-string'"
 "import OutputHTML, OutputXML, OutputXHTML from './output'"
-"module jediRuntime at './php-runtime'"
+"import phpRuntime from './php-runtime'"
 "export PHP5Transpiler, PHP5TranspilerWithDebug"
 
 ometa Beautify {
@@ -15,7 +15,7 @@ ometa Beautify {
 ometa PHP5Transpiler {
 
 	document = [#document [string:filename number number] anything:source undefined topBlock:xs]
-		-> (jediRuntime() + '\n' + flattenLines(xs).join('\n')),
+		-> (phpRuntime() + '\n' + flattenLines(xs).join('\n')),
 
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
 	block = [node*:x] -> x,
@@ -27,8 +27,6 @@ ometa PHP5Transpiler {
 
 	node ignore,
 	node [#closeStartTag] -> this.output.closeStartTag(),
-	node [(#MixedWhitespace | #Offside | #Section | #Error):syntaxError position:pos anything*:data]
-		-> { this.error(syntaxError, data) },
 	node [string:nodeType position:pos apply(nodeType):x] -> this.attachDebugInfo(x, pos),
 	node :unknown -> { this.error('Unknown', unknown) },
 
@@ -61,14 +59,15 @@ ometa PHP5Transpiler {
 
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol :y]]	-> (isNamespace(x) ? x + y : x + '::' + y),
-	call ['.' expr:x [#Symbol :y]]	->	(x + '->' + y),
-	call ['?.' expr:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
+	call ['.' (symbol|call):x [#Symbol :y]]	->	(x + '->' + y),
+	call ['.' trans:x [#Symbol :y]]	->	('($_ = ' + x + ') && false ?: $_' + '->' + y),
+	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
 
-	call [#Call [#Symbol :s externalSymbol(s):x] &[#Tuple :_] trans:y]	->	(x + y),
-	call [#Call [#Symbol :s externalSymbol(s):x] trans:y]	->	(x + '(' + y + ')'),
 	call [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
-	call [#Call trans:x &[#Tuple :_] trans:y]	->	(x + y),
-	call [#Call trans:x trans:y]	->	(x + '(' + y + ')'),
+	call [#Call (symbol|call):x &[#Tuple :_] trans:y]	->	(x + y),
+	call [#Call (symbol|call):x trans:y]	->	(x + '(' + y + ')'),
+	call [#Call trans:x &[#Tuple :_] trans:y]	->	('($_ = ' + x + ') && false ?: $_' + y),
+	call [#Call trans:x trans:y]	->	('($_ = ' + x + ') && false ?: $_(' + y + ')'),
 
 	range ['...' trans:x trans:y]	->	('(range(' + x + ', ' + y + '))'),
 	range ['..<' trans:x trans:y]	->	('(range(' + x + ', ' + y + ' - 1))'),
@@ -92,12 +91,7 @@ ometa PHP5Transpiler {
 	trans [#Tuple [trans*:list]]	->	('(' + list.join(', ') + ')'),
 	trans [#Tuple [tupleItem*:list]]	->	('[' + list.join(', ') + ']'),
 
-	trans [#Error position:pos]	-> { this.error('IllegalExpression') },
 	trans :unknown	->	{ this.error('UnknownExpression', unknown) },
-
-
-	//trans [trans*:x] -> ( x ),
-
 
 	comment [:line] -> ["echo '<!-- " + this.output.escapeComment(simpleString(line)) + " -->';"],
 	comment [echoComment*:xs] -> [].concat(
@@ -164,6 +158,8 @@ ometa PHP5Transpiler {
 	instruction #end :x :_	-> ('// end ' + x),
 
 	bindingPattern [#Symbol :v] -> [[v], '$' + v],
+	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value] [#Symbol :index] [#Symbol :count]]] -> [[key, value, index, count], '$' + key + ' => $' + value],
+	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value] [#Symbol :index]]] -> [[key, value, index], '$' + key + ' => $' + value],
 	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
 	bindingPattern [#ListPattern [bindingPattern*:bindings]]
 		-> ([
@@ -383,8 +379,24 @@ function echoLines(lines) {
 
 function translateMultiLoops(binds, b) {
 	if (binds.length > 0) {
+		var lines = []
 		var bind = binds.shift();
-		return ["foreach (" + bind[1] + " as " + bind[0][1] + ") {", translateMultiLoops(binds,b), "}"]
+		var bindVars = bind[0][0]
+		var indexVar, countVar
+		if (bindVars.length > 2) {
+			indexVar = '$' + bindVars[2]
+			lines.push(indexVar + ' = 0;')
+			if (bindVars.length > 3) {
+				countVar = '$' + bindVars[3]
+				lines.push(countVar + ' = 0;')
+			}
+		}
+		lines.push("foreach (" + bind[1] + " as " + bind[0][1] + ") {")
+		if (countVar) lines.push('++' + countVar + ';')
+		lines.push(translateMultiLoops(binds, b))
+		if (indexVar) lines.push('++' + indexVar + ';')
+		lines.push('}')
+		return lines
 	}
 	return b;
 }
