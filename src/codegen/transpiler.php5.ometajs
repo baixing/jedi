@@ -20,17 +20,17 @@ ometa PHP5Transpiler {
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
 	block = [node*:x] -> x,
 
-	position = [string:filename number:line number:col]	-> [filename, line, col],
-	position = [number:line number:col]	-> ['*', line, col], // for compatibility
+	position = [string:filename number:line number:col savePosition(filename, line, col)]	-> [filename, line, col],
+	position = [number:line number:col savePosition('*', line, col)]	-> ['*', line, col], // for compatibility
 
 	ignore	=	[char*:s]	->	string(s), // empty or ignore
 
 	node ignore,
 	node [#closeStartTag] -> this.output.closeStartTag(),
 	node [(#MixedWhitespace | #Offside | #Section | #Error):syntaxError position:pos anything*:data]
-		-> { var err = new Error(syntaxError); err.position = pos; err.data = data; throw err; },
+		-> { this.error(syntaxError, data) },
 	node [string:nodeType position:pos apply(nodeType):x] -> this.attachDebugInfo(x, pos),
-	node :unknown -> { throw new Error(unknown) },
+	node :unknown -> { this.error('Unknown', unknown) },
 
 	doctype = [#comment position [outputMethod:x]] -> x | -> ["echo '<!doctype html>', \"\\n\";"],
 	outputMethod [spaces ("html" spaces? "5"?) spaces] -> ["echo '<!doctype html>', \"\\n\";"],
@@ -91,9 +91,9 @@ ometa PHP5Transpiler {
 	trans [#String :s :raw]	->	(this.output.convertNewlines("'" + s.replace(/'/g, '\\\'') + "'")),
 	trans [#Tuple [trans*:list]]	->	('(' + list.join(', ') + ')'),
 	trans [#Tuple [tupleItem*:list]]	->	('[' + list.join(', ') + ']'),
-	trans [#Error position:pos]
-			-> { var err = new Error('TranspilingError'); err.position = pos; throw err; },
-	trans :unknown	->	['/*', JSON.stringify(unknown), '*/'],
+
+	trans [#Error position:pos]	-> { this.error('IllegalExpression') },
+	trans :unknown	->	{ this.error('UnknownExpression', unknown) },
 
 
 	//trans [trans*:x] -> ( x ),
@@ -311,6 +311,12 @@ PHP5Transpiler.initialize = function() {
 	this.savePosition = function (filename, line, column) {
 		this._currentPosition = [filename, line, column]
 	}
+	this.error = function (name, data) {
+		var err = new Error(name)
+		err.position = this._currentPosition.slice()
+		err.data = data
+		throw err
+	}
 
 	this.output = new OutputHTML()
 
@@ -327,7 +333,7 @@ PHP5Transpiler.initialize = function() {
 				this.output = new OutputXML()
 				break
 			default:
-				throw Error('Unknown output method: ' + method)
+				this.error('UnknownOutputMethod', method)
 		}
 	}
 
