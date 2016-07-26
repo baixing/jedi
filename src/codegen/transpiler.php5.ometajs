@@ -235,7 +235,7 @@ PHP5Transpiler.initialize = function() {
 		this.saveUseSymbols([], [[symbol, symbol]])
 	}
 	this.saveUseSymbols = function (segments, aliases) {
-		if (this._stack[0].externals === undefined) this._stack[0].externals = {}
+		if (this._stack[0].externals === undefined) this._stack[0].externals = Object.create(null)
 		var e = this._stack[0].externals
 		for (var i = 0; i < aliases.length; ++i) {
 			var a = aliases[i]
@@ -249,7 +249,7 @@ PHP5Transpiler.initialize = function() {
 	}
 	this.externalSymbol = function(symbol, allowNamespace) {
 		for (var i = 0; i < this._stack.length; i++) {
-			var e = this._stack[i].externals || []
+			var e = this._stack[i].externals || Object.create(null)
 			var result = e[symbol]
 			if (result) {
 				if (!allowNamespace && result[result.length - 1] === '') {
