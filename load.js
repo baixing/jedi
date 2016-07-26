@@ -1,7 +1,7 @@
 module.exports = load
 
 function load(mod) {
-	if (/[/\\]node_modules[/\\]jedi$/.test(__dirname)) {
+	if (/[/\\]node_modules[/\\]jedi$/.test(__dirname) || process.env.PROD) {
 		require('babel-polyfill')
 		require('./lib/ometa-js')
 		return require('./lib/' + mod)
