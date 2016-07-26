@@ -141,30 +141,30 @@ exports.PHP5Transpiler =
 				]
 			]
 
-		'binding of a named tuple':
-			input: [
-				[
-					'binding',
-					[ 1, 1 ],
-					null,
-					[
-						'Tuple',
-						[
-							[
-								'Mapping',
-								['Symbol', 'name'],
-								['String', 'hax']
-							],
-							[
-								'Mapping',
-								['Symbol', 'age'],
-								['Number', 18]
-							]
-						]
-					],
-					[]
-				]
-			]
+		# 'binding of a named tuple':
+		# 	input: [
+		# 		[
+		# 			'binding',
+		# 			[ 1, 1 ],
+		# 			null,
+		# 			[
+		# 				'Tuple',
+		# 				[
+		# 					[
+		# 						'Mapping',
+		# 						['Symbol', 'name'],
+		# 						['String', 'hax']
+		# 					],
+		# 					[
+		# 						'Mapping',
+		# 						['Symbol', 'age'],
+		# 						['Number', 18]
+		# 					]
+		# 				]
+		# 			],
+		# 			[]
+		# 		]
+		# 	]
 
 		'single quot text':
 			input: [
