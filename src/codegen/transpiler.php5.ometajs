@@ -235,8 +235,7 @@ PHP5Transpiler.initialize = function() {
 		return ans
 	}
 	this.saveExternalSymbol = function (symbol) {
-		if (this._stack[0].externals === undefined) this._stack[0].externals = [symbol]
-		else this._stack[0].externals.push(symbol)
+		this.saveUseSymbols([], [[symbol, symbol]])
 	}
 	this.saveUseSymbols = function (segments, aliases) {
 		if (this._stack[0].externals === undefined) this._stack[0].externals = []
