@@ -238,7 +238,7 @@ PHP5Transpiler.initialize = function() {
 		this.saveUseSymbols([], [[symbol, symbol]])
 	}
 	this.saveUseSymbols = function (segments, aliases) {
-		if (this._stack[0].externals === undefined) this._stack[0].externals = []
+		if (this._stack[0].externals === undefined) this._stack[0].externals = {}
 		var e = this._stack[0].externals
 		for (var i = 0; i < aliases.length; ++i) {
 			var a = aliases[i]
@@ -255,13 +255,11 @@ PHP5Transpiler.initialize = function() {
 			var e = this._stack[i].externals || []
 			var result = e[symbol]
 			if (result) {
-				if (typeof result === 'string') return '\\' + result
 				if (!allowNamespace && result[result.length - 1] === '') {
 					this.error('IllegalNamespaceUsage', {symbol: symbol, namespace: result.join('/')})
 				}
 				return '\\' + result.join('\\')
 			}
-			if (e.indexOf(symbol) >= 0) return symbol
 		}
 		throw fail
 	}
