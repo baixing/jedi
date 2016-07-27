@@ -8,8 +8,6 @@ import reportError	from './report-error'
 export default (tree, show = []) => {
 	if (show[0]) dir(tree)
 
-	reportError(tree)
-
 	console.time('transform 1')
 	tree = doImport(tree)
 	console.timeEnd('transform 1')
