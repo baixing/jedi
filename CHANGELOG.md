@@ -4,6 +4,7 @@
 Features:
   * `for (key, value, index?, count?) in ...`
   * `use` directive
+  * report duplicated error for `external`/`use` directive
   * `X.new()` for `new X()`
   * report error in transform phase
   * extra information when report error
@@ -15,7 +16,7 @@ Bug Fixes:
 
 Architecture:
   * travis CI
-  * change to babel features preset
+  * change to babel es2015 preset
   * factor out error emit with recent position info in codegen
   * update deps
   * output test case name
