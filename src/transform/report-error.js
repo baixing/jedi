@@ -2,9 +2,7 @@ import {isErrorNode}	from '../util/node'
 import traverse	from '../util/traverse'
 
 export default function reportError(tree) {
-	return tree::traverse(node => {
-		checkError(node)
-	})
+	return tree::traverse(checkError)
 }
 
 function checkError({nodeType, position, data}) {
