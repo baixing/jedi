@@ -255,7 +255,7 @@ PHP5Transpiler.initialize = function() {
 				if (!allowNamespace && result[result.length - 1] === '') {
 					this.error('IllegalNamespaceUsage', {symbol: symbol, namespace: result.join('/')})
 				}
-				return '\\' + result.join('\\')
+				return result.join('\\')
 			}
 		}
 		throw fail
