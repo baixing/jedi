@@ -15,7 +15,7 @@ export default (e, source) => {
 		])
 		info.push([])
 
-		const lines = readFileSync(filename === '*' ? source : filename).toString().split(/\r?\n/)
+		const lines = readFileSync(filename === '*' ? source : filename, 'utf-8').split(/\r?\n/)
 		lines[lines.length - 1] += '\u{1F51A}'
 
 		const startLine = Math.max(e.position[1] - 8, 0),
