@@ -1,4 +1,4 @@
-1.0.0-rc5 / 2016-07-26
+1.0.0-rc5 / 2016-07-28
 ========================
 
 Features:
@@ -8,6 +8,7 @@ Features:
   * `X.new()` for `new X()`
   * report error in transform phase
   * extra information when report error
+  * `/--version` for jedi-transpiler-service
 
 Bug Fixes:
   * respond 403 forbidden if no permission for writing
