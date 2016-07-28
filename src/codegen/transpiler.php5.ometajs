@@ -169,7 +169,7 @@ ometa PHP5Transpiler {
 		]),
 
 	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
-	fragment :name :_ enterBlock([]) block:b exitBlock -> ['//  #' + name, b],
+	fragment :name :_ enterFragmentBlock(name) block:b exitFragmentBlock -> ['//  #' + name, b],
 	macro :elementPattern paramPattern:parameter enterBlock(parameter) block:body exitBlock:free saveMacro(elementPattern, parameter, body, free)
 		-> ['// define ' + elementPattern],
 
@@ -209,6 +209,13 @@ PHP5Transpiler.initialize = function() {
 		var needImport = this._stack[0].needImport || []
 		this._stack.shift()
 		return needImport
+	}
+	this.enterFragmentBlock = function (name) {
+		this.enterBlock([])
+		this._stack[0].fragmentName = name
+	}
+	this.exitFragmentBlock = function () {
+		return this.exitBlock()
 	}
 	this.resolve = function(symbol) {
 		ans = '';
@@ -262,8 +269,14 @@ PHP5Transpiler.initialize = function() {
 	}
 
 	this.saveMacro = function(elementPattern, parameter, body, free) {
-		if (this._stack[0].macros === undefined) this._stack[0].macros = []
-		this._stack[0].macros.push([elementPattern, parameter, body, free])
+		var i = 0, scope
+		do {
+			scope = this._stack[i]
+			if (scope.fragmentName && scope.fragmentName.indexOf('#') >= 0) continue
+			else break
+		} while (i++ < this._stack.length)
+		if (scope.macros === undefined) scope.macros = []
+		scope.macros.push([elementPattern, parameter, body, free])
 	}
 	this.elementOutput = function (tag, cls, id, bind, children, body, startT, endT, param) {
 		if (bind === undefined) return [startT, body, endT]
