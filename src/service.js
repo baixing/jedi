@@ -3,6 +3,7 @@ import {parse as parseURL} from 'url'
 import {join as joinPath} from 'path'
 import {stat} from 'fs'
 import {transpile} from './index'
+import pkg from '../package'
 
 export default function service({base, lang, port}) {
 	//var watched = []
@@ -10,6 +11,12 @@ export default function service({base, lang, port}) {
 	httpServer((req, res) => {
 
 		if (req.method === 'GET') {
+			if (req.url === '/--version') {
+				res.writeHead(200)
+				res.end(pkg.version)
+				return
+			}
+
 			let f = joinPath(base, parseURL(req.url).pathname)
 			f = f.replace(/^\\\\([A-Z])\|/, '$1:')
 			//if (watched.indexOf(path) >= 0)
