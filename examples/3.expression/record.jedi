@@ -7,3 +7,6 @@
 		= record.y
 		= record.z
 		= record.ok
+
+:let x = {['a-b']: 'hello'}
+	:d x['a-b']

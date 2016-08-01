@@ -53,7 +53,7 @@ ometa PHP5Transpiler {
 	stringLiteral [#String :s]	->	("'" + s.replace(/'/g, "\\'") + "'"),
 	templateLiteral [#Quasi undefined [trans*:list]]	->	('(' + list.join(') . (') + ')'),
 	listLiteral [#List [expr*:list]]	->	('[' + list.join(', ') + ']'),
-	recordLiteral [#Record [recordItem*:list]]	->	('(object)[' + list.join(', ') + ']'),
+	recordLiteral [#Record [recordItem*:list]]	->	('new ArrayObject([' + list.join(', ') + '], 2)'),
 	recordItem [#RecordItem string:s trans:value]	->	("'" + s + "' => " + value),
 	recordItem [#RecordItem trans:key trans:value]	->	(key + ' => ' + value),
 
