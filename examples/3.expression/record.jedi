@@ -10,3 +10,6 @@
 
 :let x = {['a-b']: 'hello'}
 	:d x['a-b']
+
+:let x = {a-b: 'hello'}
+	:d x.a-b

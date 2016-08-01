@@ -59,9 +59,9 @@ ometa PHP5Transpiler {
 
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol :y]]	-> (isNamespace(x) ? x + y : x + '::' + y),
-	call ['.' (symbol|call):x [#Symbol :y]]	->	(x + '->' + y),
-	call ['.' trans:x [#Symbol :y]]	->	('($_ = ' + x + ') && false ?: $_' + '->' + y),
-	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + y + ' : null)'),
+	call ['.' (symbol|call):x [#Symbol :y]]	->	(x + '->' + phpName(y)),
+	call ['.' trans:x [#Symbol :y]]	->	('($_ = ' + x + ') && false ?: $_' + '->' + phpName(y)),
+	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + phpName(y) + ' : null)'),
 
 	call [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
 	call [#Call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol 'new']] &[#Tuple :_] trans:y]	->	('(new ' + x + y + ')'),
@@ -158,10 +158,10 @@ ometa PHP5Transpiler {
 	instruction #d trans:x :_	->	('var_dump(' + x + ');'),
 	instruction #end :x :_	-> ('// end ' + x),
 
-	bindingPattern [#Symbol :v] -> [[v], '$' + v],
-	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value] [#Symbol :index] [#Symbol :count]]] -> [[key, value, index, count], '$' + key + ' => $' + value],
-	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value] [#Symbol :index]]] -> [[key, value, index], '$' + key + ' => $' + value],
-	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], '$' + key + ' => $' + value],
+	bindingPattern [#Symbol :v] -> [[v], phpVar(v)],
+	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value] [#Symbol :index] [#Symbol :count]]] -> [[key, value, index, count], phpVar(key) + ' => ' + phpVar(value)],
+	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value] [#Symbol :index]]] -> [[key, value, index], phpVar(key) + ' => ' + phpVar(value)],
+	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], phpVar(key) + ' => ' + phpVar(value)],
 	bindingPattern [#ListPattern [bindingPattern*:bindings]]
 		-> ([
 			bindings.reduce(function (a, b) { return a.concat(b[0]) }, []),
@@ -221,14 +221,14 @@ PHP5Transpiler.initialize = function() {
 		ans = '';
 		for (var i = 0; i < this._stack.length; i++) {
 			if (this._stack[i].indexOf(symbol) >= 0)  {
-				var ans = '$' + symbol
+				var ans = phpVar(symbol)
 				var importSymbol = symbol
 				var level = i
 				break
 			}
 		}
 		if (ans == '') {
-			ans = '$data->' + symbol
+			ans = '$data->' + phpName(symbol)
 			importSymbol = 'data'
 			var level = i
 		}
@@ -398,10 +398,10 @@ function translateMultiLoops(binds, b) {
 		var bindVars = bind[0][0]
 		var indexVar, countVar
 		if (bindVars.length > 2) {
-			indexVar = '$' + bindVars[2]
+			indexVar = phpVar(bindVars[2])
 			lines.push(indexVar + ' = 0;')
 			if (bindVars.length > 3) {
-				countVar = '$' + bindVars[3]
+				countVar = phpVar(bindVars[3])
 				lines.push(countVar + ' = 0;')
 			}
 		}
@@ -427,13 +427,13 @@ function unique(param) {
 	return result
 }
 
-function phpVariable(param) {
-	return '$' + param
+function phpVar(param) {
+	return '$' + phpName(param)
 }
 
 function getImportString(param) {
 	var result = unique(param)
-	result = result.map(phpVariable)
+	result = result.map(phpVar)
 	return param.length > 0 ? ' use (' + result.join(',') + ')' : ''
 }
 
@@ -470,4 +470,8 @@ function assignment(binds, body, param) {
 
 function isNamespace(s) {
 	return s.endsWith('\\')
+}
+
+function phpName(s) {
+	return /^[a-z_\x7f-\xff][a-z0-9_\x7f-\xff]*$/i.test(s) ? s : "{'" + s + "'}"
 }
