@@ -113,9 +113,6 @@ ometa PHP5Transpiler {
 	textLine string:s	->	("'" + this.output.escapeText(simpleString(s)) + "', \"\\n\""),
 	echoTemplateString []	->	'',
 	echoTemplateString [trans+:exprList]	->	('echo ' + this.output.phpEscapeText('(' + exprList.join(') . (') + ')') + ';'),
-	//	-> dom.text(lines),
-	echoTemplateStringForAttr []	->	'',
-	echoTemplateStringForAttr [trans+:exprList]	->	('echo ' + this.output.phpAttrValue('(' + exprList.join(') . (') + ')') + ';'),
 
 	element [:tag :cls :id] undefined
 		{this.output.startTag(tag, cls, id)}:startT
@@ -134,7 +131,6 @@ ometa PHP5Transpiler {
 	attribute :name undefined	->	["echo ' " + name + "';"],
 	attribute :name :op undefined	->	["echo ' " + name + "';"],
 	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + this.output.attrValue(simpleString(s)) + "\"';"],
-	attribute :name :op [#Quasi undefined echoTemplateStringForAttr:line] -> ["echo ' " + name + '="' + "';",  line, "echo '\"';"],
 	attribute :name :op trans:exp -> ["echo jedi_runtime_attribute('" + name + "', " + exp + ");"],
 
 	binding :_ trans:expr [] -> ['echo ' + this.output.phpEscapeText(expr) + ';'],
