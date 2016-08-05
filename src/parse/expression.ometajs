@@ -44,7 +44,10 @@ ometa Expression {
 		(interpolation | stringLiteralSection)*:s
 		'"'
 		-> [#Quasi, tag, s],
-	interpolation = '{' expression:expr '}' -> expr,
+
+	interpolation	= '\\' '(' expression:expr ')'
+		| '{' expression:expr '}'
+		-> expr,
 	stringLiteralSection = <(escapedChar | ~('"' | '{') char)+:cooked>:raw
 		-> [#String, cooked.join(''), raw],
 
