@@ -59,14 +59,14 @@ ometa PHP5Transpiler {
 
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
 	call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol :y]]	-> (isNamespace(x) ? x + y : x + '::' + y),
-	call ['.' (symbol|call):x [#Symbol :y]]	->	(x + '->' + phpName(y)),
+	call ['.' (memberSymbol|call):x [#Symbol :y]]	->	(x + '->' + phpName(y)),
 	call ['.' trans:x [#Symbol :y]]	->	('($_ = ' + x + ') && false ?: $_' + '->' + phpName(y)),
 	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + phpName(y) + ' : null)'),
 
 	call [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
 	call [#Call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol 'new']] &[#Tuple :_] trans:y]	->	('(new ' + x + y + ')'),
-	call [#Call (symbol|call):x &[#Tuple :_] trans:y]	->	(x + y),
-	call [#Call (symbol|call):x trans:y]	->	(x + '(' + y + ')'),
+	call [#Call (callSymbol|call):x &[#Tuple :_] trans:y]	->	(x + y),
+	call [#Call (callSymbol|call):x trans:y]	->	(x + '(' + y + ')'),
 	call [#Call trans:x &[#Tuple :_] trans:y]	->	('($_ = ' + x + ') && false ?: $_' + y),
 	call [#Call trans:x trans:y]	->	('($_ = ' + x + ') && false ?: $_(' + y + ')'),
 
@@ -80,6 +80,13 @@ ometa PHP5Transpiler {
 	symbol [#Symbol '*']	->	'$context',
 	symbol [#Symbol :s externalSymbol(s):x]	->	x,
 	symbol [#Symbol :s resolve(s):x]	->	x,
+
+	callSymbol [#Symbol :s externalSymbol(s):x]	->	x,
+	callSymbol [#Symbol :s resolve(s):x warnMissingUse(s)]	->	x,
+
+	memberSymbol [#Symbol '*']	->	'$context',
+	memberSymbol [#Symbol :s externalSymbol(s):x]	->	x,
+	memberSymbol [#Symbol :s resolve(s):x !{if (x.startsWith('$data->') && startsWithUpperCase(s)) this.warnMissingUse(s) }]	->	x,
 
 	ternary [#Ternary expr:x expr:y undefined]	->	('(' + x + ') ? (' + y + ') : null'),
 	ternary [#Ternary expr:x expr:y expr:z]	->	('(' + x + ') ? (' + y + ') : (' + z + ')'),
@@ -331,6 +338,9 @@ PHP5Transpiler.initialize = function() {
 		err.data = data
 		throw err
 	}
+	this.warnMissingUse = function (symbol) {
+		this.error('missing use/external for symbol "' + symbol + '"?')
+	}
 
 	this.output = new OutputHTML()
 
@@ -472,4 +482,8 @@ function isNamespace(s) {
 
 function phpName(s) {
 	return /^[a-z_\x7f-\xff][a-z0-9_\x7f-\xff]*$/i.test(s) ? s : "{'" + s + "'}"
+}
+
+function startsWithUpperCase(s) {
+	return s >= 'A' && s < '['
 }
