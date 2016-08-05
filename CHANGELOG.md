@@ -1,4 +1,4 @@
-1.0.0-rc5 / 2016-07-28
+1.0.0-rc5 / 2016-08-05
 ========================
 
 Features:
@@ -9,11 +9,17 @@ Features:
   * report error in transform phase
   * extra information when report error
   * `/--version` for jedi-transpiler-service
+  * allow access record using `[]` operator
+  * warn missing use/external (assume function calls or titlecase classes)
+  * experimental swift-like interpolation syntax
 
 Bug Fixes:
   * respond 403 forbidden if no permission for writing
   * fix #63
   * rethrow error for exit code
+  * ensure valid PHP name
+  * fix #72
+
 
 Architecture:
   * travis CI
