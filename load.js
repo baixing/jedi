@@ -1,14 +1,15 @@
 module.exports = load
 
 function load(mod) {
-	if (/[/\\]node_modules[/\\]jedi$/.test(__dirname)) {
-		require('babel/polyfill')
+	if (/[/\\]node_modules[/\\]jedi$/.test(__dirname) || process.env.PROD) {
+		require('babel-polyfill')
 		require('./lib/ometa-js')
 		return require('./lib/' + mod)
 	} else { // dev env
 		console.info('jedi development version')
 		require('source-map-support').install()
-		require('babel/register')
+		require('babel-register')
+		require('babel-polyfill')
 		require('./lib/ometa-js')
 		return require('./src/' + mod)
 	}

@@ -33,7 +33,7 @@ export default function sortNodes(tree) {
 							macros.push(node)
 							break
 						}
-					case 'fragment':
+					case 'fragment': // see https://github.com/baixing/jedi/issues/65
 						if (node.nodeName.slice(-1) === '#') {
 							skips.push(node)
 							break

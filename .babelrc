@@ -1,5 +1,3 @@
 {
-	"stage": 0,
-	"blacklist": [],
-	"optional": ["runtime"]
+	"presets": ["stage-0", "es2015"]
 }

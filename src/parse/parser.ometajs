@@ -77,18 +77,17 @@ ometa PlainParser <: OffsideRule {
 	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
 	external_	=	"external" space+ symbol:x (spaces ',' spaces symbol)*:xs spaces	->	[#external, [x].concat(xs)],
 
-	/*
-	alias	= symbol:x space+ "as" space+ symbol:y	->	[x, y]
-		|	symbol:x	->	[x, x],
-	use_ = "use" spaces '{' alias:x (spaces ',' spaces alias)*:xs ',' '}' "from" space+ <Expression.path>:path,
+	use_	= "use" space+ path_imports:imports -> [#use, imports],
+	path_imports	= (segment:s '/' -> s)*:segments aliases:aliases -> [segments, aliases],
+	segment	= ('.' '.' | '.' | identifier):s -> string(s),
+	aliases	=	'*' alias:as	->	[['*', as]]
+		|	id_alias:x	->	[x]
+		|	'{' spaces id_aliases:xs spaces '}'	->	xs,
 
-	use_	=	"use" spaces path:p space+ "as" space+ symbol '{' alias:x (spaces ',' spaces alias)*:xs ',' '}' "from" space+ <Expression.path>:path,
-
-	#use a/b => import b from 'a/b'  /  use \a\b
-	#use ./a/b as b1 => import b1 from './a/b'  / use a\b
-	#use a/b/* as b1 => import * as b1 from 'a/b'
-	#use a/b/{c as c1, d}
-	*/
+	id_aliases	= (id_alias:x spaces comma spaces -> x)*:xs (id_alias:last)? -> (last ? xs.concat([last]) : xs),
+	alias	= spaces "as" spaces identifier:as -> as,
+	id_alias	= spaces identifier:id alias?:as -> [id, as],
+	identifier	= nameChar+:x -> string(x),
 
 	instructionPattern	=	import_
 		|	if_ | elseif_ | else_
@@ -96,7 +95,8 @@ ometa PlainParser <: OffsideRule {
 		|	match_ | case_
 		|	let_
 		|	end_
-		|	external_,
+		|	external_
+		| use_,
 	instructionPattern	=	instructionName:name spaces instructionParam:param spaces	->	[name, param],
 	instructionName	=	nameChar+:x -> string(x),
 	instructionParam	=	expr,

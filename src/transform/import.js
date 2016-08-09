@@ -1,17 +1,13 @@
 import Debug from 'debug'
 const debug = Debug('transform')
 import {inspect} from 'util'
-
 import traverse from '../util/traverse'
+
+import attachFilename from './attach-filename'
+import reportError from './report-error'
 export default function doImport(document) {
+	document = reportError(attachFilename(document))
 	return document::traverse(node => {
-		const {nodeType, position: [path]} = node
-		if (nodeType !== 'document') throw new Error()
-		node.childNodes = node.childNodes::traverse(({nodeType, position}) => {
-			if (nodeType !== 'skip' && position.length === 2) position.unshift(path)
-		}, undefined, true)
-		return false
-	})::traverse(node => {
 		const {nodeType, position: [path], nodeName, nodeValue, childNodes} = node
 		if (nodeType === 'instruction' && nodeName === 'import') {
 			let tree = loadTree(resolve(nodeValue, path))
@@ -20,6 +16,7 @@ export default function doImport(document) {
 		}
 	}, 'post')
 }
+
 
 import {resolve as resolvePath} from 'url'
 const resolve = (name, referrer) => resolvePath(referrer, name)

@@ -96,7 +96,7 @@ class Output {
 	}
 	startTag(tag, cls, id) {
 		this.lastTag = tag
-		cls = cls.filter(ignorePsuedoClass)
+		if (cls) cls = cls.filter(ignorePsuedoClass)
 		return echo(
 			'<', tag,
 			cls.length > 0 ? ' class="' + cls.join(' ') + '"' : '',

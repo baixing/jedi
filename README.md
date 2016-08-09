@@ -7,8 +7,11 @@ inspired by
 and many others. It's still in beta phase but we already use it in
 production (http://m.baixing.com/) for several years.
 
-[![NPM version](https://badge.fury.io/js/jedi.png)](http://badge.fury.io/js/jedi)
-[![Dep status](https://david-dm.org/baixing/jedi.png)](https://david-dm.org/baixing/jedi)
+[![NPM version][npm-image]][npm-url]
+[![Build status][travis-image]][travis-url]
+[![Downloads][downloads-image]][npm-url]
+[![Dependencies status][deps-image]][deps-url]
+
 
 ### Install ###
 
@@ -17,23 +20,23 @@ production (http://m.baixing.com/) for several years.
 ### Usage ###
 
 Compile to php:
-```jedi example.jedi php```
+```sh
+jedi example.jedi php
+```
+
+Compile and run:
+```sh
+jediphp example
+```
 
 Watch changes and auto compiling:
-```jedi -w example.jedi php```
+```sh
+jedi -w example.jedi php
+```
 
 ### Template Syntax ###
 
 See [examples](https://github.com/baixing/jedi/tree/master/examples)
-
-### Known major bugs and limitations for 1.0 milestone
-
-0. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not fully implemented
-
-0. only very basic support of import instruction
-
-0. string concat and some other expression operators are not implemented
-
 
 ### Build system
 
@@ -56,19 +59,27 @@ which adjust some details and add [CMUI](https://github.com/CMUI/CMUI) keywords.
 
 See https://github.com/CyanSalt/Sublime-Jedi
 
-#### Others ####
+#### Vim ####
 
-Planned:
+See https://github.com/HerringtonDarkholme/jedi-syntax
 
-1. Code Browser, jEdit
-2. NetBeans
-3. CodeMirror, ACE
+
+### Known major bugs and limitations for 1.0 milestone
+
+0. subtemplate fragments (which combine the power of Jade's mixin and block feature) is not fully implemented
+
+0. importing with parameters is not implemented
+
+0. destructuring is not implemented
+
+0. quantifiers is not fully implemented
+
 
 ### Copyright & License ###
 
    Copyright 2012, 2013 HE Shi-Jun
 
-   Copyright 2014, 2015 baixing.com
+   Copyright 2014, 2015, 2016 baixing.com
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -80,3 +91,12 @@ Planned:
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+
+[npm-image]: https://img.shields.io/npm/v/jedi.svg
+[npm-url]: https://npmjs.org/package/jedi
+[travis-image]: https://img.shields.io/travis/baixing/jedi.svg
+[travis-url]: https://travis-ci.org/baixing/jedi
+[downloads-image]: http://img.shields.io/npm/dm/jedi.svg
+[deps-image]: https://david-dm.org/baixing/jedi.svg
+[deps-url]: https://david-dm.org/baixing/jedi

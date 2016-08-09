@@ -141,30 +141,30 @@ exports.PHP5Transpiler =
 				]
 			]
 
-		'binding of a named tuple':
-			input: [
-				[
-					'binding',
-					[ 1, 1 ],
-					null,
-					[
-						'Tuple',
-						[
-							[
-								'Mapping',
-								['Symbol', 'name'],
-								['String', 'hax']
-							],
-							[
-								'Mapping',
-								['Symbol', 'age'],
-								['Number', 18]
-							]
-						]
-					],
-					[]
-				]
-			]
+		# 'binding of a named tuple':
+		# 	input: [
+		# 		[
+		# 			'binding',
+		# 			[ 1, 1 ],
+		# 			null,
+		# 			[
+		# 				'Tuple',
+		# 				[
+		# 					[
+		# 						'Mapping',
+		# 						['Symbol', 'name'],
+		# 						['String', 'hax']
+		# 					],
+		# 					[
+		# 						'Mapping',
+		# 						['Symbol', 'age'],
+		# 						['Number', 18]
+		# 					]
+		# 				]
+		# 			],
+		# 			[]
+		# 		]
+		# 	]
 
 		'single quot text':
 			input: [
@@ -519,7 +519,7 @@ exports.PHP5Transpiler =
 
 			expect: [
 				[ 'echo \'<meta\';',
-					[[ 'echo \' charset="\';', 'echo htmlspecialchars((\'utf-8\'), 0x88);', 'echo \'"\';' ] ],
+					[[ 'echo jedi_runtime_attribute(\'charset\', (\'utf-8\'));' ]],
 				[]]
 			]
 
@@ -532,7 +532,7 @@ exports.PHP5Transpiler =
 
 			expect: [
 				[ 'echo \'<meta\';',
-					[[ 'echo \' charset="\';', 'echo htmlspecialchars((\'utf-8\') . ($data->x), 0x88);', 'echo \'"\';' ] ],
+					[[ 'echo jedi_runtime_attribute(\'charset\', (\'utf-8\') . ($data->x));' ]],
 				[]]
 			]
 

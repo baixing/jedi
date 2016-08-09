@@ -1,8 +1,9 @@
 import {createServer as httpServer} from 'http'
 import {parse as parseURL} from 'url'
 import {join as joinPath} from 'path'
-import {exists as existsFile, stat} from 'fs'
+import {stat} from 'fs'
 import {transpile} from './index'
+import pkg from '../package'
 
 export default function service({base, lang, port}) {
 	//var watched = []
@@ -10,40 +11,36 @@ export default function service({base, lang, port}) {
 	httpServer((req, res) => {
 
 		if (req.method === 'GET') {
+			if (req.url === '/--version') {
+				res.writeHead(200)
+				res.end(pkg.version)
+				return
+			}
+
 			let f = joinPath(base, parseURL(req.url).pathname)
 			f = f.replace(/^\\\\([A-Z])\|/, '$1:')
 			//if (watched.indexOf(path) >= 0)
 			const send = (status, message) => {
+				const s = message + ': ' + f + '\n'
 				res.writeHead(status)
-				res.end(message + ': ' + f + '\n')
-				if (status >= 400) {
-					console.error(message + ': ' + f)
-					console.error()
-				} else {
-					console.info(message + ': ' + f)
-					console.info()
-				}
+				res.end(s)
+				if (status >= 400) console.error(s)
+				else console.info(s)
 			}
 
-			existsFile(f, exists => {
-				if (!exists) {
-					send(404, 'file not exist')
-				} else {
-					stat(f, (err, stats) => {
-						if (err) throw err // should never happen
-						if (stats.isFile()) {
-							const t0 = Date.now()
-							lang.forEach(function(lang){
-								transpile(f, f.replace(/\.jedi$/, '.' + lang), lang)
-							})
-							const t1 = Date.now()
-							send(200, 'transpiled in ' + (t1 - t0) + 'ms')
-						} else {
-							send(404, 'path is not a file')
-						}
-					})
-				}
+			stat(f, (err, stats) => {
+				if (err) return send(404, err)
+				if (!stats.isFile()) return send(404, 'path is not a file')
 
+				const t0 = Date.now()
+				try {
+					lang.forEach(lang => transpile(f, f.replace(/\.jedi$/, '.' + lang), lang))
+				} catch (e) {
+					if (e.code === 'EACCES') return send(403, 'jedi probably cannot access directory')
+					else return send(500, e.message)
+				}
+				const t1 = Date.now()
+				send(200, 'transpiled in ' + (t1 - t0) + 'ms')
 			})
 
 			//transpiler.watch(loc.pathname)

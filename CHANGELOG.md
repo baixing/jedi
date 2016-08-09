@@ -1,11 +1,46 @@
-1.0.0 / 2016-04-01
+1.0.0-rc5 / 2016-08-05
 ========================
 
-
-1.0.0-rc4 / 2016-03-07
-========================
+Features:
+  * `for (key, value, index?, count?) in ...`
+  * `use` directive
+  * report duplicated error for `external`/`use` directive
+  * `X.new()` for `new X()`
+  * report error in transform phase
+  * extra information when report error
+  * `/--version` for jedi-transpiler-service
+  * allow access record using `[]` operator
+  * warn missing use/external (assume function calls or titlecase classes)
+  * experimental swift-like interpolation syntax
 
 Bug Fixes:
+  * respond 403 forbidden if no permission for writing
+  * fix #63
+  * rethrow error for exit code
+  * ensure valid PHP name
+  * fix #72
+
+
+Architecture:
+  * travis CI
+  * change to babel es2015 preset
+  * factor out error emit with recent position info in codegen
+  * update deps
+  * output test case name
+
+Documents:
+  * update badges
+  * comment #65
+
+1.0.0-rc4 / 2016-05-27
+========================
+
+Features:
+  * `jediphp` command
+  * do not output pseudo class
+
+Bug Fixes:
+  * add postinstall script to ensure ometa files are compiled
   * fix cache problem
   * fix #47
   * fix literal grammar, allow symbol start with reserved words

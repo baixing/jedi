@@ -6,32 +6,27 @@
 ometa Expression {
 
 	keyword	=	("not" | "if" | "then" | "else" | "mod" | "div" | "mul" | "&&" | "-") ~nameChar,
-	primary	=	literal | listLiteral | recordLiteral | tupleLiteral | path | symbol,
+
+	primary = tupleLiteral | listLiteral | recordLiteral | literal | symbol,
 
 	symbol	=	<'*' | ~keyword nameChar+>:s -> [#Symbol, string(s)],
 	nameChar	=	UnicodeText.nameChar | '$',
-
-	path = symbol?:start segment+:segments
-		-> [#Path, start].concat(segments),
-	segment = '/' <segmentChar*>,
-	segmentChar = ~(space | ambigSep | '/' | '?' | '#') char,
-	ambigSep = (',' | ']' | ')') (space | end),
 
 	literal = (nullLiteral | booleanLiteral | numberLiteral
 		| stringLiteral | quasiLiteral):lit ~nameChar -> lit,
 
 	nullLiteral "null" -> [#Null],
 
-	booleanLiteral "true" -> [#True],
-	booleanLiteral "false" -> [#False],
+	booleanLiteral "true"	-> [#True],
+	booleanLiteral "false"	-> [#False],
 
-	numberLiteral "NaN" -> [#NaN],
-	numberLiteral "INF" -> [#PosInf],
-	numberLiteral "+INF" -> [#PosInf],
-	numberLiteral "-INF" -> [#NegInf],
-	numberLiteral "∞" -> [#PosInf],
-	numberLiteral "+∞" -> [#PosInf],
-	numberLiteral "-∞" -> [#NegInf],
+	numberLiteral "NaN"	-> [#NaN],
+	numberLiteral "INF"	-> [#PosInf],
+	numberLiteral "+INF"	-> [#PosInf],
+	numberLiteral "-INF"	-> [#NegInf],
+	numberLiteral "∞"	-> [#PosInf],
+	numberLiteral "+∞"	-> [#PosInf],
+	numberLiteral "-∞"	-> [#NegInf],
 
 	numberLiteral <signedInt ('.' digit+)? ('e' signedInt)?>:n
 		-> [#Number, parseFloat(string(n))],
@@ -49,7 +44,10 @@ ometa Expression {
 		(interpolation | stringLiteralSection)*:s
 		'"'
 		-> [#Quasi, tag, s],
-	interpolation = '{' expression:expr '}' -> expr,
+
+	interpolation	= '\\' '(' expression:expr ')'
+		| '{' expression:expr '}'
+		-> expr,
 	stringLiteralSection = <(escapedChar | ~('"' | '{') char)+:cooked>:raw
 		-> [#String, cooked.join(''), raw],
 
@@ -59,14 +57,10 @@ ometa Expression {
 	escapedChar '\\' 'v' -> '\u000b',
 	escapedChar '\\' 'f' -> '\u000c',
 	escapedChar '\\' 'r' -> '\u000d',
-	escapedChar '\\' <hex hex? hex? hex? hex? hex?>:u space?
-		-> codepoint(u),
-	escapedChar '\\' 'u' <hex hex hex hex>:u
-		-> codepoint(u),
-	escapedChar '\\' 'u' '{' <hex+>:u '}'
-		-> codepoint(u),
-	escapedChar '\\' <'&' (~';' char)+ ';'>:entity
-		-> namedCharRef(entity),
+	escapedChar '\\' <hex hex? hex? hex? hex? hex?>:u space?	-> codepoint(u),
+	escapedChar '\\' 'u' <hex hex hex hex>:u	-> codepoint(u),
+	escapedChar '\\' 'u' '{' <hex+>:u '}'	-> codepoint(u),
+	escapedChar '\\' <'&' (~';' char)+ ';'>:entity	-> namedCharRef(entity),
 	escapedChar '\\' char:c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 
@@ -125,9 +119,10 @@ ometa Expression {
 
 	// x.name | x?.name
 	refExp = refExp:x (``.'' | ``?.''):op symbol:name -> [op, x, name],
-	// x(y) | x [y]
-	refExp = refExp:x spaces (tupleLiteral | listLiteral | recordLiteral):y -> [#Call, x, y],
-	refExp = refExp:x space+ primary:y -> [#Call, x, y], // x y
+	// x(y) | x[y]
+	refExp = refExp:x spaces (tupleLiteral | listLiteral):y -> [#Call, x, y],
+	// x 0 | x y | x {record}
+	refExp = refExp:x space+ (literal | symbol | recordLiteral):y -> [#Call, x, y],
 	refExp = primary,
 
 	rangeExp = refExp:x spaces (``...'' | ``..<''):op spaces refExp:y -> [op, x, y],
@@ -156,6 +151,13 @@ ometa Expression {
 	op6 = spaces ("+" | "-"):x spaces -> x,
 	op7 = spaces ("×" -> "mul" | "÷" -> "div" | "mul" | "div" | "mod"):x spaces -> x,
 	op9 = spaces ('!' | "not"):x spaces -> x,
+
+	// for future use
+	path = symbol?:start segment+:segments
+		-> [#Path, start].concat(segments),
+	segment = '/' <segmentChar*>,
+	segmentChar = ~(space | ambigSep | '/' | '?' | '#') char,
+	ambigSep = (',' | ']' | ')') (space | end),
 
 	END
 }
