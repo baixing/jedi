@@ -45,10 +45,8 @@ ometa Expression {
 		'"'
 		-> [#Quasi, tag, s],
 
-	interpolation	= '\\' '(' expression:expr ')'
-		| '{' expression:expr '}'
-		-> expr,
-	stringLiteralSection = <(escapedChar | ~('"' | '{') char)+:cooked>:raw
+	interpolation	= ('\\' '(' expression:expr ')' | '{' expression:expr '}') -> expr,
+	stringLiteralSection = <(escapedChar | ~('"' | '\\' | '{') char)+:cooked>:raw
 		-> [#String, cooked.join(''), raw],
 
 	escapedChar '\\' 'b' -> '\u0008',
@@ -61,7 +59,7 @@ ometa Expression {
 	escapedChar '\\' 'u' <hex hex hex hex>:u	-> codepoint(u),
 	escapedChar '\\' 'u' '{' <hex+>:u '}'	-> codepoint(u),
 	escapedChar '\\' <'&' (~';' char)+ ';'>:entity	-> namedCharRef(entity),
-	escapedChar '\\' char:c -> c,
+	escapedChar '\\' (~'(' char):c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 
 	listLiteral =
