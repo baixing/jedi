@@ -62,56 +62,42 @@ ometa Expression {
 	escapedChar '\\' (~'(' char):c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 
-	spread = "..." expression:x -> [#Spread, x],
-	listLiteral =
-		'[' spaces
-		(listItem:item comma -> item)*:x listItem?:y
-		spaces ']'
-		-> [#List, y ? x.concat([y]) : x],
-	listItem = spread | expression,
 
-	recordLiteral =
-		'{' spaces
-		(recordItem:item comma -> item)*:x recordItem?:y
-		spaces '}'
-		-> [#Record, y ? x.concat([y]) : x],
-	recordItem = spread,
-	recordItem = '[' expression:key ']' spaces ':' spaces expression:value
-		-> [#RecordItem, key, value],
-	recordItem = symbol:x spaces ':' spaces expression:value
-		-> [#RecordItem, x[1], value],
-	recordItem = symbol:x
-		-> [#RecordItem, x[1], x],
+	comma = spaces ',' spaces,
 
-	tupleLiteral =
-		'(' spaces
-		(expression:item comma -> item)*:x expression?:y
-		spaces ')'
-		-> [#Tuple, y ? x.concat([y]) : x],
+	commaList string:rule	=	(apply(rule):x comma -> x)*:list
+			apply(rule)?:last !{ if (last) list.push(last) }
+		-> list,
+
+	spread = "..." spaces expression:x -> [#Spread, x],
+
+	listLiteral	= '[' spaces commaList('listItem'):x spaces ']' -> [#List, x],
+	listItem	= spread | expression,
+
+	recordLiteral	= '{' spaces commaList('recordItem'):x spaces '}' -> [#Record, x],
+	recordItem	= spread
+		| '[' expression:key ']' spaces ':' spaces expression:value	-> [#RecordItem, key, value]
+		| symbol:x spaces ':' spaces expression:value	-> [#RecordItem, x[1], value]
+		| symbol:x	-> [#RecordItem, x[1], x],
+
+	tupleLiteral = '(' spaces commaList('expression'):x spaces ')' -> [#Tuple, x],
 
 
 	bindingPattern = listPattern | recordPattern | symbol,
-	listPattern =
-		'[' spaces
-		((bindingPattern | restPattern):item comma -> item)*:x
-		(bindingPattern | restPattern)?:y
-		spaces ']'
-		-> [#ListPattern, y ? x.concat([y]) : x],
-	restPattern = "..." spaces symbol:x
-		-> [#RestPattern, x],
-	recordPattern =
-		'{' spaces
-		((mappingPattern | bindingPattern | restPattern):item comma -> item)*:x
-		(mappingPattern | bindingPattern | restPattern)?:y
-		spaces '}'
-		-> [#RecordPattern, y ? x.concat([y]) : x],
-	tuplePattern =
-		'(' spaces
-		(bindingPattern:item comma -> item)*:x bindingPattern?:y
-		spaces ')'
-		-> [#TuplePattern, y ? x.concat([y]) : x],
 
-	comma = spaces ',' spaces,
+	restPattern = "..." spaces symbol:x -> [#RestPattern, x],
+
+	listPattern	= '[' spaces commaList('listItemPattern'):x spaces ']' -> [#ListPattern, x],
+	listItemPattern	= restPattern | bindingPattern,
+
+	recordPattern	= '{' spaces commaList('recordItemPattern'):x spaces '}' -> [#RecordPattern, x],
+	recordItemPattern	= restPattern
+		| '[' expression:key ']' spaces ':' spaces bindingPattern:bind	-> [#MappingPattern, key, bind]
+		| symbol:x spaces ':' spaces bindingPattern:bind	-> [#MappingPattern, x[1], bind]
+		| symbol:x	-> [#MappingPattern, x[1], x],
+
+	tuplePattern = '(' spaces commaList('bindingPattern'):x spaces ')' -> [#TuplePattern, x],
+
 
 	binOp string:left string:op string:right = apply(left):x,
 
