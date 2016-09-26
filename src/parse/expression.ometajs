@@ -85,11 +85,9 @@ ometa Expression {
 
 	tupleLiteral =
 		'(' spaces
-		(tupleItem:item comma -> item)*:x tupleItem?:y
+		(expression:item comma -> item)*:x expression?:y
 		spaces ')'
 		-> [#Tuple, y ? x.concat([y]) : x],
-	tupleItem = mapping | expression,
-	mapping = symbol:name spaces ':' spaces expression:expr -> [#Mapping, name, expr],
 
 	bindingPattern = tuplePattern | listPattern | recordPattern | symbol,
 	listPattern =
