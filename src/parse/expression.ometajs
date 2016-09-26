@@ -62,18 +62,20 @@ ometa Expression {
 	escapedChar '\\' (~'(' char):c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 
+	spread = "..." expression:x -> [#Spread, x],
 	listLiteral =
 		'[' spaces
 		(listItem:item comma -> item)*:x listItem?:y
 		spaces ']'
 		-> [#List, y ? x.concat([y]) : x],
-	listItem = expression,
+	listItem = spread | expression,
 
 	recordLiteral =
 		'{' spaces
 		(recordItem:item comma -> item)*:x recordItem?:y
 		spaces '}'
 		-> [#Record, y ? x.concat([y]) : x],
+	recordItem = spread,
 	recordItem = '[' expression:key ']' spaces ':' spaces expression:value
 		-> [#RecordItem, key, value],
 	recordItem = symbol:x spaces ':' spaces expression:value
