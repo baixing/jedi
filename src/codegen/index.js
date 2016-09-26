@@ -18,8 +18,8 @@ export const compile = (ast, target) => {
 	}
 }
 
-const alignEchosAndComments = code => {
-	code = code
+function alignEchosAndComments(code) {
+	return code
 		.replace(/^(\s*)echo\s/gm, 'echo$1  ')
 		.replace(/((?:^|\n)echo\s+'<.*?)';\necho\s+'>'/g, "$1>'")
 	code = code
