@@ -89,7 +89,8 @@ ometa Expression {
 		spaces ')'
 		-> [#Tuple, y ? x.concat([y]) : x],
 
-	bindingPattern = tuplePattern | listPattern | recordPattern | symbol,
+
+	bindingPattern = listPattern | recordPattern | symbol,
 	listPattern =
 		'[' spaces
 		((bindingPattern | restPattern):item comma -> item)*:x
@@ -106,10 +107,9 @@ ometa Expression {
 		-> [#RecordPattern, y ? x.concat([y]) : x],
 	tuplePattern =
 		'(' spaces
-		((bindingPattern | mappingPattern):item comma -> item)*:x bindingPattern?:y
+		(bindingPattern:item comma -> item)*:x bindingPattern?:y
 		spaces ')'
 		-> [#TuplePattern, y ? x.concat([y]) : x],
-	mappingPattern = symbol:name spaces ':' spaces bindingPattern:bind -> [#MappingPattern, name, bind],
 
 	comma = spaces ',' spaces,
 
