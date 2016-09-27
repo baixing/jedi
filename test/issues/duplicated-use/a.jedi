@@ -1,0 +1,7 @@
+:use a/b/test
+
+= test()
+
+#test
+	:use c/d/test
+	= test()

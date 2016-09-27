@@ -1,0 +1,9 @@
+:let a = 1
+	= a.b
+	= a.b()
+
+= null()
+= (a).b
+
+:if a
+	"{a.b}"

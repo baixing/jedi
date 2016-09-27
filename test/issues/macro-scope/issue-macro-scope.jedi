@@ -1,0 +1,8 @@
+:let test = 1
+	div.test1 = 0
+
+	:: div.test2 ()
+		:d test
+
+	:: div.test1 ()
+		div.test2 = 0

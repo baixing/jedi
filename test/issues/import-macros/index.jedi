@@ -1,0 +1,7 @@
+:import macros#a
+
+#frag
+	:: div ()
+		"inner"
+
+div = {a:1}

@@ -1,0 +1,11 @@
+::div.a ()
+	'hehe'
+
+:import c
+	#main
+		'ok'
+
+::div.a.b ()
+	:let a = *.a, b = *.b
+	span "a = \(a)"
+	span "b = \(b)"

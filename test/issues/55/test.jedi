@@ -1,0 +1,10 @@
+div.test = [1, 2]
+
+
+::div.test (regularPosts, vipDingPosts)
+	:let a = *[0], a2 = *[1]
+		= a.count()
+		- echo $a2->count();
+			:let b = 1
+				= a.count()
+				= a2.count()
