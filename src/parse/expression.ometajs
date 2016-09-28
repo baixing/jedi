@@ -1,4 +1,4 @@
-"module namedCharRef at './named-char-ref'"
+"import namedCharRef from './named-char-ref'"
 "import string, codepoint from '../util/ometa-string'"
 "import UnicodeText from './text'"
 "export Expression"
