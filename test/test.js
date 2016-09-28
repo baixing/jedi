@@ -6,17 +6,17 @@ const heading = (s, level = 2) => {
 	console.log(p, s, p)
 }
 
-function testRule(grm, rule, testsuite, matchAll) {
+function testRule(grm, rule, testsuite, options, matchAll) {
 	let total, ok = 0, skip = 0
 	try {
 		if (Array.isArray(testsuite)) {
 			total = testsuite.length
-			testsuite.forEach(doTest)
+			testsuite.forEach(test => doTest(test, options))
 		} else {
 			const names = Object.keys(testsuite)
 			total = names.length
 			names.forEach(function(name){
-				doTest(testsuite[name])
+				doTest(testsuite[name], options)
 			})
 		}
 	} finally {
@@ -24,7 +24,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 		if (skip) summary += ', ' + skip + ' tests skipped'
 		console.log(summary)
 	}
-	function doTest(testcase){
+	function doTest(testcase, {inputFilter} = {}){
 		let input, expect, actual
 		if (typeof testcase === 'object' && 'input' in testcase) {
 			input = testcase.input
@@ -32,6 +32,7 @@ function testRule(grm, rule, testsuite, matchAll) {
 		} else {
 			input = testcase
 		}
+		if (inputFilter) input = inputFilter(input)
 		try {
 			actual = matchAll ?
 				grm.matchAll(input, rule) :
@@ -74,20 +75,20 @@ function testRule(grm, rule, testsuite, matchAll) {
 	}
 }
 
-export function testOMeta(grm, testsuites, rules) {
+export function testOMeta(grm, testsuites, rules, options) {
 	rules.forEach(function(rule){
 		let tested, suiteName
 
 		suiteName = rule
 		if (suiteName in testsuites) {
 			heading(suiteName)
-			testRule(grm, rule, testsuites[suiteName], false)
+			testRule(grm, rule, testsuites[suiteName], options, false)
 			tested = true
 		}
 		suiteName = '[' + rule + ']'
 		if (suiteName in testsuites) {
 			heading(suiteName)
-			testRule(grm, rule, testsuites[suiteName], true)
+			testRule(grm, rule, testsuites[suiteName], options, true)
 			tested = true
 		}
 

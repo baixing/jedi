@@ -50,8 +50,9 @@ testOMeta(Parser, jediParserTests.Parser, [
 
 console.log('Testing php5 codegen...')
 import {PHP5Transpiler} from '../src/codegen/transpiler.php5'
+import inputFilter from '../src/transform/'
 import transpilerPhpTests from './codegen-php5'
 testOMeta(PHP5Transpiler, transpilerPhpTests.PHP5Transpiler, [
 	'block',
 	'document',
-])
+], {inputFilter})
