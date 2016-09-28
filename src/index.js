@@ -10,6 +10,11 @@ export function transpile(source, dest, lang, {adaptive, debug, writeErrorToFile
 	try {
 		const config = loadConfig(source)
 		const tree = transform(parseFile(source), debug)
+		if (!lang) return
+		if (lang === 'json') {
+			fs.writeFileSync(dest, JSON.stringify(tree, null, 2))
+			return
+		}
 		if (adaptive || config.adaptive) {
 			tree[4].unshift(['comment', [source, 0, 1], ['html']])
 			outputs.push({file: dest, content: compile(tree, lang)})

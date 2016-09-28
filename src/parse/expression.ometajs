@@ -1,4 +1,4 @@
-"module namedCharRef at './named-char-ref'"
+"import namedCharRef from './named-char-ref'"
 "import string, codepoint from '../util/ometa-string'"
 "import UnicodeText from './text'"
 "export Expression"
@@ -45,10 +45,8 @@ ometa Expression {
 		'"'
 		-> [#Quasi, tag, s],
 
-	interpolation	= '\\' '(' expression:expr ')'
-		| '{' expression:expr '}'
-		-> expr,
-	stringLiteralSection = <(escapedChar | ~('"' | '{') char)+:cooked>:raw
+	interpolation	= ('\\' '(' expression:expr ')' | '{' expression:expr '}') -> expr,
+	stringLiteralSection = <(escapedChar | ~('"' | '\\' | '{') char)+:cooked>:raw
 		-> [#String, cooked.join(''), raw],
 
 	escapedChar '\\' 'b' -> '\u0008',
@@ -61,59 +59,45 @@ ometa Expression {
 	escapedChar '\\' 'u' <hex hex hex hex>:u	-> codepoint(u),
 	escapedChar '\\' 'u' '{' <hex+>:u '}'	-> codepoint(u),
 	escapedChar '\\' <'&' (~';' char)+ ';'>:entity	-> namedCharRef(entity),
-	escapedChar '\\' char:c -> c,
+	escapedChar '\\' (~'(' char):c -> c,
 	hex = char:c ?/[0-9a-f]/i.test(c),
 
-	listLiteral =
-		'[' spaces
-		(listItem:item comma -> item)*:x listItem?:y
-		spaces ']'
-		-> [#List, y ? x.concat([y]) : x],
-	listItem = expression,
-
-	recordLiteral =
-		'{' spaces
-		(recordItem:item comma -> item)*:x recordItem?:y
-		spaces '}'
-		-> [#Record, y ? x.concat([y]) : x],
-	recordItem = '[' expression:key ']' spaces ':' spaces expression:value
-		-> [#RecordItem, key, value],
-	recordItem = symbol:x spaces ':' spaces expression:value
-		-> [#RecordItem, x[1], value],
-	recordItem = symbol:x
-		-> [#RecordItem, x[1], x],
-
-	tupleLiteral =
-		'(' spaces
-		(tupleItem:item comma -> item)*:x tupleItem?:y
-		spaces ')'
-		-> [#Tuple, y ? x.concat([y]) : x],
-	tupleItem = mapping | expression,
-	mapping = symbol:name spaces ':' spaces expression:expr -> [#Mapping, name, expr],
-
-	bindingPattern = tuplePattern | listPattern | recordPattern | symbol,
-	listPattern =
-		'[' spaces
-		((bindingPattern | restPattern):item comma -> item)*:x
-		(bindingPattern | restPattern)?:y
-		spaces ']'
-		-> [#ListPattern, y ? x.concat([y]) : x],
-	restPattern = "..." spaces symbol:x
-		-> [#RestPattern, x],
-	recordPattern =
-		'{' spaces
-		((mappingPattern | bindingPattern | restPattern):item comma -> item)*:x
-		(mappingPattern | bindingPattern | restPattern)?:y
-		spaces '}'
-		-> [#RecordPattern, y ? x.concat([y]) : x],
-	tuplePattern =
-		'(' spaces
-		((bindingPattern | mappingPattern):item comma -> item)*:x bindingPattern?:y
-		spaces ')'
-		-> [#TuplePattern, y ? x.concat([y]) : x],
-	mappingPattern = symbol:name spaces ':' spaces bindingPattern:bind -> [#MappingPattern, name, bind],
 
 	comma = spaces ',' spaces,
+
+	commaList string:rule	=	(apply(rule):x comma -> x)*:list
+			apply(rule)?:last !{ if (last) list.push(last) }
+		-> list,
+
+	spread = "..." spaces expression:x -> [#Spread, x],
+
+	listLiteral	= '[' spaces commaList('listItem'):x spaces ']' -> [#List, x],
+	listItem	= spread | expression,
+
+	recordLiteral	= '{' spaces commaList('recordItem'):x spaces '}' -> [#Record, x],
+	recordItem	= spread
+		| '[' expression:key ']' spaces ':' spaces expression:value	-> [#RecordItem, key, value]
+		| symbol:x spaces ':' spaces expression:value	-> [#RecordItem, x[1], value]
+		| symbol:x	-> [#RecordItem, x[1], x],
+
+	tupleLiteral = '(' spaces commaList('expression'):x spaces ')' -> [#Tuple, x],
+
+
+	bindingPattern = listPattern | recordPattern | symbol,
+
+	restPattern = "..." spaces symbol:x -> [#RestPattern, x],
+
+	listPattern	= '[' spaces commaList('listItemPattern'):x spaces ']' -> [#ListPattern, x],
+	listItemPattern	= restPattern | bindingPattern,
+
+	recordPattern	= '{' spaces commaList('recordItemPattern'):x spaces '}' -> [#RecordPattern, x],
+	recordItemPattern	= restPattern
+		| '[' expression:key ']' spaces ':' spaces bindingPattern:bind	-> [#MappingPattern, key, bind]
+		| symbol:x spaces ':' spaces bindingPattern:bind	-> [#MappingPattern, x[1], bind]
+		| symbol:x	-> [#MappingPattern, x[1], x],
+
+	tuplePattern = '(' spaces commaList('bindingPattern'):x spaces ')' -> [#TuplePattern, x],
+
 
 	binOp string:left string:op string:right = apply(left):x,
 

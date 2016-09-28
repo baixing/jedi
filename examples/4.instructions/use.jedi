@@ -11,7 +11,7 @@
 
 :use a/b/* as B
 :d B.test()
--- syntax error
+-- warning
 	:d B
 	:d B[1]
 	:d B()
@@ -25,11 +25,20 @@
 :use * as php
 :d php.is_array([])
 
+
+-- old external instruction
+
 :external test
 :d test
 :d test()
 :d test.ok
 :d test.ok()
+
+:external User, base64
+:let user = User.get(userId)
+p "Welcome \(user.name)!"
+div > img
+	@src = "data:image/png;base64,\(base64(user.avatar))"
 
 -- syntax error
 	:external test

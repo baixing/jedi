@@ -1,38 +1,42 @@
 import {tuple2record, record2tuple} from './adapter'
 import {skip, isNode} from './node'
 
-export default function traverse(f, order = 'pre', traverseAll) {
+export default function traverse(visitor, traverseAll = false) {
+	if (typeof visitor === 'function') visitor = {enter: visitor}
+
 	if (skip(this)) {
 		if (!traverseAll) return this
 		const node = tuple2record(this)
-		f(node)
+		if (visitor.enter) visitor.enter(node)
+		if (visitor.leave) visitor.leave(node)
 		return record2tuple(node)
 	}
 	if (isNode(this)) {
 		const node = tuple2record(this)
-		if (order === 'post') traverseChildNodes(node)
-		const recursive = f(node)
-		if (recursive || recursive === undefined && order === 'pre') traverseChildNodes(node)
+		const recursive = do {
+			if (visitor.enter) visitor.enter(node)
+		}
+		if (recursive || recursive === undefined) traverseChildNodes(node)
+		if (visitor.leave) visitor.leave(node)
 		return record2tuple(node)
 	}
 
 	if (Array.isArray(this)) {
-		return this.map(child => child::traverse(f, order, traverseAll))
+		return this.map(child => child::traverse(visitor, traverseAll))
 	}
 
 	throw new Error(this)
 
 	function traverseChildNodes(node) {
 		if (Array.isArray(node.childNodes)) {
-			node.childNodes = node.childNodes.map(child => child::traverse(f, order, traverseAll))
+			const scope = node.childNodes.scope
+			node.childNodes = node.childNodes.map(child => child::traverse(visitor, traverseAll))
+			node.childNodes.scope = scope
 		}
 		if (traverseAll) {
 			if (Array.isArray(node.binding) && isNode(node.binding)) {
-				node.binding = node.binding::traverse(f, order, traverseAll)
+				node.binding = node.binding::traverse(visitor, traverseAll)
 			}
-			// if (Array.isArray(node.data) && Array.isArray(node.data[node.data.length - 1])) {
-			// 	node.data[node.data.length - 1] = node.data[node.data.length - 1].map(child => child::traverse(f, order, traverseAll))
-			// }
 		}
 	}
 }

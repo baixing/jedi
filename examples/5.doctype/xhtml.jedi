@@ -2,17 +2,17 @@
 
 html
 	head
-		style
-			!
-				body { margin: 0 }
+		style !
+			body { margin: 0 }
 	body
-		'a > b
-		'b < a
-		'"Hello!"
-		:let text = '<>"'
-			= text
+		:let text = '<>"'''
+		= text
+
 		header
-			img @src='test'
+			img
+				@src = 'test'
 
 		section.note#sec1
-
+			'a > b'
+			'b < a'
+			'"Hello!"'

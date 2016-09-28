@@ -3,18 +3,36 @@ const debug = Debug('transform')
 import {inspect} from 'util'
 import traverse from '../util/traverse'
 
-import attachFilename from './attach-filename'
-import reportError from './report-error'
+import attachFilename	from './attach-filename'
+import reportError	from './report-error'
+import attachScope	from './attach-scope'
+import sortNodes	from './sort-nodes'
+
+import {dir} from '../util/debug'
+
 export default function doImport(document) {
-	document = reportError(attachFilename(document))
-	return document::traverse(node => {
-		const {nodeType, position: [path], nodeName, nodeValue, childNodes} = node
-		if (nodeType === 'instruction' && nodeName === 'import') {
-			let tree = loadTree(resolve(nodeValue, path))
-			tree = override(tree, childNodes)
-			Object.assign(node, tree)
+	// console.log('attach filename, check errors, sort nodes and analyze scopes')
+	console.time('semantic process')
+	document = attachFilename(document)
+	document = reportError(document)
+	document = sortNodes(document)
+	document = attachScope(document)
+	// dir(document)
+	console.timeEnd('semantic process')
+
+	return document::traverse({
+		leave(node) {
+			const {nodeType, position: [path], nodeName, nodeValue, childNodes} = node
+			if (nodeType === 'instruction' && nodeName === 'import') {
+				const parentScope = childNodes.scope.parent
+				let tree = loadTree(resolve(nodeValue, path))
+				tree = override(tree, childNodes)
+				Object.assign(node, tree)
+				node.childNodes.scope.macrosParent = parentScope
+				parentScope.mergeMacros(node.childNodes.scope.macros)
+			}
 		}
-	}, 'post')
+	})
 }
 
 

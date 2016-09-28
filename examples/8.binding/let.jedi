@@ -1,0 +1,7 @@
+:let x = 1
+:d x
+	:let x = 2, y = 3
+	:d x
+	:d y
+:d x
+:d y

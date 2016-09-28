@@ -1,0 +1,9 @@
+:let x = true, y = 1
+	input
+		@disabled = x
+	div
+		@data-a = (if y > 0 then "a")
+		@data-b = (if y <= 0 then 'b')
+		@data-c = 'c'
+		= 'a'
+		= "b"

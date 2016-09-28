@@ -1,0 +1,46 @@
+:external A
+:d A.test()
+:d a + A.new()
+:d A.new(1, 2).x
+
+
+
+div
+	@x='a' 'b'
+
+:let a = {}
+	//= a(x)
+	= a[x]
+	= a.b
+	= a.b(x)
+	= a.b[x]
+	= a.b.c
+	= a[x](y)
+	//= a(x)(y)
+	//= a(x)[y]
+	= (a).b
+
+//= a(x)
+= a[x]
+= a.b
+= a.b(x)
+= a.b[x]
+= a.b.c
+= a[x](y)
+//= a(x)(y)
+//= a(x)[y]
+= (a).b
+
+div
+	:external a
+	= a
+	= a(x)
+	= a[x]
+	= a.b
+	= a.b(x)
+	= a.b[x]
+	= a.b.c
+	= a[x](y)
+	= a(x)(y)
+	= a(x)[y]
+	= (a).b

@@ -1,5 +1,5 @@
-script!
-		console.log('</script>')
+script !
+	console.log('</script>')
 
 script = [1, 2, 3, '</script>']
 	!
@@ -8,7 +8,6 @@ script = [1, 2, 3, '</script>']
 		console.assert(data[2] === 3)
 		console.assert(data[3] === '</script>')
 
-:let a = 'a'
-	script = {a, b: 'B'}
-		!
-			console.log(data)
+script = {a: 'A', b: 'B'}
+	!
+		console.log(data)

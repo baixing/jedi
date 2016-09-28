@@ -13,7 +13,7 @@ ometa PlainParser <: OffsideRule {
 	nameChar = Expression.nameChar,
 
 	load string:filename readFile(filename):content source(content):nodes
-		->	[#document, [filename, 1, 1], content, undefined, nodes],
+		->	[#document, [filename, 1, 1], content, [], nodes],
 
 	ignore	=	'/' '/',
 	indentChar	->	#tab,
@@ -68,14 +68,21 @@ ometa PlainParser <: OffsideRule {
 	unless_	=	"unless" spaces expr:x spaces	->	[#unless, x],
 	elseif_	=	"else if" spaces expr:x spaces	->	[#elseif, x],
 	else_	=	"else" spaces	->	[#else],
-	for_	=	"for" spaces for_content:x (comma for_content)*:y	->	[#for, [x].concat(y)],
-	for_content	=	Expression.bindingPattern:x spaces "in" spaces expr:y	->	[x, y],
 	match_	=	"match" spaces expr:x	->	[#match, x],
 	case_	=	"case" spaces expr:x	->	[#case, x],
+	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
+
 	let_	=	"let" spaces let_binding:x (comma let_binding)*:y	->[#let, [x].concat(y)],
 	let_binding	=	Expression.bindingPattern:x spaces '=' spaces expr:y	->	[x, y],
-	end_	=	"end" space+ instructionName:name spaces	->	[#end, name],
-	external_	=	"external" space+ symbol:x (spaces ',' spaces symbol)*:xs spaces	->	[#external, [x].concat(xs)],
+
+	for_	=	"for" spaces for_content:x (comma for_content)*:y comma?	->	[#for, [x].concat(y)],
+	for_content	=	(for_bindings:b | '(' spaces for_bindings:b spaces ')') spaces "in" spaces expr:it	->	[it].concat(b),
+	for_bindings	=	(symbol:key comma)?:hasKey
+			Expression.bindingPattern:value
+			(("at" spaces | comma) symbol:index)?:hasIndex
+		-> [value, (hasKey ? key : undefined), (hasIndex ? index : undefined)],
+
+	external_	=	"external" space+ symbol:x (comma symbol)*:y spaces	->	[#external, [x].concat(y)],
 
 	use_	= "use" space+ path_imports:imports -> [#use, imports],
 	path_imports	= (segment:s '/' -> s)*:segments aliases:aliases -> [segments, aliases],
@@ -83,12 +90,10 @@ ometa PlainParser <: OffsideRule {
 	aliases	=	'*' alias:as	->	[['*', as]]
 		|	id_alias:x	->	[x]
 		|	'{' spaces id_aliases:xs spaces '}'	->	xs,
-
 	id_aliases	= (id_alias:x spaces comma spaces -> x)*:xs (id_alias:last)? -> (last ? xs.concat([last]) : xs),
 	alias	= spaces "as" spaces identifier:as -> as,
 	id_alias	= spaces identifier:id alias?:as -> [id, as],
 	identifier	= nameChar+:x -> string(x),
-
 
 	instructionPattern	=	import_
 		|	if_ | elseif_ | else_
@@ -125,8 +130,9 @@ ometa Parser <: PlainParser {
 
 	macro	=	[macroStart macroPattern:x] block:b	->	x.concat([b]),
 	macroStart	=	':' ':' spaces,
-	macroPattern	=	elementPattern:sel spaces macroParam:param spaces	->	[sel, param],
-	macroParam	=	Expression.tuplePattern,
+	macroPattern	=	elementPattern:sel macroParam:param spaces	->	[sel, param],
+	macroParam	=	spaces "of" spaces Expression.bindingPattern:x	-> x
+		|	spaces Expression.tuplePattern:x	-> x,
 
 	element	=	[elementPattern:e bindingPattern?:b] block:children	->	[e, b, children],
 	element	=	[elementPattern:e childCombinator offsetCol char+:rest]

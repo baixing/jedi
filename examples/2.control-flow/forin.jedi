@@ -1,3 +1,12 @@
+:let fruits = ['apple', 'banana', 'cherry', 'durian']
 ol
-	*li for x in 1..<5
-		= x
+	*li for fruit in fruits
+		= fruit
+
+:let fruits_zh = {apple: '苹果', banana: '香蕉', cherry: '樱桃', durian: '榴梿'}
+dl
+	:for f at i in fruits
+		dt
+			= f
+		dd
+			= fruits_zh[f]

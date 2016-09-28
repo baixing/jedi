@@ -1,0 +1,8 @@
+:let o = {a: 10, b: 20, c: 30, d: 40}
+
+*div for value at index in o
+	"\(index). \(value)"
+
+-- deprecated old syntax
+:for (key, value, index) in o
+	:d [key, value, index]

@@ -5,7 +5,7 @@ export const isCharArray = a => Array.isArray(a) && a.every(isChar)
 export const string = a => {
 	if (typeof a === 'string') return a
 	if (isCharArray(a)) return a.join('')
-	throw Error(a + ' is not a string')
+	throw new Error(a + ' is not a string')
 }
 
 export const codepoint = a => String.fromCodePoint(parseInt(string(a), 16))

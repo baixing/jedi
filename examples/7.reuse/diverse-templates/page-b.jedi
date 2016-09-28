@@ -1,6 +1,5 @@
-::	span.ord ()
-		:let i = *
-			"{i}. "
+::	span.ord of i
+	"\(i). "
 
 :import page
 	#body::before

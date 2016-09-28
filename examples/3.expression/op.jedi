@@ -1,4 +1,5 @@
-:let a = 8, b = 3
+-
+	:let a = 8, b = 3
 	:d a + b
 	:d a - b
 	:d a mul b
@@ -7,7 +8,8 @@
 	:d a × b
 	:d a ÷ b
 
-:let a = true, b = false
+-
+	:let a = true, b = false
 	:d a && b
 	:d a || b
 	:d not a

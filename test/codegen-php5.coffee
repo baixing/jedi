@@ -19,7 +19,7 @@ exports.PHP5Transpiler =
 				['comment', [1, 1], ['comment line']]
 			]
 
-			expect: [['echo \'<!-- comment line -->\';']]
+			expect: [["echo '<!-- ', 'comment line', ' -->';"]]
 
 		'comment multiple lines':
 			input: [
@@ -32,15 +32,6 @@ exports.PHP5Transpiler =
 				'echo \'comment line 2\', "\\n";',
 				'echo \'-->\';'
 			]]
-
-		'doctype':
-			input: [[
-				'comment',
-				[1,1],
-				['html5']
-			]]
-
-			expect: [['echo \'<!-- html5 -->\';']]
 
 		'suppress single line':
 			input: [
@@ -80,8 +71,8 @@ exports.PHP5Transpiler =
 				'inject line',
 				'{',
 				[
-					['echo \'<!-- line 1 -->\';'],
-					['echo \'<!-- line 2 -->\';'],
+					["echo '<!-- ', 'line 1', ' -->';"],
+					["echo '<!-- ', 'line 2', ' -->';"],
 				],
 				'}'
 			]]
@@ -257,7 +248,7 @@ exports.PHP5Transpiler =
 		'iterate values':
 			input: [
 				['instruction', [1, 1], 'for',
-					[[['Symbol', 'v'], ['Symbol', 'x']]]
+					[[['Symbol', 'x'], ['Symbol', 'v'], undefined, undefined]]
 					[['text', [2, 2], undefined, [
 						[['Symbol', 'v']]
 					]]]
@@ -265,11 +256,11 @@ exports.PHP5Transpiler =
 			]
 
 			expect: [[
-				'foreach ($data->x as $v) {',
+				'\\Jedi\\foreachValue($data->x, function ($v) {',
 				[[
 					'echo htmlspecialchars(($v), 0x88);'
 				]],
-				'}'
+				'});'
 			]]
 
 		'iterate key, value pairs':
@@ -278,14 +269,10 @@ exports.PHP5Transpiler =
 				[1,1],
 				'for',
 				[[
-					[
-						'TuplePattern',
-						[
-							['Symbol', 'key'],
-							['Symbol', 'value']
-						]
-					],
 					['Symbol', 'x']
+					['Symbol', 'value']
+					['Symbol', 'key']
+					undefined
 				]],
 				[
 					[
@@ -305,11 +292,11 @@ exports.PHP5Transpiler =
 			]]
 
 			expect: [[
-				'foreach ($data->x as $key => $value) {',
+				'\\Jedi\\foreachKeyValue($data->x, function ($key, $value) {',
 				[[
 					"""echo htmlspecialchars(($key) . (' = ') . ($value) . ('"'), 0x88);"""
 				]],
-				'}'
+				'});'
 			]]
 
 		'multiple for':
@@ -317,8 +304,18 @@ exports.PHP5Transpiler =
 				[ 1, 1 ],
 				'for',
 				[
-					[ [ 'Symbol', 'x' ], [ 'Symbol', 'list1' ] ],
-					[ [ 'Symbol', 'y' ], [ 'Symbol', 'list2' ] ]
+					[
+						[ 'Symbol', 'list1' ]
+						[ 'Symbol', 'x' ]
+						undefined
+						undefined
+					]
+					[
+						[ 'Symbol', 'list2' ]
+						[ 'Symbol', 'y' ]
+						undefined
+						undefined
+					]
 				],
 				[[
 					'text',
@@ -329,46 +326,14 @@ exports.PHP5Transpiler =
 			]]
 
 			expect: [[
-				'foreach ($data->list1 as $x) {',
+				'\\Jedi\\foreachValue($data->list1, function ($x) {',
 				[
-					'foreach ($data->list2 as $y) {',
+					'\\Jedi\\foreachValue($data->list2, function ($y) {',
 					[[ "echo htmlspecialchars(($x) . (', ') . ($y), 0x88);" ]],
-					'}'
+					'});'
 				],
-				'}'
+				'});'
 			]]
-
-		'multiple for with key value':
-			input: [[ 'instruction',
-				[ 1, 1 ],
-				'for',
-				[
-					[[ 'Symbol', 'x' ], [ 'Symbol', 'list1' ]],
-					[[ 'Symbol', 'y' ], [ 'Symbol', 'list2' ]],
-					[[ 'TuplePattern', [[ 'Symbol', 'key' ], [ 'Symbol', 'value' ]]], [ 'Symbol', 'x' ]]
-				],
-				[[
-					'text',
-					[ 2, 5 ],
-					undefined,
-					[[
-						[ 'Symbol', 'x' ],
-						[ 'String', ', ', ', ' ],
-						[ 'Symbol', 'y' ],
-						[ 'String', ', ', ', ' ],
-						[ 'Symbol', 'key' ],
-						[ 'Symbol', 'value' ]
-					]]
-				]]
-			]]
-
-			expect: [[ 'foreach ($data->list1 as $x) {',
-				[ 'foreach ($data->list2 as $y) {',
-					[ 'foreach ($data->x as $key => $value) {',
-						[[ "echo htmlspecialchars(($x) . (', ') . ($y) . (', ') . ($key) . ($value), 0x88);" ]],
-					'}'],
-				'}'],
-			'}' ]]
 
 		'let simple binding':
 			input: [[ 'instruction',
@@ -384,9 +349,8 @@ exports.PHP5Transpiler =
 			]]
 
 			expect: [[
-				'call_user_func(function($x) {',
+				'$x = 10;',
 				[[ "echo htmlspecialchars(('12345') . ($x), 0x88);" ]],
-				'}, 10);'
 			]]
 
 		'let binding':
@@ -411,34 +375,10 @@ exports.PHP5Transpiler =
 			]]
 
 			expect: [[
-				'call_user_func(function($x,$y) {',
+				'$x = 1;',
+				'$y = 2;',
 				[[ 'echo htmlspecialchars(($x) . (\', \') . ($y), 0x88);' ]],
-				'}, 1,2);'
 			]]
-
-		###
-		'let binding with pattern match':
-			input: [[
-				'instruction',
-				[ 1, 1 ],
-				'let',
-				[[
-					[
-						'TuplePattern',
-						[[ 'Symbol', 'x' ], [ 'Symbol', 'y' ], [ 'Symbol', 'z' ]]
-					],
-					[
-						'Tuple',
-						[[ 'Number', 1 ], [ 'Number', 2 ], [ 'Number', 3 ]]
-					]
-				]],
-				[[
-					'text',
-					[ 2, 5 ],
-					undefined,
-					[[[ 'Symbol', 'x' ], [ 'String', ', ', ', ' ], [ 'Symbol', 'y' ]]]
-				]]
-			]]###
 
 		'element':
 			input: [
@@ -447,7 +387,7 @@ exports.PHP5Transpiler =
 
 			expect: [[
 				'echo \'<div class="test1"\';',
-				'',
+				["echo '>';"],
 				'echo \'</div>\';'
 			]]
 
@@ -460,7 +400,12 @@ exports.PHP5Transpiler =
 			input: [
 				['element', [1, 1], ['div', ['test1'], undefined], undefined, [
 					['element', [1, 23], ['div', ['test2'], undefined], ['Symbol', 'x'], [
-						['text', [1, 1], undefined, [
+						['instruction', [3, 1], 'let', [
+							[
+								['Symbol', 'y'], ['Number', 0]
+							]
+						], []]
+						['text', [2, 1], undefined, [
 							[
 								['String', 'Hello ', 'Hello ']
 								['Symbol', 'user'],
@@ -472,14 +417,21 @@ exports.PHP5Transpiler =
 				]]
 			]
 
-			expect: [[ 'echo \'<div class="test1"\';',
-				[[ 'call_user_func(function ($context) use ($data) {',
-					[ 'echo \'<div class="test2"\';',
-						[ [ 'echo htmlspecialchars((\'Hello \') . ($data->user) . (\'!\'), 0x88);' ] ],
-					'echo \'</div>\';' ],
-				'}, $data->x);' ] ],
-				'echo \'</div>\';'
-			]]
+			expect: [
+				[ 'echo \'<div class="test1"\';',
+					[
+						"echo '>';"
+						[ 'call_user_func(function ($context) use ($data) {',
+							[ 'echo \'<div class="test2"\';',
+								[
+									"echo '>';"
+									['$y = 0;']
+									['echo htmlspecialchars((\'Hello \') . ($data->user) . (\'!\'), 0x88);']
+								],
+							'echo \'</div>\';' ],
+						'}, $data->x);' ] ],
+						'echo \'</div>\';'
+					]]
 
 		'nested elements with binding':
 			input: [
@@ -488,19 +440,23 @@ exports.PHP5Transpiler =
 				]]
 			]
 
-			expect: [[ 'echo \'<div class="test1"\';',
-				[[ 'call_user_func(function ($context) {',
-					[ 'echo \'<div class="test2"\';',
-					'echo \'>\', htmlspecialchars($context, 0x88);',
-					'echo \'</div>\';' ],
-				'}, $data->x);' ] ],
+			expect: [[
+				'echo \'<div class="test1"\';',
+				["echo '>';", [
+					'echo \'<div class="test2"\';'
+					[
+						"echo '>';"
+						'echo htmlspecialchars($data->x, 0x88);'
+					]
+					'echo \'</div>\';'
+				]],
 				'echo \'</div>\';'
 			]]
 
 		'element bug 001':
 			input: [[ 'element', [ 1, 1 ], [ 'meta', '', undefined ], undefined,
 					[[ 'attribute', [ 1, 16 ], 'charset', '=', [ 'String', 'utf-8' ] ]
-						['closeStartTag'] ] ] ]
+					] ] ]
 
 			expect: [
 				[ 'echo \'<meta\';',
@@ -519,7 +475,10 @@ exports.PHP5Transpiler =
 
 			expect: [
 				[ 'echo \'<meta\';',
-					[[ 'echo jedi_runtime_attribute(\'charset\', (\'utf-8\'));' ]],
+					[
+						[ 'echo \\jedi\\attribute(\'charset\', (\'utf-8\'));' ]
+						"echo '>';"
+					]
 				[]]
 			]
 
@@ -532,7 +491,10 @@ exports.PHP5Transpiler =
 
 			expect: [
 				[ 'echo \'<meta\';',
-					[[ 'echo jedi_runtime_attribute(\'charset\', (\'utf-8\') . ($data->x));' ]],
+					[
+						[ 'echo \\jedi\\attribute(\'charset\', (\'utf-8\') . ($data->x));' ]
+						"echo '>';"
+					]
 				[]]
 			]
 
@@ -543,7 +505,10 @@ exports.PHP5Transpiler =
 				[['text', [1, 1], undefined, ['Big sheep testcase']]]
 			]
 
-			expect: /^<\?php\n[\S\s]*\necho \'<!doctype html>\', "\\n";\n echo \'Big sheep testcase\', "\\n";$/
+			expect: '''
+				echo '<!doctype html>', "\\n";
+				 echo 'Big sheep testcase', "\\n";
+			'''
 
 		'extend with before hook':
 			input: [ 'document', [ './test/test', 1, 1 ], '', undefined,
@@ -559,7 +524,16 @@ exports.PHP5Transpiler =
 				]
 			]
 
-			expect: /^<\?php\n[\s\S]*\necho \'<!doctype html>\', "\\n";\n \/\/  #headBlock\n   echo \'<style\';\n     echo \' src="test\.css"\';\n   echo \'<\/style>\';\n \/\/  #headBlock\n   echo \'Big sheep testcase\', "\\n";$/
+			expect: '''
+				echo '<!doctype html>', "\\n";
+				 //  #headBlock
+				   echo '<style';
+				     echo ' src="test.css"';
+				    echo '>';
+				   echo '</style>';
+				 //  #headBlock
+				   echo 'Big sheep testcase', "\\n";
+			'''
 
 		'extend with mutiple hooks':
 			input: [ 'document', [ './test/test', 1, 1 ], '', undefined,
@@ -581,4 +555,21 @@ exports.PHP5Transpiler =
 					],
 				]
 			]
-			expect: /^<\?php\n[\s\S]*\necho \'<!doctype html>\', "\\n";\n \/\/  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'<\/style>\';\n \/\/  #headBlock\n   echo \'<style\';\n     echo \' src="test.css"\';\n   echo \'<\/style>\';\n \/\/  #headBlock\n   echo \'<style\';\n     echo \' src="test\.css"\';\n   echo \'<\/style>\';$/
+			expect: '''
+				echo '<!doctype html>', "\\n";
+				 //  #headBlock
+				   echo '<style';
+				     echo ' src="test.css"';
+				    echo '>';
+				   echo '</style>';
+				 //  #headBlock
+				   echo '<style';
+				     echo ' src="test.css"';
+				    echo '>';
+				   echo '</style>';
+				 //  #headBlock
+				   echo '<style';
+				     echo ' src="test\.css"';
+				    echo '>';
+				   echo '</style>';
+			'''
