@@ -82,42 +82,6 @@ exports.Parser =
 					[]
 				]
 			]
-		'binding of a tuple':
-			input: "= ('hax', 18)"
-			expect: [
-				['binding', [ 1, Number ], null,
-					['Tuple', [['String', 'hax'], ['Number', 18]]],
-					[]
-				]
-			]
-
-		'binding of a named tuple':
-
-			input: "= (name:'hax', age:18)"
-
-			expect: [
-				[
-					'binding',
-					[ 1, Number ],
-					null,
-					[
-						'Tuple',
-						[
-							[
-								'Mapping',
-								['Symbol', 'name'],
-								['String', 'hax']
-							],
-							[
-								'Mapping',
-								['Symbol', 'age'],
-								['Number', 18]
-							]
-						]
-					],
-					[]
-				]
-			]
 
 		'single quot text':
 			input: """
@@ -219,7 +183,7 @@ exports.Parser =
 			'''
 			expect: [
 				['instruction', [1, Number], 'for',
-					[[['Symbol', 'v'], ['Symbol', 'x']]]
+					[[['Symbol', 'x'], ['Symbol', 'v'], undefined, undefined]]
 					[['text', [2, Number], undefined, [
 						[['Symbol', 'v']]
 					]]]
@@ -237,14 +201,10 @@ exports.Parser =
 					[1, Number],
 					'for',
 					[[
-						[
-							'TuplePattern',
-							[
-								['Symbol', 'key'],
-								['Symbol', 'value']
-							]
-						],
 						['Symbol', 'x']
+						['Symbol', 'value']
+						['Symbol', 'key']
+						undefined
 					]],
 					[
 						[
@@ -272,8 +232,8 @@ exports.Parser =
 				[ 1, 1 ],
 				'for',
 				[
-					[ [ 'Symbol', 'x' ], [ 'Symbol', 'list1' ] ],
-					[ [ 'Symbol', 'y' ], [ 'Symbol', 'list2' ] ]
+					[ [ 'Symbol', 'list1' ], [ 'Symbol', 'x' ], undefined, undefined ],
+					[ [ 'Symbol', 'list2' ], [ 'Symbol', 'y' ], undefined, undefined ]
 				],
 				[[
 					'text',
@@ -289,28 +249,39 @@ exports.Parser =
 					"{x}, {y}, {key}{value}
 			'''
 
-			expect: [[ 'instruction',
-				[ 1, 1 ],
-				'for',
-				[
-					[[ 'Symbol', 'x' ], [ 'Symbol', 'list1' ]],
-					[[ 'Symbol', 'y' ], [ 'Symbol', 'list2' ]],
-					[[ 'TuplePattern', [[ 'Symbol', 'key' ], [ 'Symbol', 'value' ]]], [ 'Symbol', 'list3' ]]
-				],
-				[[
-					'text',
-					[ 2, 5 ],
-					undefined,
-					[[
-						[ 'Symbol', 'x' ],
-						[ 'String', ', ', ', ' ],
-						[ 'Symbol', 'y' ],
-						[ 'String', ', ', ', ' ],
-						[ 'Symbol', 'key' ],
-						[ 'Symbol', 'value' ]
+			expect: [
+				[ 'instruction', [ 1, 1 ], 'for'
+					[
+						[
+							['Symbol', 'list1']
+							[ 'Symbol', 'x' ]
+							undefined, undefined
+						]
+						[
+							['Symbol', 'list2']
+							['Symbol', 'y']
+							undefined, undefined
+						]
+						[
+							['Symbol', 'list3']
+							['Symbol', 'value']
+							['Symbol', 'key']
+							undefined
+						]
+					]
+					[['text', [ 2, 5 ],
+						undefined,
+						[[
+							[ 'Symbol', 'x' ]
+							[ 'String', ', ', ', ' ]
+							[ 'Symbol', 'y' ]
+							[ 'String', ', ', ', ' ]
+							[ 'Symbol', 'key' ]
+							[ 'Symbol', 'value' ]
+						]]
 					]]
-				]]
-			]]
+				]
+			]
 
 		'let simple binding':
 			input: '''
@@ -358,7 +329,7 @@ exports.Parser =
 
 		'let binding with pattern match':
 			input: '''
-				:let (x, y, z) = (1, 2, 3)
+				:let [x, y, z] = [1, 2, 3]
 					"{x}, {y}
 			'''
 			expect: [[
@@ -367,11 +338,11 @@ exports.Parser =
 				'let',
 				[[
 					[
-						'TuplePattern',
+						'ListPattern',
 						[[ 'Symbol', 'x' ], [ 'Symbol', 'y' ], [ 'Symbol', 'z' ]]
 					],
 					[
-						'Tuple',
+						'List',
 						[[ 'Number', 1 ], [ 'Number', 2 ], [ 'Number', 3 ]]
 					]
 				]],
