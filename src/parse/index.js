@@ -3,7 +3,7 @@ export const parseFile = filename => {
 	const lines = splitLines(readFile(filename))
 	const tree = parseLines(lines)
 	console.timeEnd('parse ' + filename)
-	return ['document', [filename, 1, 1], lines, undefined, tree]
+	return ['document', [filename, 1, 1], lines, [], tree]
 }
 
 import {readFileSync} from 'fs'
