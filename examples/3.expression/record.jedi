@@ -1,15 +1,11 @@
-
 :let z = 'ok'
-	div
-		@title=z
-	:let record = {x: 1, y: 2, z, [z]: 4}
-		= record.x
-		= record.y
-		= record.z
-		= record.ok
+:let record = {x: 1, y: 2, z, [z]: 4}
+:d record
 
-:let x = {['a-b']: 'hello'}
+-
+	:let x = {['a-b']: 'hello'}
 	:d x['a-b']
 
-:let x = {a-b: 'hello'}
+-
+	:let x = {a-b: 'hello'}
 	:d x.a-b

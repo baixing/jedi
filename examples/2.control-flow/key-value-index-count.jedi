@@ -1,9 +1,0 @@
-:let o = {a: 10, b: 20, c: 30, d: 40}
-
-	:for (key, value, index, count) in o
-		:d [key, value, index, count]
-
-	div for (key, value, index) in o
-		span = key
-		span = value
-		span = index

@@ -1,2 +1,2 @@
-:let x = 'hello world!'
-	:d "xxx {x}"
+:let user = 'world'
+:d "Hello \(user)!"

@@ -1,4 +1,7 @@
 section.class1.class2#id
 	h1 'Heading'
-	p '...'
-	p '...'
+	ul
+		li > a @@ href=a.html
+			'Page a'
+		li > a @@ href=b.html
+			'Page b'

@@ -1,4 +1,4 @@
 :let a = 1...10
-	:d a
-	:for i in a
-		:d i
+:d a
+:for i in a
+	:d i

@@ -1,0 +1,14 @@
+:let [x, y, z] = [1, 2, 3]
+	= x
+	= y
+	= z
+
+:let a = 1, b = 2
+:let [c, d] = [a, b]
+= c
+= d
+
+:let t1 = 1, t2 = t1 + 1
+--:let [t1, t2] = [t2, t1]
+= t1
+= t2
