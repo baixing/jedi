@@ -29,7 +29,9 @@ export default function traverse(visitor, traverseAll = false) {
 
 	function traverseChildNodes(node) {
 		if (Array.isArray(node.childNodes)) {
+			const scope = node.childNodes.scope
 			node.childNodes = node.childNodes.map(child => child::traverse(visitor, traverseAll))
+			node.childNodes.scope = scope
 		}
 		if (traverseAll) {
 			if (Array.isArray(node.binding) && isNode(node.binding)) {

@@ -55,6 +55,9 @@ export default function sortNodes(tree) {
 					e.position = attributes[0].position
 					throw e
 				}
+				const scope = node.childNodes.scope
+				node.childNodes = sorted.map(record2tuple)
+				node.childNodes.scope = scope
 			}
 		}
 	})
