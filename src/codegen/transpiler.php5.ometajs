@@ -1,24 +1,20 @@
 "import dir from '../util/debug'"
 "import string, flattenLines, flattenArray from '../util/ometa-string'"
 "import OutputHTML, OutputXML, OutputXHTML from './output'"
-"import phpRuntime from './php-runtime'"
+"import php from './php'"
+"import assignments, createMacro, resolve, echoLines, translateMultiLoops, isNamespace, elementOutput, startsWithUpperCase from './assignment'"
+"import createScope from '../transform/Scope'"
 "export PHP5Transpiler, PHP5TranspilerWithDebug"
 
-ometa Beautify {
-	document = lines:x -> deleteRedundantEcho(x),
-	lines newline:nl	=	string:s	->	s.split(nl),
-	newline	->	/\r?\n/,
-
-	END
-}
+var g = php()
 
 ometa PHP5Transpiler {
 
-	document = [#document [string:filename number number] anything:source undefined topBlock:xs]
-		-> (phpRuntime() + '\n' + flattenLines(xs).join('\n')),
+	document = [#document [string:filename number number] anything:source :_ &anything:children enterScope(children.scope) topBlock:xs exitScope(children.scope)]
+		-> flattenLines(xs).join('\n'),
 
 	topBlock = [ignore*:x doctype:y node*:xs] -> x.concat(y, xs),
-	block = [node*:x] -> x,
+	block = &anything:x enterScope(x.scope) [node*:result] exitScope(x.scope) -> result,
 
 	position = [string:filename number:line number:col savePosition(filename, line, col)]	-> [filename, line, col],
 	position = [number:line number:col savePosition('*', line, col)]	-> ['*', line, col], // for compatibility
@@ -50,21 +46,35 @@ ometa PHP5Transpiler {
 	literal [#NegInf]	->	'-INF',
 	literal [#Number :n]	->	String(n),
 
+	spread [#Spread expr:x] -> x,
+
 	stringLiteral [#String :s]	->	("'" + s.replace(/'/g, "\\'") + "'"),
 	templateLiteral [#Quasi undefined [trans*:list]]	->	('(' + (list.length === 0 ? "''" : list.join(') . (')) + ')'),
-	listLiteral [#List [expr*:list]]	->	('[' + list.join(', ') + ']'),
-	recordLiteral [#Record [recordItem*:list]]	->	('new ArrayObject([' + list.join(', ') + '], 2)'),
+	listLiteral [#List []]	->	'array()',
+	listLiteral [#List [listItemGroup:x]]	->	x,
+	listLiteral [#List [listItemGroup+:groups]]	->	('array_merge(' + groups.join(', ') + ')'),
+
+	listItemGroup	= spread:x	-> ('\\Jedi\\toArray(' + x + ')')
+		| expr+:list	-> ('array(' + list.join(', ') + ')'),
+
+	recordLiteral [#Record []]	->	'\\Jedi\\record(array())',
+	recordLiteral [#Record [recordItemGroup:x]]	->	('\\Jedi\\record(' + x + ')'),
+	recordLiteral [#Record [recordItemGroup*:groups]]	->	('\\Jedi\\record(array_replace(' + groups.join(', ') + '))'),
+
+	recordItemGroup	= spread:x	-> ('(array)(' + x + ')')
+		| recordItem+:list	-> ('array(' + list.join(', ') + ')'),
+
 	recordItem [#RecordItem string:s trans:value]	->	("'" + s + "' => " + value),
 	recordItem [#RecordItem trans:key trans:value]	->	(key + ' => ' + value),
 
 	//call ["." [#Symbol 'url'] [#Symbol 'static']]	-> 'UrlBuilder::staticResource',
-	call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol :y]]	-> (isNamespace(x) ? x + y : x + '::' + y),
-	call ['.' (memberSymbol|call):x [#Symbol :y]]	->	(x + '->' + phpName(y)),
-	call ['.' trans:x [#Symbol :y]]	->	('($_ = ' + x + ') && false ?: $_' + '->' + phpName(y)),
-	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + phpName(y) + ' : null)'),
+	call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol :y]]	-> (isNamespace(x) ? x.slice(0, -1) + y : x + '::' + y),
+	call ['.' (memberSymbol|call):x [#Symbol :y]]	->	(x + '->' + g.varName(y)),
+	call ['.' trans:x [#Symbol :y]]	->	('($_ = ' + x + ') && false ?: $_' + '->' + g.varName(y)),
+	call ['?.' trans:x [#Symbol :y]]	->	('(' + x + ' ? ' + x + '->' + g.varName(y) + ' : null)'),
 
 	call [#Call trans:x [#List [trans:y]]]	->	(x + '[' + y + ']'),
-	call [#Call ['.' [#Symbol :s externalSymbol(s, true):x] [#Symbol 'new']] &[#Tuple :_] trans:y]	->	('(new ' + x + y + ')'),
+	call [#Call ['.' [#Symbol :s externalSymbol(s, false):x] [#Symbol 'new']] &[#Tuple :_] trans:y]	->	('(new ' + x + y + ')'),
 	call [#Call (callSymbol|call):x &[#Tuple :_] trans:y]	->	(x + y),
 	call [#Call (callSymbol|call):x trans:y]	->	(x + '(' + y + ')'),
 	call [#Call trans:x &[#Tuple :_] trans:y]	->	('($_ = ' + x + ') && false ?: $_' + y),
@@ -78,14 +88,13 @@ ometa PHP5Transpiler {
 	bin [#BinaryOp :op trans:x trans:y]	->	('(' + x + ' ' + op + ' ' + y + ')'),
 	bin [#UnaryOp :op trans:x]	->	('!' + x),
 	symbol [#Symbol '*']	->	'$context',
-	symbol [#Symbol :s externalSymbol(s):x]	->	x,
 	symbol [#Symbol :s resolve(s):x]	->	x,
 
-	callSymbol [#Symbol :s externalSymbol(s):x]	->	x,
+	callSymbol [#Symbol :s externalSymbol(s, false):x]	->	x,
 	callSymbol [#Symbol :s resolve(s):x warnMissingUse(s)]	->	x,
 
 	memberSymbol [#Symbol '*']	->	'$context',
-	memberSymbol [#Symbol :s externalSymbol(s):x]	->	x,
+	memberSymbol [#Symbol :s externalSymbol(s, false):x]	->	x,
 	memberSymbol [#Symbol :s resolve(s):x !{if (x.startsWith('$data->') && startsWithUpperCase(s)) this.warnMissingUse(s) }]	->	x,
 
 	ternary [#Ternary expr:x expr:y undefined]	->	('(' + x + ') ? (' + y + ') : null'),
@@ -101,91 +110,67 @@ ometa PHP5Transpiler {
 
 	trans :unknown	->	{ this.error('UnknownExpression', unknown) },
 
-	comment [:line] -> ["echo '<!-- " + this.output.escapeComment(simpleString(line)) + " -->';"],
+	comment [:line] -> ["echo '<!-- ', " + this.output.escapeComment(g.str(line)) + ", ' -->';"],
 	comment [echoComment*:xs] -> [].concat(
 			"echo '<!--', \"\\n\";",
 			xs,
 			"echo '-->';"
 		),
-	echoComment [char*:s] -> ("echo '" + this.output.escapeComment(simpleString(s)) + "', \"\\n\";"),
+	echoComment [char*:s] -> ("echo " + this.output.escapeComment(g.str(s)) + ", \"\\n\";"),
 
 	scriptsource [scriptsourceLine*:lines]	->	echoLines(lines),
-	scriptsourceLine string:s	->	("'" + this.output.escapeScriptSource(simpleString(s)) + "', \"\\n\""),
+	scriptsourceLine string:s	->	(this.output.escapeScriptSource(g.str(s)) + ", \"\\n\""),
 
 	text stringLiteral:s	->	['echo ' + this.output.escapeText(s) + ';'],
 	text templateLiteral:s	->	['echo ' + this.output.phpEscapeText(s) + ';'],
 	text undefined [textLine*:lines]	->	echoLines(lines),
 	text undefined [echoTemplateString*:lines]	->	lines,
 
-	textLine string:s	->	("'" + this.output.escapeText(simpleString(s)) + "', \"\\n\""),
+	textLine string:s	->	(this.output.escapeText(g.str(s)) + ', "\\n"'),
 	echoTemplateString []	->	'',
 	echoTemplateString [trans+:exprList]	->	('echo ' + this.output.phpEscapeText('(' + exprList.join(') . (') + ')') + ';'),
 
-	element [:tag :cls :id] undefined
-		{this.output.startTag(tag, cls, id)}:startT
-		enterBlock([]) &anything:children block:body exitBlock:param
-		{this.output.endTag(tag)}:endT
-		-> this.elementOutput(tag, cls, id, undefined, children, body, startT, endT, param),
-
-	element [:tag :cls :id] trans:bind
-		{this.output.startTag(tag, cls, id)}:startT
-		enterBlock([]) &anything:children block:body exitBlock:param
-		{this.output.endTag(tag)}:endT
-		-> this.elementOutput(tag, cls, id, bind, children, body, startT, endT, param),
+	element :pattern (undefined|trans):bind &anything:children block:body
+		-> elementOutput(this.output, pattern, bind, children.scope, body),
 
 
 	attribute :name undefined undefined	->	["echo ' " + name + "';"],
 	attribute :name undefined	->	["echo ' " + name + "';"],
 	attribute :name :op undefined	->	["echo ' " + name + "';"],
-	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + this.output.attrValue(simpleString(s)) + "\"';"],
-	attribute :name :op trans:exp -> ["echo jedi_runtime_attribute('" + name + "', " + exp + ");"],
+	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + this.output.attrValue(string(s)) + "\"';"],
+	attribute :name :op trans:exp -> ["echo \\jedi\\attribute('" + name + "', " + exp + ");"],
 
 	binding :_ trans:expr [] -> ['echo ' + this.output.phpEscapeText(expr) + ';'],
 	//binding trans:expr [] -> ["$__temp = " + expr + "; if (method_exists($__temp, '__toString')) echo htmlspecialchars($__temp); else print_r($__temp);"],
-	binding :_ trans:expr enterBlock([]) block:body exitBlock:param
-		-> closure(expr, body, param),
+	binding :_ trans:expr &anything:children block:body
+		-> g.block(children.scope, body, expr),
 
-	instruction #external ![]:xs [[#Symbol :x !xs.push(x) saveExternalSymbol(x)]+] :_
+	instruction #external ![]:xs [[#Symbol :x !xs.push(x)]+] :_
 		-> ('// external ' + xs.join(', ') + '\n'),
-	instruction #use [:segments :aliases saveUseSymbols(segments, aliases)] :_
+	instruction #use [:segments :aliases] :_
 		-> ('// use ' + segments.join('/') + '/' + (aliases.length > 1 ? '{' + aliases.map(function (x) { return x[0] + (x[1] ? ' as ' + x[1] : '') }).join(', ') + '}' : aliases.map(function (x) { return x[0] + (x[1] ? ' as ' + x[1] : '') }).join() + '\n')),
 
 	instruction #if trans:expr block:b -> ["if (" + expr + ") {", b, "}"],
 	instruction #elseif trans:expr block:b -> ["else if (" + expr + ") {", b, "}"],
 	instruction #else :_ block:b -> ["else {", b, "}"],
 
-	instruction #let [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] createBindings(collectSymbols(binds)):realBindings
-		->	phpAssignment(realBindings),
-	instruction #letlocal [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(collectSymbols(binds)) block:b exitBlock:param
-		->	assignment(binds, b, param),
-	instruction #for [([bindingPattern:bind trans:expr] -> [bind, expr])+:binds] enterBlock(collectSymbols(binds)) block:b exitBlock
-		->	translateMultiLoops(binds, b),
+	instruction #let [([:bind trans:expr] -> [bind, expr])+:binds] &anything:children block:body
+		->	assignments(binds, children.scope, body),
+	instruction #for [([trans:it :value :key :index] -> [it, value, key, index])+:binds] &anything:children block:body
+		->	translateMultiLoops(binds, children, body),
 
 	instruction #unsafe trans:x :_ -> ('echo ' + x + ';'),
 	instruction #d trans:x :_	->	('var_dump(' + x + ');'),
 	instruction #end :x :_	-> ('// end ' + x),
 
-	bindingPattern [#Symbol :v] -> [[v], phpVar(v)],
-	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value] [#Symbol :index] [#Symbol :count]]] -> [[key, value, index, count], phpVar(key) + ' => ' + phpVar(value)],
-	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value] [#Symbol :index]]] -> [[key, value, index], phpVar(key) + ' => ' + phpVar(value)],
-	bindingPattern [#TuplePattern [[#Symbol :key] [#Symbol :value]]] -> [[key, value], phpVar(key) + ' => ' + phpVar(value)],
-	bindingPattern [#ListPattern [bindingPattern*:bindings]]
-		-> ([
-			bindings.reduce(function (a, b) { return a.concat(b[0]) }, []),
-			bindings.reduce(function (a, b) { return a.concat(b[1]) }, [])
-		]),
-
 	suppress :lines -> (lines.map(function(line){ return '// ' + line })),
-	fragment :name :_ enterFragmentBlock(name) block:b exitFragmentBlock -> ['//  #' + name, b],
-	macro :elementPattern paramPattern:parameter enterBlock(parameter) block:body exitBlock:free saveMacro(elementPattern, parameter, body, free)
-		-> ['// define ' + elementPattern],
-
-	paramPattern [#TuplePattern [([#Symbol :name] -> name)*:names]] -> names,
+	fragment :name :_ block:b -> ['//  #' + name, b],
+	macro :name :param &anything:children block:body -> createMacro(name, param, children.scope, body),
 
 	endElement -> '',
 
-	inject :x :y [string*:lines] resolve(#data) -> [x + ';'].concat(lines.map(function(l){ return '//' + l })),
-	inject :x :y block:body resolve(#data) -> [x, '{', body, '}'],
+	inject :x :y resolve(#data) [string*:lines] -> [x + ';'].concat(lines.map(function(l){ return '//' + l })),
+	inject :x :y resolve(#data) block:body -> [x, '{', body, '}'],
 	/*filter [#Symbol [``if'']] [spaces Expression.expression:exp node(exp):x] block:body
 		-> ['if (' + x + ') {', body, '}'],
 	filter [#Symbol [``else'']] :x block:body
@@ -206,139 +191,59 @@ ometa PHP5Transpiler {
 }
 
 PHP5Transpiler.initialize = function() {
-	this._stack = [['page']]
 
-	this.enterBlock = function(bindings) {
-		this._stack.unshift(bindings)
+	this._scopes = [createScope()]
+
+	this.currentScope = function () {
+		return this._scopes[this._scopes.length - 1]
 	}
-	this.exitBlock = function() {
-		var needImport = this._stack[0].needImport || []
-		this._stack.shift()
-		return needImport
+
+	this.enterScope = function (x) {
+		//console.log('enter scope', x)
+		if (x) this._scopes.push(x)
 	}
-	this.enterFragmentBlock = function (name) {
-		this.enterBlock([])
-		this._stack[0].fragmentName = name
-	}
-	this.exitFragmentBlock = function () {
-		return this.exitBlock()
-	}
-	this.resolve = function(symbol) {
-		ans = '';
-		for (var i = 0; i < this._stack.length; i++) {
-			if (this._stack[i].indexOf(symbol) >= 0)  {
-				var ans = phpVar(symbol)
-				var importSymbol = symbol
-				var level = i
-				break
+
+	this.exitScope = function (x) {
+		//console.log('exit scope', this.currentScope())
+		if (x) {
+			if (x !== this.currentScope()) {
+				//console.log(x)
+				//console.log(this.currentScope())
+				this.error('scope error')
 			}
-		}
-		if (ans == '') {
-			ans = '$data->' + phpName(symbol)
-			importSymbol = 'data'
-			var level = i
-		}
-		for (var i = 0; i < level; i++) {
-			if (this._stack[i].needImport === undefined) this._stack[i].needImport = [importSymbol]
-			else this._stack[i].needImport.push(importSymbol)
-		}
-		return ans
-	}
-	this.saveExternalSymbol = function (symbol) {
-		this.saveUseSymbols([], [[symbol, symbol]])
-	}
-	this.saveUseSymbols = function (segments, aliases) {
-		if (this._stack[0].externals === undefined) this._stack[0].externals = Object.create(null)
-		var e = this._stack[0].externals
-		for (var i = 0; i < aliases.length; ++i) {
-			var a = aliases[i]
-			var id = a[0], as = a[1]
-			if (as === undefined) as = id
-			if (id === '*') id = ''
-			if (e[as]) this.error('SymbolConflict', {symbol: as})
-			e[as] = segments.concat(id)
-			// console.log('save', as, e[as])
+			this._scopes.pop()
 		}
 	}
+
+	this.resolve = function (name) {
+		var x = resolve(name, this.currentScope())
+		if (typeof x === 'string') return x
+		if (x[x.length - 1] === '*') {
+			this.error('IllegalNamespaceUsage', {symbol: name, namespace: x.join('/')})
+		}
+		return x.join('\\')
+	}
+
 	this.externalSymbol = function(symbol, allowNamespace) {
-		for (var i = 0; i < this._stack.length; i++) {
-			var e = this._stack[i].externals || Object.create(null)
-			var result = e[symbol]
-			if (result) {
-				if (!allowNamespace && result[result.length - 1] === '') {
-					this.error('IllegalNamespaceUsage', {symbol: symbol, namespace: result.join('/')})
-				}
-				return result.join('\\')
-			}
+		var x = resolve(symbol, this.currentScope())
+		if (typeof x === 'string') throw fail
+		if (!allowNamespace && x[x.length - 1] === '') {
+			this.error('IllegalNamespaceUsage', {symbol: symbol, namespace: x.join('/')})
 		}
-		throw fail
+		return x.join('\\')
 	}
 
-	this.saveMacro = function(elementPattern, parameter, body, free) {
-		var i = 0, scope
-		do {
-			scope = this._stack[i]
-			if (scope.fragmentName && scope.fragmentName.indexOf('#') >= 0) continue
-			else break
-		} while (i++ < this._stack.length)
-		if (scope.macros === undefined) scope.macros = []
-		scope.macros.push([elementPattern, parameter, body, free])
-	}
-	this.elementOutput = function (tag, cls, id, bind, children, body, startT, endT, param) {
-		if (bind === undefined) return [startT, body, endT]
-		//dir(children)
-		//dirty implementation for script = data
-		if (tag === 'script' && bind) {
-			body.splice(1, 0, "echo 'void function(data){';")
-			body.push("echo '}(', json_encode($context, 0x100), ')';")
-			return closure(bind, [startT, body, endT], param)
-		}
-		var overrided = children.some(function(node){
-			//console.log(node)
-			return ['element', 'text', 'comment', 'instruction'].indexOf(node[0]) >= 0
-		})
-		if (overrided) return closure(bind, [startT, body, endT], param)
-		else {
-			var m = this.findMacro(tag, cls, id, bind)
-			if (m) {
-				return closure(bind, [startT, m[2], endT], m[3]) // || ['//call macro']
-			} else {
-				return closure(bind, [startT, "echo '>', " + this.output.phpEscapeText('$context') + ';', endT], param)
-			}
-		}
-	}
-	this.findMacro = function (tag, cls, id, param) {
-		//console.log('findMacro', tag, cls, id)
-		//dir(this._stack)
-		var mostSpecific, specificity
-		for (var n = 0; n < this._stack.length; n++) {
-			if (this._stack[n].macros)
-				for (var i = 0; i < this._stack[n].macros.length; i++) {
-					var m = this._stack[n].macros[i]
-					var elemPattern = m[0]
-					if (elemPattern[0] === tag &&
-						elemPattern[1].every(function(c){ return cls.indexOf(c) >= 0 })
-					) {
-						var s = (elemPattern[1].length * 256) - n
-						if (!mostSpecific || s >= specificity) {
-							mostSpecific = m
-							specificity = s
-						}
-					}
-				}
-		}
-		//console.log('findMacro result:', mostSpecific)
-		return mostSpecific
-	}
 	this.savePosition = function (filename, line, column) {
 		this._currentPosition = [filename, line, column]
 	}
+
 	this.error = function (name, data) {
 		var err = new Error(name)
 		err.position = this._currentPosition.slice()
 		err.data = data
 		throw err
 	}
+
 	this.warnMissingUse = function (symbol) {
 		this.error('missing use/external for symbol "' + symbol + '"?')
 	}
@@ -365,7 +270,6 @@ PHP5Transpiler.initialize = function() {
 	this.attachDebugInfo = function (x, pos) {
 		return x
 	}
-
 }
 
 ometa PHP5TranspilerWithDebug <: PHP5Transpiler {}
@@ -377,114 +281,4 @@ PHP5TranspilerWithDebug.initialize = function () {
 			'// ' + pos[1] + ', ' + pos[2] + ' @ ' + pos[0]
 		].concat(x)
 	}
-}
-
-function deleteRedundantEcho(lines) {
-	for (var i = 1; i < lines.length; i++) {
-		if (lines[i].match(/^\s*echo/) && (lines[i - 1].match(/^\s*echo/) || lines[i - 1].match(/^\s*,/))) {
-			lines[i - 1] = lines[i - 1].substring(0, lines[i - 1].length - 1)
-			lines[i] = lines[i].replace('echo', ',')
-		}
-	}
-	var ans = ''
-	for (var i = 0; i < lines.length; i++) {
-		ans += lines[i] + '\n'
-	}
-	return ans
-}
-
-function echoLines(lines) {
-	var n = lines.length
-	return lines.map(function(l, i) {
-		return (i > 0 ? '     ' : 'echo ') + l + (i < n ? ',' : ';')
-	})
-}
-
-function translateMultiLoops(binds, b) {
-	if (binds.length > 0) {
-		var lines = []
-		var bind = binds.shift();
-		var bindVars = bind[0][0]
-		var indexVar, countVar
-		if (bindVars.length > 2) {
-			indexVar = phpVar(bindVars[2])
-			lines.push(indexVar + ' = 0;')
-			if (bindVars.length > 3) {
-				countVar = phpVar(bindVars[3])
-				lines.push(countVar + ' = 0;')
-			}
-		}
-		lines.push("foreach (" + bind[1] + " as " + bind[0][1] + ") {")
-		if (countVar) lines.push('++' + countVar + ';')
-		lines.push(translateMultiLoops(binds, b))
-		if (indexVar) lines.push('++' + indexVar + ';')
-		lines.push('}')
-		return lines
-	}
-	return b;
-}
-
-function simpleString(s) {
-	return string(s).replace(/'/g, "\\'")
-}
-
-function unique(param) {
-	var result = [];
-	for (var i=0; i < param.length; i++) {
-		if (result.indexOf(param[i]) == -1) result.push(param[i])
-	}
-	return result
-}
-
-function phpVar(param) {
-	return '$' + phpName(param)
-}
-
-function getImportString(param) {
-	var result = unique(param)
-	result = result.map(phpVar)
-	return param.length > 0 ? ' use (' + result.join(',') + ')' : ''
-}
-
-function closure(context, body, param) {
-	return [
-		'call_user_func(function ($context)' + getImportString(param) + ' {',
-		body,
-		'}, ' + context + ');'
-	]
-}
-
-function collectSymbols(binds) {
-	return flattenArray(binds.map(function(b){
-		return b[0][0]
-	}))
-}
-
-function assignment(binds, body, param) {
-	var key = '', value = ''
-	for (var i = 0; i < binds.length; i++) {
-		key += binds[i][0][1]
-		value += binds[i][1]
-		if (i < binds.length - 1) {
-			key += ','
-			value += ','
-		}
-	}
-	return [
-		'call_user_func(function(' + key + ')' + getImportString(param) + ' {',
-		body,
-		'}, ' + value + ');'
-	]
-}
-
-function isNamespace(s) {
-	return s.endsWith('\\')
-}
-
-function phpName(s) {
-	return /^[a-z_\x7f-\xff][a-z0-9_\x7f-\xff]*$/i.test(s) ? s : "{'" + s + "'}"
-}
-
-function startsWithUpperCase(s) {
-	return s >= 'A' && s < '['
 }
