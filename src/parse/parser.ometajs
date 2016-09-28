@@ -13,7 +13,7 @@ ometa PlainParser <: OffsideRule {
 	nameChar = Expression.nameChar,
 
 	load string:filename readFile(filename):content source(content):nodes
-		->	[#document, [filename, 1, 1], content, undefined, nodes],
+		->	[#document, [filename, 1, 1], content, [], nodes],
 
 	ignore	=	'/' '/',
 	indentChar	->	#tab,
