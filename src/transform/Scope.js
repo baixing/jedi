@@ -4,14 +4,14 @@ import {macroName} from '../util/macro'
 export default class Scope {
 
 	constructor(parent, {position, nodeType, nodeName}) {
-		this.parent = parent
 		this.position = position
 		this.temp = 0
 		this.bindings = new Map
 		this.freeVars = new Set
 		this.macros = []
-		this.macrosParent = parent
 		this.freeMacros = new Set
+		this.parent = parent
+		this.macrosParent = parent
 	}
 
 	newTemp() {
