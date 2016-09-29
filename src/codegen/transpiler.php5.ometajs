@@ -137,7 +137,7 @@ ometa PHP5Transpiler {
 	attribute :name undefined undefined	->	["echo ' " + name + "';"],
 	attribute :name undefined	->	["echo ' " + name + "';"],
 	attribute :name :op undefined	->	["echo ' " + name + "';"],
-	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + this.output.attrValue(string(s)) + "\"';"],
+	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + this.output.attrValue(string(s)).replace(/'/g, "\\'") + "\"';"],
 	attribute :name :op trans:exp -> ["echo \\jedi\\attribute('" + name + "', " + exp + ");"],
 
 	binding :_ trans:expr [] -> ['echo ' + this.output.phpEscapeText(expr) + ';'],
