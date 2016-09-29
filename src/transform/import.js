@@ -90,6 +90,7 @@ function override(template, blocks) {
 			//TODO: adopted nodes should not be traversed
 			if (frags.replace) {
 				node.childNodes.splice(0, Infinity, ...frags.replace.childNodes)
+				node.childNodes.scope = frags.replace.childNodes.scope
 			}
 			if (frags.befores.length > 0) {
 				const i = node.childNodes.findIndex(child => {
