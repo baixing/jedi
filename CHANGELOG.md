@@ -1,3 +1,35 @@
+1.0.0-rc6 / 2016-09-29
+========================
+
+Features:
+  * complete macro syntax: `::macro of param`
+  * flatten let instruction
+  * support destructuring
+  * support spread/rest
+  * resolve bindings per file
+  * revise for syntax: `for key, value at index in ...`
+  * allow output AST as JSON
+  * support diff php version target (5.3 ~ 5.6)
+
+Bug Fixes:
+  * "\(experssion)" swift-like interpolation syntax
+  * fix literal attribute output (escape `'`)
+  * do not allow name starts/ends with '-'
+
+Refactor:
+  * rewrite scope and bindings
+  * rewrite macro
+  * [codegen] rewrite runtime/php
+  * [transform] traverse enter/leave
+  * [parser] simplify tupleLiteral/tuplePattern
+  * [parser] simplify comma separated construct
+
+Tests:
+  * add tests for issues
+  * apply transform for codegen tests
+  * update testcases
+
+
 1.0.0-rc5 / 2016-08-05
 ========================
 
@@ -20,7 +52,6 @@ Bug Fixes:
   * ensure valid PHP name
   * fix #72
 
-
 Architecture:
   * travis CI
   * change to babel es2015 preset
@@ -31,6 +62,7 @@ Architecture:
 Documents:
   * update badges
   * comment #65
+
 
 1.0.0-rc4 / 2016-05-27
 ========================
