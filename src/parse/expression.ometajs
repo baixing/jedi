@@ -9,7 +9,7 @@ ometa Expression {
 
 	primary = tupleLiteral | listLiteral | recordLiteral | literal | symbol,
 
-	symbol	=	<'*' | ~keyword nameChar+>:s -> [#Symbol, string(s)],
+	symbol	=	<'*' | ~keyword nameChar+>:s !{ if (s[0] === '-' || s[s.length - 1] === '-') throw fail } -> [#Symbol, string(s)],
 	nameChar	=	UnicodeText.nameChar | '$',
 
 	literal = (nullLiteral | booleanLiteral | numberLiteral

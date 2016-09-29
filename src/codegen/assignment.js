@@ -171,6 +171,7 @@ export function resolveMacro(element, scope) {
 }
 
 export function resolve(name, scope) {
+	// console.log('resolve', name, scope)
 	const [type, id] = scope.findSymbol(name)
 	switch (type) {
 		case 'local': return g.var(id)

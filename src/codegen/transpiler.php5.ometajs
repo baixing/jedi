@@ -91,11 +91,11 @@ ometa PHP5Transpiler {
 	symbol [#Symbol :s resolve(s):x]	->	x,
 
 	callSymbol [#Symbol :s externalSymbol(s, false):x]	->	x,
-	callSymbol [#Symbol :s resolve(s):x warnMissingUse(s)]	->	x,
+	callSymbol [#Symbol :s resolve(s):x warnMissingUse(s, x)]	->	x,
 
 	memberSymbol [#Symbol '*']	->	'$context',
 	memberSymbol [#Symbol :s externalSymbol(s, false):x]	->	x,
-	memberSymbol [#Symbol :s resolve(s):x !{if (x.startsWith('$data->') && startsWithUpperCase(s)) this.warnMissingUse(s) }]	->	x,
+	memberSymbol [#Symbol :s resolve(s):x !{if (x.startsWith('$data->') && startsWithUpperCase(s)) this.warnMissingUse(s, x) }]	->	x,
 
 	ternary [#Ternary expr:x expr:y undefined]	->	('(' + x + ') ? (' + y + ') : null'),
 	ternary [#Ternary expr:x expr:y expr:z]	->	('(' + x + ') ? (' + y + ') : (' + z + ')'),
@@ -137,7 +137,7 @@ ometa PHP5Transpiler {
 	attribute :name undefined undefined	->	["echo ' " + name + "';"],
 	attribute :name undefined	->	["echo ' " + name + "';"],
 	attribute :name :op undefined	->	["echo ' " + name + "';"],
-	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + "" + this.output.attrValue(string(s)) + "\"';"],
+	attribute :name :op [#String :s] -> ["echo ' " + name + '="' + this.output.attrValue(string(s)).replace(/'/g, "\\'") + "\"';"],
 	attribute :name :op trans:exp -> ["echo \\jedi\\attribute('" + name + "', " + exp + ");"],
 
 	binding :_ trans:expr [] -> ['echo ' + this.output.phpEscapeText(expr) + ';'],
@@ -244,8 +244,8 @@ PHP5Transpiler.initialize = function() {
 		throw err
 	}
 
-	this.warnMissingUse = function (symbol) {
-		this.error('missing use/external for symbol "' + symbol + '"?')
+	this.warnMissingUse = function (symbol, resolved) {
+		this.error('missing use/external for symbol "' + symbol + ' (will be resolved to ' + resolved + ')"?')
 	}
 
 	this.output = new OutputHTML()
