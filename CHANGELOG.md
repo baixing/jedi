@@ -1,3 +1,15 @@
+1.0.0-rc7 / 2016-10-10
+========================
+
+Bug Fixes:
+  * 0.10 compatibility
+
+Refactor:
+  * remove for-of for 0.10 (which do not have native Symbol) compatibility
+
+Architecture:
+  * add 0.10/0.12 env in CI
+
 1.0.0-rc6 / 2016-09-29
 ========================
 
