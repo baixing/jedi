@@ -33,6 +33,7 @@
     "commander": "^2.9.0",
     "debug": "^2.2.0",
     "es6-shim": "^0.35.1",
+    "es7-shim": "^6.0.0",
     "js-yaml": "^3.6.1",
     "maps": "^0.3.3",
     "source-map-support": "^0.4.0"
