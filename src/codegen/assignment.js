@@ -8,9 +8,9 @@ const hasOwn = {}.hasOwnProperty
 
 export function assignments(bindings, scope, body) {
 	const result = []
-	for (const [pattern, expr] of bindings) {
+	bindings.forEach(([pattern, expr]) => {
 		result.push(...assignment(scope, pattern, expr))
-	}
+	})
 	if (body.length > 0) result.push(g.block(scope, body))
 	return result
 }
@@ -25,7 +25,8 @@ export function assignment(scope, assignmentPattern, expression) {
 			const names = [], before = [], after = [], sub = []
 			let rest = ''
 			let x = before
-			for (const element of value) {
+
+			value.forEach(element => {
 				const [kind, value] = element
 				if (kind === 'RestPattern') {
 					names.push(g.var(value[1]))
@@ -39,7 +40,7 @@ export function assignment(scope, assignmentPattern, expression) {
 					x.push('null')
 					sub.push(assignment(element, temp))
 				}
-			}
+			})
 			return [
 				`list(${names.join(', ')}) = ` +
 				(x === before
@@ -52,7 +53,7 @@ export function assignment(scope, assignmentPattern, expression) {
 			const names = [], sub = []
 			let defaults = []
 			const groups = []
-			for (const element of value) {
+			value.forEach(element => {
 				const [kind, name, binding] = element
 				if (kind === 'RestPattern') {
 					names.push(g.var(name[1]))
@@ -72,7 +73,7 @@ export function assignment(scope, assignmentPattern, expression) {
 						}
 					} else throw new Error('Not implemented: ' + name)
 				} else throw new Error('Unknown kind: ' + kind)
-			}
+			})
 			groups.push(defaults)
 			return [
 				`list(${names.join(', ')}) = \\Jedi\\recordPattern(${expression}, ${g.seq(groups.map(x => g.assoc(x)))});`
@@ -86,7 +87,7 @@ export function assignment(scope, assignmentPattern, expression) {
 
 
 export function translateMultiLoops(bindings, children, body) {
-	for (const [iterable, value, key, at] of bindings.reverse()) {
+	bindings.reverse().forEach(([iterable, value, key, at]) => {
 		const [valueKind, valueName] = value
 		let valueVar
 		if (valueKind === 'Symbol') {
@@ -100,7 +101,7 @@ export function translateMultiLoops(bindings, children, body) {
 			valueVar,
 			at ? g.var(at[1]) : undefined,
 			body)
-	}
+	})
 	return body
 }
 

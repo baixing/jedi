@@ -61,7 +61,7 @@ export default class Scope {
 	}
 
 	saveBindings(bindings) {
-		for (const name of collectBindings(bindings)) this.saveSymbol(name, 'local')
+		collectBindings(bindings).forEach(name => this.saveSymbol(name, 'local'))
 	}
 
 	saveSymbol(name, resolution) {

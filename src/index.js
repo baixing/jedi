@@ -29,7 +29,7 @@ export function transpile(source, dest, lang, {adaptive, debug, writeErrorToFile
 		if (writeErrorToFile) outputs.push({file: dest, content: outputCompilingError(e, source, lang)})
 		else throw e
 	}
-	for (const {file, content} of outputs) fs.writeFileSync(file, content)
+	outputs.forEach(({file, content}) => fs.writeFileSync(file, content))
 }
 
 
