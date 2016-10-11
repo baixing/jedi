@@ -1,5 +1,8 @@
-1.0.0-rc7 / 2016-10-10
+1.0.0-rc7 / 2016-10-11
 ========================
+
+Features:
+  * continue line
 
 Bug Fixes:
   * 0.10 compatibility

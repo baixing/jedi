@@ -1,2 +1,6 @@
-:let user = 'world'
-:d "Hello \(user)!"
+:let [greeting, to] = [
+\		'Hello',
+\		'world',
+\	]
+
+:d "\(greeting) \(to)!"
