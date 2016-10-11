@@ -63,8 +63,8 @@ OffsideRule.initialize = function() {
 				var indentChar = this.indentChar()
 				if (indentChar === 'auto') indentChar = this._stack[0].indentChar
 				switch (indentChar) {
-					case 'tab': return '\t'
-					case 'space': return new Array(this.shiftWidth() + 1).join(' ')
+					case 'tab':	return '\t'
+					case 'space':	return ' '.repeat(this.shiftWidth())
 				}
 			}
 	this.setShift	=	function (c) {
