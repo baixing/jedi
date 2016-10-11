@@ -106,13 +106,3 @@ OffsideRule.initialize = function() {
 			]
 		}
 }
-
-function expandTabs(tabsize, line) {
-	return line.replace(/\t/g, function(_, offset){
-		return repeat(' ', offset % tabsize || tabsize)
-	})
-}
-
-function repeat(s, n) {
-	return new Array(n + 1).join(s)
-}
