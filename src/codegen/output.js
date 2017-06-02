@@ -80,7 +80,7 @@ class Output {
 		return s.replace(/--/g, '- -')
 	}
 	escapeScriptSource(s) {
-		return s.replace(/<\/script>/g, '<\\/script>')
+		return s.replace(/<(?=\/script[\s/>])/g, '<\\')
 	}
 	escapeText(s) {
 		return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')

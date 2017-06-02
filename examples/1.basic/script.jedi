@@ -1,5 +1,6 @@
 script !
-	console.log('</script>')
+	console.log('</script/')
+	console.log('</script ')
 
 script = [1, 2, 3, '</script>']
 	!
