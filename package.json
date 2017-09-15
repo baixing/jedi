@@ -1,53 +1,53 @@
 {
-  "name": "jedi",
-  "version": "2.0.0-alpha",
-  "author": "Hax <johnhax@gmail.com>",
-  "description": "jedi — a language for Web development",
-  "keywords": [
-    "view",
-    "template",
-    "dsl"
-  ],
-  "license": "Apache-2.0",
-  "main": "index.js",
-  "files": [
-    "cli/",
-    "lib/",
-    "doc/",
-    "index.js",
-    "load.js",
-    "src/"
-  ],
-  "bin": {
-    "jedi": "./cli/jedi",
-    "jedi-transpiler-service": "./cli/jedi-transpiler-service",
-    "jediphp": "./cli/jediphp"
-  },
-  "scripts": {
-    "test": "node test",
-    "prepublish": "babel --source-maps --out-dir lib --ignore *.ometa.js --copy-files src",
-    "postinstall": "./cli/jedi --version"
-  },
-  "dependencies": {
-    "babel-polyfill": "^6.26.0",
-    "commander": "^2.9.0",
-    "debug": "^2.2.0",
-    "js-yaml": "^3.6.1",
-    "maps": "^0.3.3",
-    "ohm-js": "^0.13.1",
-    "source-map-support": "^0.4.0"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-features": "^2.1.3",
-    "babel-preset-stage-0": "^6.5.0",
-    "babel-register": "^6.9.0",
-    "coffee-script": "^1.12.7"
-  },
-  "repository": {
-    "type": "git",
-    "url": "http://github.com/baixing/jedi.git"
-  },
-  "homepage": "http://github.com/baixing/jedi",
-  "bugs": "http://github.com/baixing/jedi/issues"
+	"name": "jedi",
+	"version": "2.0.0-alpha",
+	"author": "Hax <johnhax@gmail.com>",
+	"description": "jedi — a language for Web development",
+	"keywords": [
+		"view",
+		"template",
+		"dsl"
+	],
+	"license": "Apache-2.0",
+	"main": "index.js",
+	"files": [
+		"cli/",
+		"lib/",
+		"doc/",
+		"index.js",
+		"load.js",
+		"src/"
+	],
+	"bin": {
+		"jedi": "./cli/jedi",
+		"jedi-transpiler-service": "./cli/jedi-transpiler-service",
+		"jediphp": "./cli/jediphp"
+	},
+	"scripts": {
+		"test": "node test",
+		"prepublish": "babel --source-maps --out-dir lib --ignore *.ometa.js --copy-files src",
+		"postinstall": "./cli/jedi --version"
+	},
+	"dependencies": {
+		"babel-polyfill": "^6.26.0",
+		"commander": "^2.9.0",
+		"debug": "^2.2.0",
+		"js-yaml": "^3.6.1",
+		"maps": "^0.3.3",
+		"ohm-js": "^0.13.1",
+		"source-map-support": "^0.4.0"
+	},
+	"devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-preset-features": "^2.1.3",
+		"babel-preset-stage-0": "^6.5.0",
+		"babel-register": "^6.9.0",
+		"coffee-script": "^1.12.7"
+	},
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/baixing/jedi.git"
+	},
+	"homepage": "http://github.com/baixing/jedi",
+	"bugs": "http://github.com/baixing/jedi/issues"
 }
