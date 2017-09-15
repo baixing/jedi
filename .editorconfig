@@ -1,13 +1,15 @@
+# See https://github.com/hax/dotfiles/tree/master/src/.editorconfig for commented edition
 root = true
-
 [*]
 charset = utf-8
 indent_style = tab
 end_of_line = lf
-insert_final_newline = true
 trim_trailing_whitespace = true
+insert_final_newline = true
+insert_final_newline = single
 max_line_length = 80
-
-[{*.yml, *.yaml, .eslintrc, package.json}]
+[*.{yaml,yml}]
 indent_style = space
 indent_size = 2
+[*.{markdown,md}]
+indent_size = 4
