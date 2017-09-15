@@ -29,25 +29,19 @@
     "postinstall": "./cli/jedi --version"
   },
   "dependencies": {
-    "babel-polyfill": "^6.9.1",
+    "babel-polyfill": "^6.26.0",
     "commander": "^2.9.0",
     "debug": "^2.2.0",
-    "es6-shim": "^0.35.1",
-    "es7-shim": "^6.0.0",
     "js-yaml": "^3.6.1",
     "maps": "^0.3.3",
     "source-map-support": "^0.4.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.9.0",
-    "babel-plugin-syntax-async-generators": "^6.8.0",
-    "babel-plugin-transform-es2015-generator-return": "^1.2.0",
-    "babel-plugin-transform-function-sent": "^1.0.0",
-    "babel-preset-es2015": "^6.9.0",
+    "babel-cli": "^6.26.0",
     "babel-preset-features": "^2.1.3",
     "babel-preset-stage-0": "^6.5.0",
     "babel-register": "^6.9.0",
-    "coffee-script": "^1.9.3"
+    "coffee-script": "^1.12.7"
   },
   "repository": {
     "type": "git",
