@@ -1,0 +1,6 @@
+:import macros
+
+body
+	:let x = 1
+	#main
+		'Hello world!'

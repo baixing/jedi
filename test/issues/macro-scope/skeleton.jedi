@@ -1,0 +1,9 @@
+:import macros
+
+
+html
+	:let x = 1
+	body
+
+		#frag
+			'origin'

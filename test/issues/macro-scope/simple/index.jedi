@@ -1,0 +1,3 @@
+:import skeleton
+	#main::before
+		div = 'test'

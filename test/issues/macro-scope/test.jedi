@@ -1,0 +1,14 @@
+:import skeleton
+
+	#frag
+		:for i in [1, 2, 3]
+			= i
+			:import calling
+
+	-- #frag::before
+		div
+			div.test = 'before'
+
+	-- #frag::after
+		div
+			div.test = 'after'

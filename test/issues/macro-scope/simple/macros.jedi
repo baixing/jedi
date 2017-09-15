@@ -1,0 +1,2 @@
+:: div of msg
+	"(\(msg))"
