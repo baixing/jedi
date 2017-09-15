@@ -1,17 +1,33 @@
+import {inspect} from 'util'
 import {macroName} from '../util/macro'
 
+
+let id = 0
+function generateId() {
+	return ++id
+}
 
 export default class Scope {
 
 	constructor(parent, {position, nodeType, nodeName}) {
+		this.id = generateId()
+		this.parent = parent
+		this.macrosParent = parent
 		this.position = position
 		this.temp = 0
 		this.bindings = new Map
 		this.freeVars = new Set
 		this.macros = []
 		this.freeMacros = new Set
-		this.parent = parent
-		this.macrosParent = parent
+	}
+
+	[inspect.custom]() {
+		return {
+			...this,
+			id:	this.id,
+			parent:	this.parent.id,
+			macrosParent:	this.macrosParent.id,
+		}
 	}
 
 	newTemp() {

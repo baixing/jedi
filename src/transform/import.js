@@ -24,12 +24,12 @@ export default function doImport(document) {
 		leave(node) {
 			const {nodeType, position: [path], nodeName, nodeValue, childNodes} = node
 			if (nodeType === 'instruction' && nodeName === 'import') {
-				const parentScope = childNodes.scope.parent
+				const macrosParent = childNodes.scope.macrosParent
 				let tree = loadTree(resolve(nodeValue, path))
 				tree = override(tree, childNodes)
 				Object.assign(node, tree)
-				node.childNodes.scope.macrosParent = parentScope
-				parentScope.mergeMacros(node.childNodes.scope.macros)
+				node.childNodes.scope.macrosParent = macrosParent
+				macrosParent.mergeMacros(node.childNodes.scope.macros)
 			}
 		}
 	})
@@ -90,9 +90,11 @@ function override(template, blocks) {
 			//TODO: adopted nodes should not be traversed
 			if (frags.replace) {
 				node.childNodes.splice(0, Infinity, ...frags.replace.childNodes)
+				frags.replace.childNodes.scope.macrosParent = node.childNodes.scope
 				node.childNodes.scope = frags.replace.childNodes.scope
 			}
 			if (frags.befores.length > 0) {
+				frags.befores.forEach(f => f.childNodes.scope.macrosParent = node.childNodes.scope)
 				const i = node.childNodes.findIndex(child => {
 					const {nodeType, nodeName, nodeValue} = tuple2record(child)
 					return nodeType !== 'fragment' || nodeName !== frag || nodeValue !== 'before'
@@ -100,6 +102,7 @@ function override(template, blocks) {
 				node.childNodes.splice(0, i, ...frags.befores.map(record2tuple))
 			}
 			if (frags.afters.length > 0) {
+				// frags.afters.forEach(node => node.childNodes.scope.macrosParent = node.childNodes.scope)
 				while (node.childNodes.length > 0) {
 					const last = node.childNodes[node.childNodes.length - 1]
 					const {nodeType, nodeName, nodeValue} = tuple2record(last)
