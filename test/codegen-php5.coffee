@@ -171,17 +171,17 @@ exports.PHP5Transpiler =
 
 			expect: [['echo \'Hello {user}!\\n\', "\\n";']]
 
-		'single quot multiple lines text ':
-			input: [
-				['text', [1, 1], undefined, ['Hello world!', 'foo bar baz', 'rawr rawr', 'super cool']]
-			]
+		# 'single quot multiple lines text ':
+		# 	input: [
+		# 		['text', [1, 1], undefined, ['Hello world!', 'foo bar baz', 'rawr rawr', 'super cool']]
+		# 	]
 
-			expect:[[
-				'echo \'Hello world!\', "\\n",'
-				'     \'foo bar baz\', "\\n",'
-				'     \'rawr rawr\', "\\n",'
-				'     \'super cool\', "\\n";'
-			]]
+		# 	expect:[[
+		# 		'echo \'Hello world!\', "\\n",'
+		# 		'     \'foo bar baz\', "\\n",'
+		# 		'     \'rawr rawr\', "\\n",'
+		# 		'     \'super cool\', "\\n";'
+		# 	]]
 
 			# expect:[[
 			# 	'echo \'Hello world!\', "\\n";'
