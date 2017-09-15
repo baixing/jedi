@@ -109,7 +109,7 @@ export function translateMultiLoops(bindings, children, body) {
 export function echoLines(lines) {
 	var n = lines.length
 	return lines.map(function(l, i) {
-		return (i > 0 ? '     ' : 'echo ') + l + (i < n ? ',' : ';')
+		return (i > 0 ? '     ' : 'echo ') + l + (i < n - 1 ? ',' : ';')
 	})
 }
 

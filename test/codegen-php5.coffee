@@ -177,11 +177,18 @@ exports.PHP5Transpiler =
 			]
 
 			expect:[[
-				'echo \'Hello world!\', "\\n";'
-				'echo \'foo bar baz\', "\\n";'
-				'echo \'rawr rawr\', "\\n";'
-				'echo \'super cool\', "\\n";'
+				'echo \'Hello world!\', "\\n",'
+				'     \'foo bar baz\', "\\n",'
+				'     \'rawr rawr\', "\\n",'
+				'     \'super cool\', "\\n";'
 			]]
+
+			# expect:[[
+			# 	'echo \'Hello world!\', "\\n";'
+			# 	'echo \'foo bar baz\', "\\n";'
+			# 	'echo \'rawr rawr\', "\\n";'
+			# 	'echo \'super cool\', "\\n";'
+			# ]]
 
 		'single quot text with single quot':
 			input: [
