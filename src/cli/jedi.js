@@ -5,11 +5,12 @@ program.
 	usage('[options] <source> <dest>').
 	version(pkg.version).
 	option('-a, --adaptive', '生成多个适配版本').
+	option('-b, --bak', '保留备份').
 	option('-w, --watch', '当源文件的内容变化时自动重新编译').
-	option('-1, --tree1', '查看抽象语法树（阶段1）').
-	option('-2, --tree2', '查看抽象语法树（阶段2）').
-	option('-3, --tree3', '查看抽象语法树（阶段3）').
-	option('-4, --tree4', '查看抽象语法树（阶段4）').
+	option('-1, --tree1', '查看语法树（阶段1）').
+	option('-2, --tree2', '查看语法树（阶段2）').
+	option('-3, --tree3', '查看语法树（阶段3）').
+	option('-4, --tree4', '查看语法树（阶段4）').
 	parse(process.argv)
 
 if (program.args.length < 1) {
@@ -43,6 +44,7 @@ const opts = {
 	adaptive: program.adaptive,
 	debug: [program.tree1, program.tree2, program.tree3, program.tree4],
 	writeErrorToFile: !!program.watch,
+	bak: program.bak,
 }
 const args = [src, dest, lang, opts]
 import {transpile, watch} from '..'

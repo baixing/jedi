@@ -5,17 +5,15 @@ import {compile} from './codegen'
 import errorInfo from './util/error-info'
 import * as fs from 'fs'
 
-export function transpile(source, dest, lang, {adaptive, debug, writeErrorToFile = true} = {}) {
+export function transpile(source, dest, lang, {adaptive, debug, writeErrorToFile = true, bak} = {}) {
 	const outputs = []
 	try {
 		const config = loadConfig(source)
 		const tree = transform(parseFile(source), debug)
 		if (!lang) return
 		if (lang === 'json') {
-			fs.writeFileSync(dest, JSON.stringify(tree, null, 2))
-			return
-		}
-		if (adaptive || config.adaptive) {
+			outputs.push({file: dest, content: JSON.stringify(tree, null, 2)})
+		} else if (adaptive || config.adaptive) {
 			tree[4].unshift(['comment', [source, 0, 1], ['html']])
 			outputs.push({file: dest, content: compile(tree, lang)})
 			tree[4][0][2] = ['xhtml mp 1.0']
@@ -30,6 +28,19 @@ export function transpile(source, dest, lang, {adaptive, debug, writeErrorToFile
 		else throw e
 	}
 	outputs.forEach(({file, content}) => fs.writeFileSync(file, content))
+}
+
+
+function writeFile(file, content, bak) {
+	if (fs.existsSync(file)) {
+		if (fs.readFileSync(file, 'utf-8') === content) {
+			console.log('no change of', file)
+			return
+		}
+		fs.renameSync(file, file + '.bak')
+		console.log(file, '->', file + '.bak')
+	}
+	fs.writeFileSync(file, content)
 }
 
 
